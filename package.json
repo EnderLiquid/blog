@@ -4,8 +4,9 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
+    "content:check": "node scripts/validate-content.mjs",
     "dev": "nuxt dev",
-    "generate": "nuxt generate && pagefind --site .output/public",
+    "generate": "npm run content:check && nuxt generate && pagefind --site .output/public",
     "preview": "nuxt preview",
     "typecheck": "nuxt typecheck"
   },
@@ -17,8 +18,10 @@
     "vue-router": "^5.1.0"
   },
   "devDependencies": {
+    "@types/node": "^26.1.1",
     "pagefind": "^1.5.2",
     "typescript": "^5.9.0",
-    "vue-tsc": "^3.2.0"
+    "vue-tsc": "^3.2.0",
+    "yaml": "^2.9.0"
   }
 }

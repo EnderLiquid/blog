@@ -91,6 +91,22 @@ h2 {
   width: min(44rem, calc(100% - 3rem));
 }
 
+.article-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.article-nav span {
+  display: flex;
+  gap: 1rem;
+}
+
+.article-nav [aria-current="page"] {
+  text-decoration: none;
+  color: var(--muted);
+}
+
 .article-header {
   margin: 4rem 0;
 }

@@ -14,21 +14,30 @@ npm run dev
 常用命令：
 
 ```bash
-npm run typecheck  # 类型检查
-npm run generate   # 静态生成并建立 Pagefind 索引
-npm run preview    # 预览 Nuxt 构建结果
+npm run content:check  # 校验文章目录、语言并生成路由清单
+npm run typecheck      # 类型检查
+npm run generate       # 静态生成并建立 Pagefind 索引
+npm run preview        # 预览 Nuxt 构建结果
 ```
 
 静态产物位于 `.output/public/`。
 
 ## 内容
 
-文章存放在 `content/posts/`。Frontmatter 格式：
+文章使用 `content/posts/<articleKeyPath>/<locale>.md` 结构：
+
+```text
+content/posts/projects/pi/pi-context/zh-cn.md
+content/posts/projects/pi/pi-context/en.md
+```
+
+对应 `/posts/projects/pi/pi-context/zh-cn/` 和 `/posts/projects/pi/pi-context/en/`。Frontmatter 格式：
 
 ```yaml
 ---
 title: 文章标题
 description: 文章摘要
+locale: zh-CN
 publishedAt: 2026-07-12
 updatedAt: 2026-07-20
 tags:
@@ -40,7 +49,7 @@ draft: false
 ---
 ```
 
-`updatedAt` 和 `image` 是可选字段，其他字段必须填写。
+`updatedAt` 和 `image` 是可选字段，其他字段必须填写。文件名 `zh-cn.md` 对应 `locale: zh-CN`，`en.md` 对应 `locale: en`；文章路径段统一使用小写 ASCII kebab-case。
 
 ## GitHub Pages
 

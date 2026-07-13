@@ -1,6 +1,7 @@
 ---
 title: 环境已经就绪
-description: 第一篇用于验证 Nuxt Content 和静态生成流程的文章。
+description: 第一篇用于验证 Nuxt Content、多语言路由和静态生成流程的文章。
+locale: zh-CN
 publishedAt: 2026-07-12
 tags:
   - nuxt

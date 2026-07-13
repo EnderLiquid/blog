@@ -2,6 +2,7 @@
 const { data: posts } = await useAsyncData('posts', () =>
   queryCollection('posts')
     .where('draft', '=', false)
+    .where('locale', '=', 'zh-CN')
     .order('publishedAt', 'DESC')
     .all(),
 )
@@ -38,7 +39,9 @@ useSeoMeta({
     </header>
 
     <section aria-labelledby="posts-title">
-      <h2 id="posts-title">文章</h2>
+      <h2 id="posts-title">
+        最近文章 · <NuxtLink to="/posts/">查看全部语言版本</NuxtLink>
+      </h2>
 
       <ul class="post-list">
         <li v-for="post in posts" :key="post.path">

@@ -8,6 +8,7 @@ export default defineContentConfig({
       schema: z.object({
         title: z.string(),
         description: z.string(),
+        locale: z.enum(['zh-CN', 'en']),
         publishedAt: z.date(),
         updatedAt: z.date().optional(),
         tags: z.array(z.string()).default([]),
