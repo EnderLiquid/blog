@@ -1,12 +1,12 @@
 import type { ComputedRef, Ref } from 'vue';
 import { createDisplayPosts, type PostSortMode } from '~/utils/post-search';
 import type { LogicalPost } from '~/utils/posts';
-import type { LocaleKey } from '~~/shared/i18n/locales';
+import type { LocaleCode } from '~~/shared/i18n/locales';
 
 /** 管理防抖、Pagefind 请求和可显示文章；URL 同步由 usePostSearchRoute 负责。 */
 export function usePostSearch(
   logicalPosts: ComputedRef<LogicalPost[]>,
-  localeKey: ComputedRef<LocaleKey>,
+  localeCode: ComputedRef<LocaleCode>,
   query: Ref<string>,
   sortMode: Ref<PostSortMode>,
 ) {
@@ -22,7 +22,7 @@ export function usePostSearch(
   const displayPosts = computed(() =>
     createDisplayPosts(
       logicalPosts.value,
-      localeKey.value,
+      localeCode.value,
       searchScores.value,
       hasQuery.value,
       !searchError.value,

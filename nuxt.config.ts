@@ -2,8 +2,8 @@ import { readFile } from 'node:fs/promises';
 import { LOCALE_DEFINITIONS } from './shared/i18n/locales';
 
 const localizedEntryRoutes = LOCALE_DEFINITIONS.flatMap((definition) => [
-  `/${definition.localeKey}/`,
-  `/${definition.localeKey}/posts/`,
+  `/${definition.code}/`,
+  `/${definition.code}/posts/`,
 ]);
 
 export default defineNuxtConfig({

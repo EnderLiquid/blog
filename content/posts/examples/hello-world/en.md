@@ -1,7 +1,6 @@
 ---
 title: The environment is ready
 description: A sample article for verifying Nuxt Content, localized routes, and static generation.
-locale: en
 publishedAt: 2026-07-12
 tags:
   - nuxt

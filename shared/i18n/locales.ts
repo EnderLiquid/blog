@@ -1,57 +1,67 @@
 /**
  * 站点支持的语言定义。
  *
- * localeKey 用于公开 URL，languageTag 用于 HTML、Intl 和文章 Frontmatter。
- * 两者含义不同，因此所有转换都必须经过此注册表。
+ * code 是站点唯一语言标识，同时也是合法的小写 BCP 47标签。URL、内容文件名、
+ * HTML lang、Intl 和 Pagefind 都直接使用它，不为不同边界保存重复映射。
  */
 export const LOCALE_DEFINITIONS = [
   {
-    localeKey: 'zh-cn',
-    languageTag: 'zh-CN',
-    pagefindLanguage: 'zh-cn',
+    code: 'zh-cn',
     label: '中文',
   },
   {
-    localeKey: 'en',
-    languageTag: 'en',
-    pagefindLanguage: 'en',
+    code: 'en',
     label: 'English',
   },
 ] as const;
 
 export type LocaleDefinition = (typeof LOCALE_DEFINITIONS)[number];
-export type LocaleKey = LocaleDefinition['localeKey'];
-export type LanguageTag = LocaleDefinition['languageTag'];
-export type PagefindLanguage = LocaleDefinition['pagefindLanguage'];
+export type LocaleCode = LocaleDefinition['code'];
 
-export const DEFAULT_LOCALE_KEY: LocaleKey = 'zh-cn';
-export const SUPPORTED_LOCALE_KEYS = LOCALE_DEFINITIONS.map(
-  (definition) => definition.localeKey,
-) as LocaleKey[];
+export const DEFAULT_LOCALE_CODE: LocaleCode = 'zh-cn';
+export const SUPPORTED_LOCALE_CODES = LOCALE_DEFINITIONS.map(
+  (definition) => definition.code,
+) as LocaleCode[];
 
-/** 判断外部字符串是否为受支持的 URL 语言标识。 */
-export function isLocaleKey(value: unknown): value is LocaleKey {
-  return LOCALE_DEFINITIONS.some((definition) => definition.localeKey === value);
-}
+/**
+ * 严格解析站点内部边界使用的语言代码。
+ *
+ * 只忽略 BCP 47标签的大小写差异；空格、下划线、地区扩展和未注册语言都视为错误。
+ */
+export function parseLocaleCode(value: string): LocaleCode {
+  const normalizedValue = value.toLowerCase();
+  const localeCode = SUPPORTED_LOCALE_CODES.find((candidate) => candidate === normalizedValue);
 
-/** 根据 URL 语言标识读取完整配置；非法值会立即失败，避免静默使用错误语言。 */
-export function getLocaleDefinition(localeKey: LocaleKey): LocaleDefinition {
-  const definition = LOCALE_DEFINITIONS.find((candidate) => candidate.localeKey === localeKey);
-
-  if (!definition) {
-    throw new Error(`不支持的语言标识：${localeKey}`);
+  if (!localeCode) {
+    throw new Error(`不支持的语言代码：“${value}”`);
   }
 
-  return definition;
+  return localeCode;
 }
 
-/** 将 Frontmatter 或 HTML 使用的标准语言标签转换为 URL 语言标识。 */
-export function getLocaleByLanguageTag(languageTag: LanguageTag): LocaleDefinition {
-  const definition = LOCALE_DEFINITIONS.find((candidate) => candidate.languageTag === languageTag);
+/**
+ * 将浏览器等外部来源的宽泛语言标签匹配为站点语言。
+ *
+ * 完整匹配优先；基础语言只有一个候选时才兼容匹配。该函数不执行默认回退，
+ * 以免调用方遍历多个偏好时被首个不支持的候选提前截断。
+ */
+export function matchCompatibleLocaleCode(value: string): LocaleCode | undefined {
+  const normalizedValue = value.toLowerCase();
+  const exactMatch = SUPPORTED_LOCALE_CODES.find((candidate) => candidate === normalizedValue);
 
-  if (!definition) {
-    throw new Error(`不支持的语言标签：${languageTag}`);
+  if (exactMatch) {
+    return exactMatch;
   }
 
-  return definition;
+  const baseLanguage = normalizedValue.split('-')[0];
+
+  if (!baseLanguage) {
+    return undefined;
+  }
+
+  const baseLanguageMatches = SUPPORTED_LOCALE_CODES.filter(
+    (candidate) => candidate.split('-')[0] === baseLanguage,
+  );
+
+  return baseLanguageMatches.length === 1 ? baseLanguageMatches[0] : undefined;
 }

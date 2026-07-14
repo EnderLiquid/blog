@@ -7,7 +7,7 @@ definePageMeta({
   path: '/404.html',
 });
 
-const { localeKey, messages } = useSiteLocale();
+const { localeCode, messages } = useSiteLocale();
 
 useSeoMeta({
   title: () => `404 · ${messages.value.notFound.title}`,
@@ -18,7 +18,7 @@ useSeoMeta({
 <template>
   <ErrorNotFoundView
     :status-code="404"
-    @home="navigateTo(homePath(localeKey))"
-    @posts="navigateTo(postsPath(localeKey))"
+    @home="navigateTo(homePath(localeCode))"
+    @posts="navigateTo(postsPath(localeCode))"
   />
 </template>

@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { homePath } from '~/utils/localized-routes';
-import { DEFAULT_LOCALE_KEY, LOCALE_DEFINITIONS, type LocaleKey } from '~~/shared/i18n/locales';
+import {
+  DEFAULT_LOCALE_CODE,
+  LOCALE_DEFINITIONS,
+  matchCompatibleLocaleCode,
+} from '~~/shared/i18n/locales';
 
 const languageLinks = LOCALE_DEFINITIONS.map((definition) => ({
   ...definition,
-  path: homePath(definition.localeKey),
+  path: homePath(definition.code),
 }));
 
 useSeoMeta({
@@ -18,21 +22,28 @@ useHead({
     { rel: 'canonical', href: '/' },
     ...LOCALE_DEFINITIONS.map((definition) => ({
       rel: 'alternate',
-      hreflang: definition.languageTag,
-      href: homePath(definition.localeKey),
+      hreflang: definition.code,
+      href: homePath(definition.code),
     })),
     { rel: 'alternate', hreflang: 'x-default', href: '/' },
   ],
 });
 
 onMounted(() => {
-  // GitHub Pages 无法在服务端协商语言。根入口只在浏览器中自动选择，
-  // 模板中的普通链接保证禁用 JavaScript 时仍然可以进入站点。
-  const browserLocaleKey: LocaleKey = navigator.language.toLowerCase().startsWith('en')
-    ? 'en'
-    : DEFAULT_LOCALE_KEY;
+  // GitHub Pages无法在服务端协商语言。逐项检查浏览器偏好，全部不支持时才回退默认语言；
+  // 模板中的普通链接保证禁用 JavaScript时仍然可以进入站点。
+  let browserLocaleCode = DEFAULT_LOCALE_CODE;
 
-  void navigateTo(homePath(browserLocaleKey), { replace: true });
+  for (const preferredLanguage of navigator.languages) {
+    const matchedLocaleCode = matchCompatibleLocaleCode(preferredLanguage);
+
+    if (matchedLocaleCode) {
+      browserLocaleCode = matchedLocaleCode;
+      break;
+    }
+  }
+
+  void navigateTo(homePath(browserLocaleCode), { replace: true });
 });
 </script>
 
@@ -44,8 +55,8 @@ onMounted(() => {
       <p>Choose a language / 选择语言</p>
 
       <ul>
-        <li v-for="link in languageLinks" :key="link.localeKey">
-          <NuxtLink :to="link.path" :lang="link.languageTag">
+        <li v-for="link in languageLinks" :key="link.code">
+          <NuxtLink :to="link.path" :lang="link.code">
             {{ link.label }}
           </NuxtLink>
         </li>
@@ -64,9 +75,9 @@ onMounted(() => {
 }
 
 h1 {
-  margin: 0.25rem 0 1rem;
+  margin: 0.5rem 0 1rem;
   font-family: var(--font-serif);
-  font-size: clamp(3rem, 11vw, 7rem);
+  font-size: clamp(3.5rem, 14vw, 8rem);
   font-weight: 400;
   line-height: 0.9;
   letter-spacing: -0.06em;
@@ -75,7 +86,7 @@ h1 {
 ul {
   display: flex;
   gap: 1.5rem;
-  margin: 2.5rem 0 0;
+  margin-top: 2rem;
   padding: 0;
   list-style: none;
 }

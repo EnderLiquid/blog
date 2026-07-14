@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { homePath, postsPath, switchLocalePath } from '~/utils/localized-routes';
-import { DEFAULT_LOCALE_KEY, LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
+import { DEFAULT_LOCALE_CODE, LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
 
 const route = useRoute();
-const { localeKey, messages } = useSiteLocale();
+const { localeCode, messages } = useSiteLocale();
 const { data: posts } = await useAsyncData('all-posts', () =>
   queryCollection('posts').where('draft', '=', false).order('publishedAt', 'DESC').all(),
 );
 
 const localeLinks = computed(() =>
   LOCALE_DEFINITIONS.map((definition) => ({
-    localeKey: definition.localeKey,
+    localeCode: definition.code,
     label: definition.label,
-    path: switchLocalePath(route.fullPath, definition.localeKey),
+    path: switchLocalePath(route.fullPath, definition.code),
   })),
 );
 
@@ -25,17 +25,17 @@ useHead(() => ({
   link: [
     {
       rel: 'canonical',
-      href: postsPath(localeKey.value),
+      href: postsPath(localeCode.value),
     },
     ...LOCALE_DEFINITIONS.map((definition) => ({
       rel: 'alternate',
-      hreflang: definition.languageTag,
-      href: postsPath(definition.localeKey),
+      hreflang: definition.code,
+      href: postsPath(definition.code),
     })),
     {
       rel: 'alternate',
       hreflang: 'x-default',
-      href: postsPath(DEFAULT_LOCALE_KEY),
+      href: postsPath(DEFAULT_LOCALE_CODE),
     },
   ],
 }));
@@ -44,12 +44,12 @@ useHead(() => ({
 <template>
   <LayoutPageShell>
     <div class="page-navigation">
-      <NuxtLink class="back-link" :to="homePath(localeKey)">
+      <NuxtLink class="back-link" :to="homePath(localeCode)">
         ← {{ messages.posts.backHome }}
       </NuxtLink>
       <NavigationLocaleLinks
         :links="localeLinks"
-        :current-locale-key="localeKey"
+        :current-locale-code="localeCode"
         label="Language / 语言"
       />
     </div>

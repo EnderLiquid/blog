@@ -6,7 +6,7 @@ const props = defineProps<{
   error: NuxtError;
 }>();
 
-const { localeKey, messages } = useSiteLocale();
+const { localeCode, messages } = useSiteLocale();
 const statusCode = computed(() => props.error.statusCode || 500);
 
 useSeoMeta({
@@ -22,7 +22,7 @@ function leaveErrorPage(targetPath: string): void {
 <template>
   <ErrorNotFoundView
     :status-code="statusCode"
-    @home="leaveErrorPage(homePath(localeKey))"
-    @posts="leaveErrorPage(postsPath(localeKey))"
+    @home="leaveErrorPage(homePath(localeCode))"
+    @posts="leaveErrorPage(postsPath(localeCode))"
   />
 </template>

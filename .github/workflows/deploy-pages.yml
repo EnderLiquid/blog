@@ -34,6 +34,9 @@ jobs:
       - name: 格式检查
         run: npm run format:check
 
+      - name: 单元测试
+        run: npm run test:unit
+
       - name: 类型检查
         run: npm run typecheck
 

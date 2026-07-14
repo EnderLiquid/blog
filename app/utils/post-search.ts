@@ -1,6 +1,6 @@
 import type { LogicalPost, RoutedPostVariant } from '~/utils/posts';
 import { selectPostVariant } from '~/utils/posts';
-import type { LocaleKey } from '~~/shared/i18n/locales';
+import type { LocaleCode } from '~~/shared/i18n/locales';
 
 export type PostSortMode = 'relevance' | 'latest' | 'oldest';
 
@@ -13,7 +13,7 @@ export interface DisplayPost {
 /** 根据搜索命中、页面语言和排序方式生成最终可渲染列表。 */
 export function createDisplayPosts(
   logicalPosts: LogicalPost[],
-  preferredLocaleKey: LocaleKey,
+  preferredLocaleCode: LocaleCode,
   searchScores: ReadonlyMap<string, number>,
   queryActive: boolean,
   searchAvailable: boolean,
@@ -26,7 +26,7 @@ export function createDisplayPosts(
 
   const displayPosts = visiblePosts.map((logicalPost) => ({
     articleKeyPath: logicalPost.articleKeyPath,
-    post: selectPostVariant(logicalPost, preferredLocaleKey),
+    post: selectPostVariant(logicalPost, preferredLocaleCode),
     score: searchScores.get(logicalPost.articleKeyPath) ?? 0,
   }));
 

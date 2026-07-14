@@ -6,10 +6,11 @@
     "build": "nuxt build",
     "content:check": "node scripts/validate-content.mjs",
     "dev": "nuxt dev",
-    "format": "prettier --write \"app/**/*.{ts,vue,css}\" \"shared/**/*.ts\" \"scripts/**/*.mjs\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
-    "format:check": "prettier --check \"app/**/*.{ts,vue,css}\" \"shared/**/*.ts\" \"scripts/**/*.mjs\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
+    "format": "prettier --write \"app/**/*.{ts,vue,css}\" \"shared/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
+    "format:check": "prettier --check \"app/**/*.{ts,vue,css}\" \"shared/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
     "generate": "npm run content:check && nuxt generate && pagefind --site .output/public",
     "preview": "nuxt preview",
+    "test:unit": "node --test tests/**/*.test.ts",
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {

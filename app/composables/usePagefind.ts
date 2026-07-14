@@ -1,11 +1,6 @@
 import { normalizeArticleKeyPath } from '~/utils/localized-routes';
 import { parsePublicArticlePath } from '~/utils/posts';
-import {
-  getLocaleDefinition,
-  LOCALE_DEFINITIONS,
-  type LocaleKey,
-  type PagefindLanguage,
-} from '~~/shared/i18n/locales';
+import { parseLocaleCode, type LocaleCode } from '~~/shared/i18n/locales';
 
 interface PagefindResultData {
   url: string;
@@ -31,7 +26,7 @@ interface PagefindModule {
 }
 
 interface PagefindEntry {
-  languages: Partial<Record<PagefindLanguage, unknown>>;
+  languages: Record<string, unknown>;
 }
 
 export interface ArticleSearchHit {
@@ -45,15 +40,15 @@ export interface PagefindSearchOptions {
 
 const PAGEFIND_BASE_PATH = '/pagefind/';
 let pagefindModulePromise: Promise<PagefindModule> | undefined;
-let availableLocaleKeysPromise: Promise<LocaleKey[]> | undefined;
+let availableLocaleCodesPromise: Promise<LocaleCode[]> | undefined;
 let searchQueue: Promise<void> = Promise.resolve();
 
-/** Pagefind 基础设施入口。页面组件只接触逻辑文章命中，不依赖 Pagefind 数据结构。 */
+/** Pagefind基础设施入口。页面组件只接触逻辑文章命中，不依赖 Pagefind数据结构。 */
 export function usePagefind() {
   function search(query: string, options: PagefindSearchOptions = {}): Promise<ArticleSearchHit[]> {
     const task = searchQueue.then(() => searchAllLocales(query, options));
 
-    // Pagefind 的浏览器运行时在语言切换时共享状态，搜索必须串行执行。
+    // Pagefind的浏览器运行时在语言切换时共享状态，搜索必须串行执行。
     // 失败也要释放队列，否则后续输入将永远无法开始。
     searchQueue = task.then(
       () => undefined,
@@ -76,21 +71,21 @@ async function searchAllLocales(
   }
 
   const pagefind = await getPagefindModule();
-  const availableLocaleKeys = await getAvailableLocaleKeys();
+  const availableLocaleCodes = await getAvailableLocaleCodes();
   const filters = options.tags?.length ? { tag: options.tags } : undefined;
   const successfulSearches: (ArticleSearchHit | undefined)[][] = [];
   let lastError: unknown;
 
-  for (const localeKey of availableLocaleKeys) {
+  for (const localeCode of availableLocaleCodes) {
     try {
-      successfulSearches.push(await searchLocale(pagefind, localeKey, normalizedQuery, filters));
+      successfulSearches.push(await searchLocale(pagefind, localeCode, normalizedQuery, filters));
     } catch (error) {
       lastError = error;
     }
   }
 
   if (successfulSearches.length === 0) {
-    throw lastError ?? new Error('Pagefind 搜索失败');
+    throw lastError ?? new Error('Pagefind搜索失败');
   }
 
   const mergedHits = new Map<string, ArticleSearchHit>();
@@ -112,23 +107,22 @@ async function searchAllLocales(
 
 async function searchLocale(
   pagefind: PagefindModule,
-  localeKey: LocaleKey,
+  localeCode: LocaleCode,
   query: string,
   filters?: Record<string, string | string[]>,
 ): Promise<(ArticleSearchHit | undefined)[]> {
   await pagefind.destroy();
 
   const htmlElement = document.documentElement;
-  const pageLanguageTag = htmlElement.lang;
-  const searchLanguageTag = getLocaleDefinition(localeKey).languageTag;
-  htmlElement.lang = searchLanguageTag;
+  const pageLocaleCode = htmlElement.lang;
+  htmlElement.lang = localeCode;
 
   try {
-    // Pagefind 1.x 通过 <html lang> 选择对应索引。初始化完成后立即恢复页面语言，
-    // 防止基础设施细节影响全局 useSiteLocale 所管理的可访问性状态。
+    // Pagefind 1.x通过 <html lang> 选择对应索引。初始化完成后立即恢复页面语言，
+    // 防止基础设施细节影响全局 useSiteLocale所管理的可访问性状态。
     await pagefind.init();
   } finally {
-    htmlElement.lang = pageLanguageTag;
+    htmlElement.lang = pageLocaleCode;
   }
 
   const response = await pagefind.search(query, { filters });
@@ -159,22 +153,26 @@ async function getPagefindModule(): Promise<PagefindModule> {
   return pagefindModulePromise;
 }
 
-async function getAvailableLocaleKeys(): Promise<LocaleKey[]> {
-  if (!availableLocaleKeysPromise) {
-    availableLocaleKeysPromise = fetch(`${PAGEFIND_BASE_PATH}pagefind-entry.json`)
+async function getAvailableLocaleCodes(): Promise<LocaleCode[]> {
+  if (!availableLocaleCodesPromise) {
+    availableLocaleCodesPromise = fetch(`${PAGEFIND_BASE_PATH}pagefind-entry.json`)
       .then((response) => {
         if (!response.ok) {
-          throw new Error(`Pagefind 索引清单加载失败：${response.status}`);
+          throw new Error(`Pagefind索引清单加载失败：${response.status}`);
         }
 
         return response.json() as Promise<PagefindEntry>;
       })
       .then((entry) =>
-        LOCALE_DEFINITIONS.filter((definition) =>
-          Boolean(entry.languages[definition.pagefindLanguage]),
-        ).map((definition) => definition.localeKey),
+        Object.keys(entry.languages).map((language) => {
+          try {
+            return parseLocaleCode(language);
+          } catch {
+            throw new Error(`Pagefind生成了未注册的语言索引：“${language}”`);
+          }
+        }),
       );
   }
 
-  return availableLocaleKeysPromise;
+  return availableLocaleCodesPromise;
 }

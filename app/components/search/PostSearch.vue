@@ -6,12 +6,12 @@ const props = defineProps<{
   posts: PostVariant[];
 }>();
 
-const { localeKey, messages } = useSiteLocale();
+const { localeCode, messages } = useSiteLocale();
 const { query, sortMode, hasQuery } = usePostSearchRoute();
 const logicalPosts = computed(() => groupPostVariants(props.posts));
 const { displayPosts, loading, searchError } = usePostSearch(
   logicalPosts,
-  localeKey,
+  localeCode,
   query,
   sortMode,
 );
@@ -67,14 +67,14 @@ const resultSummary = computed(() => {
 
     <ul v-else class="results">
       <li v-for="item in displayPosts" :key="item.articleKeyPath">
-        <article :lang="item.post.locale">
+        <article :lang="item.post.localeCode">
           <h2>
             <NuxtLink :to="item.post.path">{{ item.post.title }}</NuxtLink>
           </h2>
           <p>{{ item.post.description }}</p>
           <footer>
             <time :datetime="toDateTime(item.post.publishedAt)">
-              {{ formatPostDate(item.post.publishedAt, item.post.locale) }}
+              {{ formatPostDate(item.post.publishedAt, item.post.localeCode) }}
             </time>
             <span v-for="tag in item.post.tags ?? []" :key="tag">#{{ tag }}</span>
           </footer>

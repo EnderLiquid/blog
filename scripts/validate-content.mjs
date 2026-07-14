@@ -2,15 +2,12 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { parse } from 'yaml';
-import { LOCALE_DEFINITIONS } from '../shared/i18n/locales.ts';
+import { parseLocaleCode, SUPPORTED_LOCALE_CODES } from '../shared/i18n/locales.ts';
 
 const postsDirectory = path.join(process.cwd(), 'content', 'posts');
 const routeManifestPath = path.join(process.cwd(), '.data', 'content-routes.json');
 const articleSegmentPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const tagPattern = articleSegmentPattern;
-const locales = new Map(
-  LOCALE_DEFINITIONS.map((definition) => [definition.localeKey, definition.languageTag]),
-);
 
 const files = await findMarkdownFiles(postsDirectory);
 const errors = [];
@@ -21,8 +18,15 @@ for (const file of files) {
   const relativePath = path.relative(postsDirectory, file).replaceAll('\\', '/');
   const pathSegments = relativePath.split('/');
   const localeFile = pathSegments.pop();
-  const localeSlug = localeFile?.replace(/\.md$/, '') ?? '';
-  const expectedLocale = locales.get(localeSlug);
+  const localeValue = localeFile?.replace(/\.md$/, '') ?? '';
+  let localeCode;
+
+  try {
+    localeCode = parseLocaleCode(localeValue);
+  } catch {
+    errors.push(`${relativePath}: 文件名必须是 ${SUPPORTED_LOCALE_CODES.join(' 或 ')}`);
+    continue;
+  }
 
   if (pathSegments.length === 0) {
     errors.push(`${relativePath}: 文章必须放在 articleKeyPath 目录中`);
@@ -35,22 +39,11 @@ for (const file of files) {
     }
   }
 
-  if (!expectedLocale) {
-    errors.push(`${relativePath}: 文件名必须是 ${[...locales.keys()].join(' 或 ')}`);
-    continue;
-  }
-
   const source = await readFile(file, 'utf8');
   const frontmatter = readFrontmatter(source, relativePath, errors);
 
   if (!frontmatter) {
     continue;
-  }
-
-  if (frontmatter.locale !== expectedLocale) {
-    errors.push(
-      `${relativePath}: locale 应为 “${expectedLocale}”，实际为 “${String(frontmatter.locale)}”`,
-    );
   }
 
   const tags = validateTags(frontmatter.tags, relativePath, errors);
@@ -61,7 +54,7 @@ for (const file of files) {
 
   if (frontmatter.draft !== true) {
     // 静态主机不会根据查询参数协商语言，每个语言版本必须拥有独立前缀路由。
-    const route = `/${localeSlug}/posts/${pathSegments.join('/')}/`;
+    const route = `/${localeCode}/posts/${pathSegments.join('/')}/`;
 
     if (routes.has(route)) {
       errors.push(`${relativePath}: 路由 ${route} 重复`);

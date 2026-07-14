@@ -1,4 +1,4 @@
-import type { LocaleKey } from '~~/shared/i18n/locales';
+import type { LocaleCode } from '~~/shared/i18n/locales';
 
 export interface SiteMessages {
   site: {
@@ -46,7 +46,7 @@ export interface SiteMessages {
   };
 }
 
-export const SITE_MESSAGES: Record<LocaleKey, SiteMessages> = {
+export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
   'zh-cn': {
     site: {
       title: 'Blog',

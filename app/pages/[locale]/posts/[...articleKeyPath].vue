@@ -2,12 +2,12 @@
 import { formatPostDate, toDateTime } from '~/utils/date';
 import { postContentPath } from '~/utils/posts';
 import { articlePath, normalizeArticleKeyPath, postsPath } from '~/utils/localized-routes';
-import { DEFAULT_LOCALE_KEY, LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
+import { DEFAULT_LOCALE_CODE, LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
 
 const route = useRoute();
-const { localeKey, localeDefinition, messages } = useSiteLocale();
+const { localeCode, messages } = useSiteLocale();
 const articleKeyPath = readArticleKeyPath(route.params.articleKeyPath);
-const currentContentPath = postContentPath(articleKeyPath, localeKey.value);
+const currentContentPath = postContentPath(articleKeyPath, localeCode.value);
 
 const { data: post } = await useAsyncData(`post:${currentContentPath}`, () =>
   queryCollection('posts').path(currentContentPath).first(),
@@ -24,7 +24,7 @@ const { data: translations } = await useAsyncData(`translations:${articleKeyPath
   const candidates = await Promise.all(
     LOCALE_DEFINITIONS.map(async (definition) => {
       const translatedPost = await queryCollection('posts')
-        .path(postContentPath(articleKeyPath, definition.localeKey))
+        .path(postContentPath(articleKeyPath, definition.code))
         .first();
 
       if (!translatedPost || translatedPost.draft) {
@@ -32,10 +32,9 @@ const { data: translations } = await useAsyncData(`translations:${articleKeyPath
       }
 
       return {
-        localeKey: definition.localeKey,
-        languageTag: definition.languageTag,
+        localeCode: definition.code,
         label: definition.label,
-        path: articlePath(definition.localeKey, articleKeyPath),
+        path: articlePath(definition.code, articleKeyPath),
       };
     }),
   );
@@ -54,18 +53,18 @@ useSeoMeta({
 useHead(() => {
   const availableTranslations = translations.value ?? [];
   const defaultTranslation =
-    availableTranslations.find((translation) => translation.localeKey === DEFAULT_LOCALE_KEY) ??
+    availableTranslations.find((translation) => translation.localeCode === DEFAULT_LOCALE_CODE) ??
     availableTranslations[0];
 
   return {
     link: [
       {
         rel: 'canonical',
-        href: articlePath(localeKey.value, articleKeyPath),
+        href: articlePath(localeCode.value, articleKeyPath),
       },
       ...availableTranslations.map((translation) => ({
         rel: 'alternate',
-        hreflang: translation.languageTag,
+        hreflang: translation.localeCode,
         href: translation.path,
       })),
       ...(defaultTranslation
@@ -98,14 +97,14 @@ function readArticleKeyPath(value: unknown): string {
 <template>
   <LayoutPageShell v-if="post" narrow>
     <div class="article-navigation">
-      <NuxtLink class="back-link" :to="postsPath(localeKey)">
+      <NuxtLink class="back-link" :to="postsPath(localeCode)">
         ← {{ messages.article.allPosts }}
       </NuxtLink>
 
       <NavigationLocaleLinks
         v-if="localeLinks.length > 1"
         :links="localeLinks"
-        :current-locale-key="localeKey"
+        :current-locale-code="localeCode"
         label="Language / 语言"
       />
     </div>
@@ -114,7 +113,7 @@ function readArticleKeyPath(value: unknown): string {
       <header class="article-header">
         <h1
           :data-article-key-path="articleKeyPath"
-          :data-locale="localeDefinition.pagefindLanguage"
+          :data-locale="localeCode"
           data-pagefind-meta="title, articleKeyPath[data-article-key-path], locale[data-locale]"
         >
           {{ post.title }}
@@ -126,12 +125,12 @@ function readArticleKeyPath(value: unknown): string {
             data-pagefind-meta="publishedAt[datetime]"
             data-pagefind-sort="publishedAt[datetime]"
           >
-            {{ formatPostDate(post.publishedAt, localeDefinition.languageTag) }}
+            {{ formatPostDate(post.publishedAt, localeCode) }}
           </time>
           <template v-if="post.updatedAt">
             · {{ messages.article.updated }}
             <time :datetime="toDateTime(post.updatedAt)">
-              {{ formatPostDate(post.updatedAt, localeDefinition.languageTag) }}
+              {{ formatPostDate(post.updatedAt, localeCode) }}
             </time>
           </template>
         </p>

@@ -1,4 +1,4 @@
-import { isLocaleKey } from '~~/shared/i18n/locales';
+import { parseLocaleCode } from '~~/shared/i18n/locales';
 
 /**
  * 所有内容页面都必须显式包含语言前缀。
@@ -9,9 +9,11 @@ export default defineNuxtRouteMiddleware((to) => {
     return;
   }
 
-  const firstPathSegment = to.path.split('/').filter(Boolean)[0];
+  const firstPathSegment = to.path.split('/').filter(Boolean)[0] ?? '';
 
-  if (!isLocaleKey(firstPathSegment)) {
+  try {
+    parseLocaleCode(firstPathSegment);
+  } catch {
     return abortNavigation(
       createError({
         statusCode: 404,

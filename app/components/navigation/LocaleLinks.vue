@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import type { LocaleKey } from '~~/shared/i18n/locales';
+import type { LocaleCode } from '~~/shared/i18n/locales';
 
 export interface LocaleLink {
-  localeKey: LocaleKey;
+  localeCode: LocaleCode;
   label: string;
   path: string;
 }
 
 defineProps<{
   links: LocaleLink[];
-  currentLocaleKey: LocaleKey;
+  currentLocaleCode: LocaleCode;
   label: string;
 }>();
 </script>
@@ -18,10 +18,10 @@ defineProps<{
   <nav class="locale-links" :aria-label="label">
     <NuxtLink
       v-for="link in links"
-      :key="link.localeKey"
+      :key="link.localeCode"
       :to="link.path"
-      :lang="link.localeKey"
-      :aria-current="link.localeKey === currentLocaleKey ? 'page' : undefined"
+      :lang="link.localeCode"
+      :aria-current="link.localeCode === currentLocaleCode ? 'page' : undefined"
     >
       {{ link.label }}
     </NuxtLink>

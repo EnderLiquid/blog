@@ -1,10 +1,4 @@
 import { defineCollection, defineContentConfig, z } from '@nuxt/content';
-import { LOCALE_DEFINITIONS, type LanguageTag } from './shared/i18n/locales';
-
-const supportedLanguageTags = LOCALE_DEFINITIONS.map((definition) => definition.languageTag) as [
-  LanguageTag,
-  ...LanguageTag[],
-];
 
 export default defineContentConfig({
   collections: {
@@ -14,7 +8,6 @@ export default defineContentConfig({
       schema: z.object({
         title: z.string(),
         description: z.string(),
-        locale: z.enum(supportedLanguageTags),
         publishedAt: z.date(),
         updatedAt: z.date().optional(),
         tags: z.array(z.string()).default([]),

@@ -4,14 +4,14 @@ import { groupPostVariants, selectPostVariant } from '~/utils/posts';
 import { homePath, postsPath } from '~/utils/localized-routes';
 import { LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
 
-const { localeKey, localeDefinition, messages } = useSiteLocale();
+const { localeCode, messages } = useSiteLocale();
 const { data: posts } = await useAsyncData('home-posts', () =>
   queryCollection('posts').where('draft', '=', false).order('publishedAt', 'DESC').all(),
 );
 
 const recentPosts = computed(() =>
   groupPostVariants(posts.value ?? [])
-    .map((logicalPost) => selectPostVariant(logicalPost, localeKey.value))
+    .map((logicalPost) => selectPostVariant(logicalPost, localeCode.value))
     .sort(
       (left, right) => new Date(right.publishedAt).getTime() - new Date(left.publishedAt).getTime(),
     )
@@ -20,9 +20,9 @@ const recentPosts = computed(() =>
 
 const localeLinks = computed(() =>
   LOCALE_DEFINITIONS.map((definition) => ({
-    localeKey: definition.localeKey,
+    localeCode: definition.code,
     label: definition.label,
-    path: homePath(definition.localeKey),
+    path: homePath(definition.code),
   })),
 );
 
@@ -35,12 +35,12 @@ useHead(() => ({
   link: [
     {
       rel: 'canonical',
-      href: homePath(localeKey.value),
+      href: homePath(localeCode.value),
     },
     ...LOCALE_DEFINITIONS.map((definition) => ({
       rel: 'alternate',
-      hreflang: definition.languageTag,
-      href: homePath(definition.localeKey),
+      hreflang: definition.code,
+      href: homePath(definition.code),
     })),
     {
       rel: 'alternate',
@@ -55,7 +55,7 @@ useHead(() => ({
   <LayoutPageShell>
     <NavigationLocaleLinks
       :links="localeLinks"
-      :current-locale-key="localeKey"
+      :current-locale-code="localeCode"
       label="Language / 语言"
     />
 
@@ -68,7 +68,7 @@ useHead(() => ({
     <section aria-labelledby="recent-posts-title">
       <h2 id="recent-posts-title">
         {{ messages.home.recentPosts }} ·
-        <NuxtLink :to="postsPath(localeKey)">{{ messages.home.allPosts }}</NuxtLink>
+        <NuxtLink :to="postsPath(localeCode)">{{ messages.home.allPosts }}</NuxtLink>
       </h2>
 
       <ul class="post-list">
@@ -76,7 +76,7 @@ useHead(() => ({
           <NuxtLink :to="post.path">
             <span>{{ post.title }}</span>
             <time :datetime="toDateTime(post.publishedAt)">
-              {{ formatPostDate(post.publishedAt, localeDefinition.languageTag) }}
+              {{ formatPostDate(post.publishedAt, post.localeCode) }}
             </time>
           </NuxtLink>
         </li>
