@@ -6,6 +6,7 @@ import { parse } from 'yaml'
 const postsDirectory = path.join(process.cwd(), 'content', 'posts')
 const routeManifestPath = path.join(process.cwd(), '.data', 'content-routes.json')
 const articleSegmentPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+const tagPattern = articleSegmentPattern
 const locales = new Map([
   ['zh-cn', 'zh-CN'],
   ['en', 'en'],
@@ -14,6 +15,7 @@ const locales = new Map([
 const files = await findMarkdownFiles(postsDirectory)
 const errors = []
 const routes = new Set()
+const tagsByArticle = new Map()
 
 for (const file of files) {
   const relativePath = path.relative(postsDirectory, file).replaceAll('\\', '/')
@@ -51,6 +53,12 @@ for (const file of files) {
     )
   }
 
+  const tags = validateTags(frontmatter.tags, relativePath, errors)
+  const articleKeyPath = pathSegments.join('/')
+  const articleTags = tagsByArticle.get(articleKeyPath) ?? []
+  articleTags.push({ relativePath, tags })
+  tagsByArticle.set(articleKeyPath, articleTags)
+
   if (frontmatter.draft !== true) {
     const route = `/posts/${pathSegments.join('/')}/${localeSlug}/`
 
@@ -59,6 +67,19 @@ for (const file of files) {
     }
 
     routes.add(route)
+  }
+}
+
+for (const [articleKeyPath, versions] of tagsByArticle) {
+  const expectedTags = versions[0]?.tags ?? []
+
+  for (const version of versions.slice(1)) {
+    if (!sameValues(expectedTags, version.tags)) {
+      errors.push(
+        `${articleKeyPath}: 各语言版本的标签必须一致；${versions[0].relativePath} 为 `
+        + `[${expectedTags.join(', ')}]，${version.relativePath} 为 [${version.tags.join(', ')}]`,
+      )
+    }
   }
 }
 
@@ -87,6 +108,35 @@ async function findMarkdownFiles(directory) {
   )
 
   return nestedFiles.flat()
+}
+
+function validateTags(value, relativePath, errors) {
+  if (value === undefined) {
+    return []
+  }
+
+  if (!Array.isArray(value) || value.some((tag) => typeof tag !== 'string')) {
+    errors.push(`${relativePath}: tags 必须是字符串数组`)
+    return []
+  }
+
+  const tags = [...new Set(value)].sort()
+
+  if (tags.length !== value.length) {
+    errors.push(`${relativePath}: tags 不能包含重复值`)
+  }
+
+  for (const tag of tags) {
+    if (!tagPattern.test(tag)) {
+      errors.push(`${relativePath}: 标签 “${tag}” 不符合小写 kebab-case 约定`)
+    }
+  }
+
+  return tags
+}
+
+function sameValues(left, right) {
+  return left.length === right.length && left.every((value, index) => value === right[index])
 }
 
 function readFrontmatter(source, relativePath, errors) {

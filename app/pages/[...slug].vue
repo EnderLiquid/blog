@@ -2,6 +2,7 @@
 const route = useRoute()
 const contentPath = route.path.replace(/\/+$/, '') || '/'
 const articleBasePath = contentPath.slice(0, contentPath.lastIndexOf('/'))
+const articleKeyPath = articleBasePath.replace(/^\/posts\//, '')
 const localePaths = {
   'zh-CN': `${articleBasePath}/zh-cn`,
   en: `${articleBasePath}/en`,
@@ -49,6 +50,7 @@ function toDateTime(value: Date | string): string {
 }
 
 const isEnglish = computed(() => post.value?.locale === 'en')
+const postTags = computed(() => post.value?.tags ?? [])
 
 useSeoMeta({
   title: () => post.value?.title,
@@ -90,7 +92,7 @@ useHead(() => {
 </script>
 
 <template>
-  <main v-if="post" class="page-shell article-shell" data-pagefind-body>
+  <main v-if="post" class="page-shell article-shell">
     <nav class="article-nav" aria-label="文章导航">
       <NuxtLink class="back-link" to="/posts/">
         ← {{ isEnglish ? 'All posts' : '全部文章' }}
@@ -108,12 +110,22 @@ useHead(() => {
       </span>
     </nav>
 
-    <article>
+    <article data-pagefind-body>
       <header class="article-header">
-        <h1>{{ post.title }}</h1>
-        <p>{{ post.description }}</p>
+        <h1
+          :data-article-key-path="articleKeyPath"
+          :data-locale="post.locale"
+          data-pagefind-meta="title, articleKeyPath[data-article-key-path], locale[data-locale]"
+        >
+          {{ post.title }}
+        </h1>
+        <p data-pagefind-meta="description">{{ post.description }}</p>
         <p>
-          <time :datetime="toDateTime(post.publishedAt)">
+          <time
+            :datetime="toDateTime(post.publishedAt)"
+            data-pagefind-meta="publishedAt[datetime]"
+            data-pagefind-sort="publishedAt[datetime]"
+          >
             {{ formatDate(post.publishedAt) }}
           </time>
           <template v-if="post.updatedAt">
@@ -123,6 +135,16 @@ useHead(() => {
             </time>
           </template>
         </p>
+        <ul v-if="postTags.length" class="article-tags" aria-label="标签">
+          <li
+            v-for="tag in postTags"
+            :key="tag"
+            :data-tag="tag"
+            data-pagefind-filter="tag[data-tag]"
+          >
+            #{{ tag }}
+          </li>
+        </ul>
       </header>
 
       <ContentRenderer class="article-content" :value="post" />

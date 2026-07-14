@@ -49,7 +49,7 @@ draft: false
 ---
 ```
 
-`updatedAt` 和 `image` 是可选字段，其他字段必须填写。文件名 `zh-cn.md` 对应 `locale: zh-CN`，`en.md` 对应 `locale: en`；文章路径段统一使用小写 ASCII kebab-case。
+`updatedAt` 和 `image` 是可选字段，其他字段必须填写。文件名 `zh-cn.md` 对应 `locale: zh-CN`，`en.md` 对应 `locale: en`；文章路径段和标签统一使用小写 ASCII kebab-case。同一文章的所有语言版本必须使用相同标签集合。
 
 ## GitHub Pages
 
@@ -59,6 +59,7 @@ draft: false
 
 ## 当前边界
 
-- 已接通文章内容、文章路由、静态生成和 Pagefind 索引。
-- 尚未实现搜索界面、主页 Shell 和 Giscus。Giscus 需要先确定 GitHub 仓库及 Discussions 配置。
+- 已接通文章内容、多语言路由、静态生成，以及 `/posts/` 中的跨语言 Pagefind 搜索。
+- Pagefind 索引在静态生成后产生，完整搜索需使用 `npm run generate` 后的静态预览验证。
+- 尚未实现主页 Shell 和 Giscus。Giscus 需要先确定 GitHub 仓库及 Discussions 配置。
 - `.npmrc` 使用 npmmirror，以规避当前环境访问 npm 官方源过慢的问题。
