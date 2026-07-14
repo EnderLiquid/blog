@@ -1,169 +1,180 @@
-import type { LocaleSlug } from '~/utils/posts'
-import { parsePostPath } from '~/utils/posts'
+import { normalizeArticleKeyPath } from '~/utils/localized-routes';
+import { parsePublicArticlePath } from '~/utils/posts';
+import {
+  getLocaleDefinition,
+  LOCALE_DEFINITIONS,
+  type LocaleKey,
+  type PagefindLanguage,
+} from '~~/shared/i18n/locales';
 
 interface PagefindResultData {
-  url: string
-  meta?: Record<string, string>
+  url: string;
+  meta?: Record<string, string>;
 }
 
 interface PagefindResult {
-  score: number
-  data: () => Promise<PagefindResultData>
+  score: number;
+  data: () => Promise<PagefindResultData>;
 }
 
 interface PagefindResponse {
-  results: PagefindResult[]
+  results: PagefindResult[];
 }
 
 interface PagefindModule {
-  init: () => Promise<void>
-  destroy: () => Promise<void>
+  init: () => Promise<void>;
+  destroy: () => Promise<void>;
   search: (
     query: string,
     options?: { filters?: Record<string, string | string[]> },
-  ) => Promise<PagefindResponse>
+  ) => Promise<PagefindResponse>;
 }
 
 interface PagefindEntry {
-  languages: Partial<Record<LocaleSlug, unknown>>
+  languages: Partial<Record<PagefindLanguage, unknown>>;
 }
 
 export interface ArticleSearchHit {
-  articleKeyPath: string
-  score: number
+  articleKeyPath: string;
+  score: number;
 }
 
 export interface PagefindSearchOptions {
-  tags?: string[]
+  tags?: string[];
 }
 
-const pagefindBasePath = '/pagefind/'
-const localeSlugs: LocaleSlug[] = ['zh-cn', 'en']
-let pagefindModulePromise: Promise<PagefindModule> | undefined
-let availableLocalesPromise: Promise<LocaleSlug[]> | undefined
-let searchQueue: Promise<void> = Promise.resolve()
+const PAGEFIND_BASE_PATH = '/pagefind/';
+let pagefindModulePromise: Promise<PagefindModule> | undefined;
+let availableLocaleKeysPromise: Promise<LocaleKey[]> | undefined;
+let searchQueue: Promise<void> = Promise.resolve();
 
+/** Pagefind 基础设施入口。页面组件只接触逻辑文章命中，不依赖 Pagefind 数据结构。 */
 export function usePagefind() {
-  function search(
-    query: string,
-    options: PagefindSearchOptions = {},
-  ): Promise<ArticleSearchHit[]> {
-    const task = searchQueue.then(() => searchAllLocales(query, options))
-    searchQueue = task.then(() => undefined, () => undefined)
-    return task
+  function search(query: string, options: PagefindSearchOptions = {}): Promise<ArticleSearchHit[]> {
+    const task = searchQueue.then(() => searchAllLocales(query, options));
+
+    // Pagefind 的浏览器运行时在语言切换时共享状态，搜索必须串行执行。
+    // 失败也要释放队列，否则后续输入将永远无法开始。
+    searchQueue = task.then(
+      () => undefined,
+      () => undefined,
+    );
+    return task;
   }
 
-  return { search }
+  return { search };
 }
 
 async function searchAllLocales(
   query: string,
   options: PagefindSearchOptions,
 ): Promise<ArticleSearchHit[]> {
-  const normalizedQuery = query.trim()
+  const normalizedQuery = query.trim();
 
   if (!normalizedQuery) {
-    return []
+    return [];
   }
 
-  const pagefind = await getPagefindModule()
-  const availableLocales = await getAvailableLocales()
-  const filters = options.tags?.length ? { tag: options.tags } : undefined
-  const successfulSearches = []
-  let lastError: unknown
+  const pagefind = await getPagefindModule();
+  const availableLocaleKeys = await getAvailableLocaleKeys();
+  const filters = options.tags?.length ? { tag: options.tags } : undefined;
+  const successfulSearches: (ArticleSearchHit | undefined)[][] = [];
+  let lastError: unknown;
 
-  // Pagefind 的多语言索引共享同一个浏览器运行时。按照官方建议，
-  // 切换 <html lang> 后重新初始化，再依次查询每个语言索引。
-  for (const locale of availableLocales) {
+  for (const localeKey of availableLocaleKeys) {
     try {
-      successfulSearches.push(
-        await searchLocale(pagefind, locale, normalizedQuery, filters),
-      )
+      successfulSearches.push(await searchLocale(pagefind, localeKey, normalizedQuery, filters));
     } catch (error) {
-      lastError = error
+      lastError = error;
     }
   }
 
   if (successfulSearches.length === 0) {
-    throw lastError ?? new Error('Pagefind 搜索失败')
+    throw lastError ?? new Error('Pagefind 搜索失败');
   }
 
-  const mergedHits = new Map<string, ArticleSearchHit>()
+  const mergedHits = new Map<string, ArticleSearchHit>();
 
   for (const hit of successfulSearches.flat()) {
     if (!hit) {
-      continue
+      continue;
     }
 
-    const existing = mergedHits.get(hit.articleKeyPath)
+    const existingHit = mergedHits.get(hit.articleKeyPath);
 
-    if (!existing || hit.score > existing.score) {
-      mergedHits.set(hit.articleKeyPath, hit)
+    if (!existingHit || hit.score > existingHit.score) {
+      mergedHits.set(hit.articleKeyPath, hit);
     }
   }
 
-  return [...mergedHits.values()]
+  return [...mergedHits.values()];
 }
 
 async function searchLocale(
   pagefind: PagefindModule,
-  locale: LocaleSlug,
+  localeKey: LocaleKey,
   query: string,
   filters?: Record<string, string | string[]>,
 ): Promise<(ArticleSearchHit | undefined)[]> {
-  await pagefind.destroy()
+  await pagefind.destroy();
 
-  const htmlElement = document.documentElement
-  const pageLocale = htmlElement.lang
-  htmlElement.lang = locale
+  const htmlElement = document.documentElement;
+  const pageLanguageTag = htmlElement.lang;
+  const searchLanguageTag = getLocaleDefinition(localeKey).languageTag;
+  htmlElement.lang = searchLanguageTag;
 
   try {
-    await pagefind.init()
+    // Pagefind 1.x 通过 <html lang> 选择对应索引。初始化完成后立即恢复页面语言，
+    // 防止基础设施细节影响全局 useSiteLocale 所管理的可访问性状态。
+    await pagefind.init();
   } finally {
-    htmlElement.lang = pageLocale
+    htmlElement.lang = pageLanguageTag;
   }
 
-  const response = await pagefind.search(query, { filters })
+  const response = await pagefind.search(query, { filters });
 
   return Promise.all(
     response.results.map(async (result) => {
-      const data = await result.data()
-      const articleKeyPath =
-        data.meta?.articleKeyPath ?? parsePostPath(data.url)?.articleKeyPath
+      const data = await result.data();
+      const rawArticleKeyPath = data.meta?.articleKeyPath ?? parsePublicArticlePath(data.url);
 
-      if (!articleKeyPath) {
-        return undefined
+      if (!rawArticleKeyPath) {
+        return undefined;
       }
 
       return {
-        articleKeyPath,
+        articleKeyPath: normalizeArticleKeyPath(rawArticleKeyPath),
         score: result.score,
-      }
+      };
     }),
-  )
+  );
 }
 
 async function getPagefindModule(): Promise<PagefindModule> {
   if (!pagefindModulePromise) {
-    const modulePath = `${pagefindBasePath}pagefind.js`
-    pagefindModulePromise = import(/* @vite-ignore */ modulePath) as Promise<PagefindModule>
+    const modulePath = `${PAGEFIND_BASE_PATH}pagefind.js`;
+    pagefindModulePromise = import(/* @vite-ignore */ modulePath) as Promise<PagefindModule>;
   }
 
-  return pagefindModulePromise
+  return pagefindModulePromise;
 }
 
-async function getAvailableLocales(): Promise<LocaleSlug[]> {
-  if (!availableLocalesPromise) {
-    availableLocalesPromise = fetch(`${pagefindBasePath}pagefind-entry.json`)
+async function getAvailableLocaleKeys(): Promise<LocaleKey[]> {
+  if (!availableLocaleKeysPromise) {
+    availableLocaleKeysPromise = fetch(`${PAGEFIND_BASE_PATH}pagefind-entry.json`)
       .then((response) => {
         if (!response.ok) {
-          throw new Error(`Pagefind 索引清单加载失败：${response.status}`)
+          throw new Error(`Pagefind 索引清单加载失败：${response.status}`);
         }
 
-        return response.json() as Promise<PagefindEntry>
+        return response.json() as Promise<PagefindEntry>;
       })
-      .then((entry) => localeSlugs.filter((locale) => Boolean(entry.languages[locale])))
+      .then((entry) =>
+        LOCALE_DEFINITIONS.filter((definition) =>
+          Boolean(entry.languages[definition.pagefindLanguage]),
+        ).map((definition) => definition.localeKey),
+      );
   }
 
-  return availableLocalesPromise
+  return availableLocaleKeysPromise;
 }

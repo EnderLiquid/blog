@@ -14,6 +14,8 @@ npm run dev
 常用命令：
 
 ```bash
+npm run format         # 使用 Prettier 格式化代码
+npm run format:check   # 检查代码格式
 npm run content:check  # 校验文章目录、语言并生成路由清单
 npm run typecheck      # 类型检查
 npm run generate       # 静态生成并建立 Pagefind 索引
@@ -31,7 +33,7 @@ content/posts/projects/pi/pi-context/zh-cn.md
 content/posts/projects/pi/pi-context/en.md
 ```
 
-对应 `/posts/projects/pi/pi-context/zh-cn/` 和 `/posts/projects/pi/pi-context/en/`。Frontmatter 格式：
+对应 `/zh-cn/posts/projects/pi/pi-context/` 和 `/en/posts/projects/pi/pi-context/`。语言是全站 URL 前缀，`/` 仅用于选择语言。Frontmatter 格式：
 
 ```yaml
 ---
@@ -53,13 +55,14 @@ draft: false
 
 ## GitHub Pages
 
-`.github/workflows/deploy-pages.yml` 会在 `main` 分支更新时执行类型检查、静态生成、Pagefind 索引和部署。
+`.github/workflows/deploy-pages.yml` 会在 `main` 分支更新时执行格式检查、类型检查、静态生成、Pagefind 索引和部署。
 
 创建 GitHub 仓库后，在仓库设置中将 Pages 的 Source 设为 **GitHub Actions**。自定义域名确定后，再配置 DNS 和 GitHub Pages 域名。
 
 ## 当前边界
 
-- 已接通文章内容、多语言路由、静态生成，以及 `/posts/` 中的跨语言 Pagefind 搜索。
+- 已接通文章内容、全站语言前缀、静态生成，以及 `/<locale>/posts/` 中的跨语言 Pagefind 搜索。
+- URL 是页面语言的唯一来源；语言配置集中在 `shared/i18n/locales.ts`。
 - Pagefind 索引在静态生成后产生，完整搜索需使用 `npm run generate` 后的静态预览验证。
 - 尚未实现主页 Shell 和 Giscus。Giscus 需要先确定 GitHub 仓库及 Discussions 配置。
 - `.npmrc` 使用 npmmirror，以规避当前环境访问 npm 官方源过慢的问题。

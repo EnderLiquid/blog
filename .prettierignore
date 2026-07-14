@@ -1,0 +1,7 @@
+.data
+.nuxt
+.output
+.playwright-cli
+node_modules
+dist
+docs

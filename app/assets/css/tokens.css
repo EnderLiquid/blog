@@ -1,0 +1,20 @@
+:root {
+  color-scheme: light dark;
+  --paper: #e9e5d8;
+  --ink: #252720;
+  --muted: #65685d;
+  --line: #a9aa9d;
+  --signal: #9d2348;
+  --font-mono: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Consolas, monospace;
+  --font-serif: Georgia, 'Noto Serif SC', serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #22231f;
+    --ink: #e2dfd2;
+    --muted: #aaa99d;
+    --line: #55574e;
+    --signal: #f07194;
+  }
+}

@@ -1,0 +1,47 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 20rem;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: var(--font-mono);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 3.9rem,
+      color-mix(in srgb, var(--signal) 35%, transparent) 4rem,
+      transparent 4.1rem
+    ),
+    var(--paper);
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.2em;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+@media (max-width: 36rem) {
+  body {
+    background: var(--paper);
+  }
+}

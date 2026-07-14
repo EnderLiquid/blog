@@ -6,6 +6,8 @@
     "build": "nuxt build",
     "content:check": "node scripts/validate-content.mjs",
     "dev": "nuxt dev",
+    "format": "prettier --write \"app/**/*.{ts,vue,css}\" \"shared/**/*.ts\" \"scripts/**/*.mjs\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
+    "format:check": "prettier --check \"app/**/*.{ts,vue,css}\" \"shared/**/*.ts\" \"scripts/**/*.mjs\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
     "generate": "npm run content:check && nuxt generate && pagefind --site .output/public",
     "preview": "nuxt preview",
     "typecheck": "nuxt typecheck"
@@ -20,6 +22,7 @@
   "devDependencies": {
     "@types/node": "^26.1.1",
     "pagefind": "^1.5.2",
+    "prettier": "^3.9.5",
     "typescript": "^5.9.0",
     "vue-tsc": "^3.2.0",
     "yaml": "^2.9.0"
