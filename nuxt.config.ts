@@ -1,16 +1,6 @@
 import { readFile } from 'node:fs/promises';
-import { LOCALE_DEFINITIONS } from './shared/i18n/locales';
-import { ROBOTS_PATH, rssPath, SITEMAP_PATH } from './shared/routing/localized-routes';
-
-const localizedEntryRoutes = LOCALE_DEFINITIONS.flatMap((definition) => [
-  `/${definition.code}/`,
-  `/${definition.code}/posts/`,
-]);
-const machineRoutes = [
-  SITEMAP_PATH,
-  ROBOTS_PATH,
-  ...LOCALE_DEFINITIONS.map((definition) => rssPath(definition.code)),
-];
+import { validateSiteManifest } from './shared/site-manifest/build.ts';
+import { createPrerenderRoutesView } from './shared/site-manifest/views.ts';
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -20,16 +10,17 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: true,
-      routes: ['/', ...localizedEntryRoutes, ...machineRoutes],
+      routes: [],
     },
   },
   hooks: {
     async 'prerender:routes'({ routes }) {
-      // 文章详情不会全部出现在入口页面中，构建前校验生成的清单是完整静态路由来源。
-      const manifestUrl = new URL('./.data/content-routes.json', import.meta.url);
-      const articleRoutes = JSON.parse(await readFile(manifestUrl, 'utf8')) as string[];
+      // 清单是具体公开资源的唯一构建期来源，Nuxt不再自行拼接页面或文章路由。
+      const manifestUrl = new URL('./.data/site-manifest.json', import.meta.url);
+      const source = await readFile(manifestUrl, 'utf8');
+      const manifest = validateSiteManifest(JSON.parse(source) as unknown);
 
-      for (const route of articleRoutes) {
+      for (const route of createPrerenderRoutesView(manifest)) {
         routes.add(route);
       }
     },

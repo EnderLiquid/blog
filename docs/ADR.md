@@ -17,3 +17,9 @@
 站点将 `https://blog.enderliquid.top` 作为唯一生产源地址，canonical、hreflang、RSS、Sitemap和robots均从共享配置生成绝对 HTTPS URL。该域名只绑定 `EnderLiquid/blog` 项目仓库，避免改变账户下现有项目站点的域名边界。
 
 RSS采用 `/zh-cn/rss.xml` 与 `/en/rss.xml` 两个永久入口，每个订阅源只包含对应语言的非草稿文章，不做跨语言回退。MVP只发布标题、摘要、日期、标签和永久链接，不渲染完整Markdown正文，以保持阅读器兼容性。Sitemap与robots保持根级单文件，并通过Nitro server routes在静态构建阶段生成；相较引入多个SEO模块，这一方案依赖更少，也能直接复用本站的文章身份和语言规则。
+
+# 使用统一构建期站点资源清单
+
+站点在Nuxt静态生成前，将静态页面声明、Markdown文章、语言配置和机器资源展开为版本化的 `.data/site-manifest.json`。清单描述应用拥有的具体公开路径、最小页面metadata和语言组；Nuxt预渲染、页面SEO、RSS、Sitemap和robots只消费由清单产生的纯视图，不再分别扫描内容或维护资源列表。
+
+完整清单只用于构建和服务端机器文件，浏览器使用由它派生的最小SEO投影。文章正文仍由Nuxt Content解析，创作源仍是Markdown和共享本地化消息。该结构增加了一个明确的前置生成阶段，但能够在新增页面、文章或语言时统一校验URL、预渲染和多语言关系，避免不同消费者静默漂移。

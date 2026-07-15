@@ -1,4 +1,4 @@
-import { SITE_MESSAGES } from '~/i18n/messages';
+import { SITE_MESSAGES } from '~~/shared/i18n/messages';
 import { parseLocalizedPath, switchLocalePath } from '~~/shared/routing/localized-routes';
 import { DEFAULT_LOCALE_CODE, type LocaleCode } from '~~/shared/i18n/locales';
 

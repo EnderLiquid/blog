@@ -6,8 +6,7 @@ import {
   normalizeArticleKeyPath,
   postsPath,
 } from '~~/shared/routing/localized-routes';
-import { DEFAULT_LOCALE_CODE, LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
-import { absoluteSiteUrl } from '~~/shared/site/config';
+import { LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
 
 const route = useRoute();
 const { localeCode, messages } = useSiteLocale();
@@ -49,41 +48,6 @@ const { data: translations } = await useAsyncData(`translations:${articleKeyPath
 
 const localeLinks = computed(() => translations.value ?? []);
 const postTags = computed(() => post.value?.tags ?? []);
-
-useSeoMeta({
-  title: () => post.value?.title,
-  description: () => post.value?.description,
-});
-
-useHead(() => {
-  const availableTranslations = translations.value ?? [];
-  const defaultTranslation =
-    availableTranslations.find((translation) => translation.localeCode === DEFAULT_LOCALE_CODE) ??
-    availableTranslations[0];
-
-  return {
-    link: [
-      {
-        rel: 'canonical',
-        href: absoluteSiteUrl(articlePath(localeCode.value, articleKeyPath)),
-      },
-      ...availableTranslations.map((translation) => ({
-        rel: 'alternate',
-        hreflang: translation.localeCode,
-        href: absoluteSiteUrl(translation.path),
-      })),
-      ...(defaultTranslation
-        ? [
-            {
-              rel: 'alternate',
-              hreflang: 'x-default',
-              href: absoluteSiteUrl(defaultTranslation.path),
-            },
-          ]
-        : []),
-    ],
-  };
-});
 
 function readArticleKeyPath(value: unknown): string {
   const pathSegments = Array.isArray(value) ? value : [value];

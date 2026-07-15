@@ -1,6 +1,7 @@
 import { createError, defineEventHandler, getRouterParam, setResponseHeader } from 'h3';
 import { parseLocaleCode } from '../../../shared/i18n/locales';
-import { queryPublishedPostVariants } from '../../utils/published-posts';
+import { createRssView } from '../../../shared/site-manifest/views';
+import { readSiteManifest } from '../../utils/site-manifest';
 import { renderRssFeed } from '../../utils/rss';
 
 export default defineEventHandler(async (event) => {
@@ -13,9 +14,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'RSS订阅源不存在' });
   }
 
-  const posts = await queryPublishedPostVariants(event);
-  const localizedPosts = posts.filter((post) => post.localeCode === localeCode);
+  const manifest = await readSiteManifest();
+  const rssView = createRssView(manifest, localeCode);
 
   setResponseHeader(event, 'content-type', 'application/rss+xml; charset=utf-8');
-  return renderRssFeed(localeCode, localizedPosts);
+  return renderRssFeed(rssView);
 });

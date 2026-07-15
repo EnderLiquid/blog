@@ -1,5 +1,5 @@
-import type { LocaleCode } from '~~/shared/i18n/locales';
-import { SITE_METADATA } from '~~/shared/site/config';
+import type { LocaleCode } from './locales.ts';
+import { SITE_METADATA } from '../site/config.ts';
 
 export interface SiteMessages {
   site: {

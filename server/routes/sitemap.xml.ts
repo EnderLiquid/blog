@@ -1,10 +1,12 @@
 import { defineEventHandler, setResponseHeader } from 'h3';
-import { queryPublishedPostVariants } from '../utils/published-posts';
+import { createSitemapView } from '../../shared/site-manifest/views';
+import { readSiteManifest } from '../utils/site-manifest';
 import { renderSitemap } from '../utils/sitemap';
 
 export default defineEventHandler(async (event) => {
-  const posts = await queryPublishedPostVariants(event);
+  const manifest = await readSiteManifest();
+  const sitemapView = createSitemapView(manifest);
 
   setResponseHeader(event, 'content-type', 'application/xml; charset=utf-8');
-  return renderSitemap(posts);
+  return renderSitemap(sitemapView);
 });

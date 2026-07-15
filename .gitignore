@@ -7,6 +7,7 @@ dist
 .playwright-cli
 .preview.pid
 .data
+app/generated
 .env
 .env.*
 !.env.example

@@ -1,50 +1,25 @@
-import { LOCALE_DEFINITIONS, type LocaleCode } from '../../shared/i18n/locales.ts';
-import { articlePath, homePath, rssPath } from '../../shared/routing/localized-routes.ts';
-import { absoluteSiteUrl, SITE_METADATA } from '../../shared/site/config.ts';
 import { escapeXml } from '../../shared/xml/escape.ts';
-import type { PublishedPostVariant } from './published-posts.ts';
+import type { RssChannelView, RssItemView } from '../../shared/site-manifest/views.ts';
 
-/** 将一个语言的文章摘要序列化为 RSS 2.0。调用方负责提前按语言过滤。 */
-export function renderRssFeed(
-  localeCode: LocaleCode,
-  posts: readonly PublishedPostVariant[],
-): string {
-  const localeDefinition = LOCALE_DEFINITIONS.find((definition) => definition.code === localeCode);
-
-  if (!localeDefinition) {
-    throw new Error(`语言注册表缺少 RSS 配置：“${localeCode}”`);
-  }
-
-  const mismatchedPost = posts.find((post) => post.localeCode !== localeCode);
-
-  if (mismatchedPost) {
-    throw new Error(
-      `RSS ${localeCode} 收到了 ${mismatchedPost.localeCode} 文章：“${mismatchedPost.articleKeyPath}”`,
-    );
-  }
-
-  const metadata = SITE_METADATA[localeCode];
-  const sortedPosts = [...posts].sort(
-    (left, right) => toDate(right.publishedAt).getTime() - toDate(left.publishedAt).getTime(),
-  );
-  const latestModification = sortedPosts.reduce<Date | undefined>((latest, post) => {
-    const candidate = toDate(post.updatedAt ?? post.publishedAt);
+/** 将已经完成语言过滤和排序的摘要视图序列化为 RSS 2.0。 */
+export function renderRssFeed(channel: RssChannelView): string {
+  const latestModification = channel.items.reduce<Date | undefined>((latest, item) => {
+    const candidate = toDate(item.updatedAt ?? item.publishedAt);
     return !latest || candidate > latest ? candidate : latest;
   }, undefined);
-
   const channelLines = [
-    `<title>${escapeXml(`${metadata.title} · ${localeDefinition.label}`)}</title>`,
-    `<link>${escapeXml(absoluteSiteUrl(homePath(localeCode)))}</link>`,
-    `<description>${escapeXml(metadata.description)}</description>`,
-    `<language>${escapeXml(localeCode)}</language>`,
-    `<atom:link href="${escapeXml(absoluteSiteUrl(rssPath(localeCode)))}" rel="self" type="application/rss+xml" />`,
+    `<title>${escapeXml(channel.title)}</title>`,
+    `<link>${escapeXml(channel.homeUrl)}</link>`,
+    `<description>${escapeXml(channel.description)}</description>`,
+    `<language>${escapeXml(channel.localeCode)}</language>`,
+    `<atom:link href="${escapeXml(channel.selfUrl)}" rel="self" type="application/rss+xml" />`,
   ];
 
   if (latestModification) {
     channelLines.push(`<lastBuildDate>${latestModification.toUTCString()}</lastBuildDate>`);
   }
 
-  channelLines.push(...sortedPosts.map(renderRssItem));
+  channelLines.push(...channel.items.map(renderRssItem));
 
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -57,27 +32,26 @@ export function renderRssFeed(
   ].join('\n');
 }
 
-function renderRssItem(post: PublishedPostVariant): string {
-  const publicUrl = absoluteSiteUrl(articlePath(post.localeCode, post.articleKeyPath));
+function renderRssItem(item: RssItemView): string {
   const lines = [
     '<item>',
-    indent(`<title>${escapeXml(post.title)}</title>`),
-    indent(`<link>${escapeXml(publicUrl)}</link>`),
-    indent(`<guid isPermaLink="true">${escapeXml(publicUrl)}</guid>`),
-    indent(`<pubDate>${toDate(post.publishedAt).toUTCString()}</pubDate>`),
-    indent(`<description>${escapeXml(post.description)}</description>`),
-    ...post.tags.map((tag) => indent(`<category>${escapeXml(tag)}</category>`)),
+    indent(`<title>${escapeXml(item.title)}</title>`),
+    indent(`<link>${escapeXml(item.url)}</link>`),
+    indent(`<guid isPermaLink="true">${escapeXml(item.url)}</guid>`),
+    indent(`<pubDate>${toDate(item.publishedAt).toUTCString()}</pubDate>`),
+    indent(`<description>${escapeXml(item.description)}</description>`),
+    ...item.tags.map((tag) => indent(`<category>${escapeXml(tag)}</category>`)),
     '</item>',
   ];
 
   return lines.join('\n');
 }
 
-function toDate(value: Date | string): Date {
-  const date = value instanceof Date ? value : new Date(value);
+function toDate(value: string): Date {
+  const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    throw new Error(`无法序列化文章日期：“${String(value)}”`);
+    throw new Error(`无法序列化文章日期：“${value}”`);
   }
 
   return date;

@@ -37,6 +37,9 @@ jobs:
       - name: 单元测试
         run: npm run test:unit
 
+      - name: 生成并校验站点资源清单
+        run: npm run site:manifest
+
       - name: 类型检查
         run: npm run typecheck
 

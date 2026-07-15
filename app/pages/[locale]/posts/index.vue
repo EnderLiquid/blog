@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { homePath, postsPath, switchLocalePath } from '~~/shared/routing/localized-routes';
-import { DEFAULT_LOCALE_CODE, LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
-import { absoluteSiteUrl } from '~~/shared/site/config';
+import { homePath, switchLocalePath } from '~~/shared/routing/localized-routes';
+import { LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
 
 const route = useRoute();
 const { localeCode, messages } = useSiteLocale();
@@ -16,30 +15,6 @@ const localeLinks = computed(() =>
     path: switchLocalePath(route.fullPath, definition.code),
   })),
 );
-
-useSeoMeta({
-  title: () => messages.value.posts.title,
-  description: () => messages.value.posts.description,
-});
-
-useHead(() => ({
-  link: [
-    {
-      rel: 'canonical',
-      href: absoluteSiteUrl(postsPath(localeCode.value)),
-    },
-    ...LOCALE_DEFINITIONS.map((definition) => ({
-      rel: 'alternate',
-      hreflang: definition.code,
-      href: absoluteSiteUrl(postsPath(definition.code)),
-    })),
-    {
-      rel: 'alternate',
-      hreflang: 'x-default',
-      href: absoluteSiteUrl(postsPath(DEFAULT_LOCALE_CODE)),
-    },
-  ],
-}));
 </script>
 
 <template>

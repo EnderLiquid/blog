@@ -3,22 +3,24 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "nuxt build",
+    "build": "npm run site:manifest && nuxt build",
     "content:check": "node scripts/validate-content.mjs",
-    "dev": "nuxt dev",
-    "format": "prettier --write \"app/**/*.{ts,vue,css}\" \"server/**/*.ts\" \"shared/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
-    "format:check": "prettier --check \"app/**/*.{ts,vue,css}\" \"server/**/*.ts\" \"shared/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
-    "generate": "npm run content:check && nuxt generate && pagefind --site .output/public",
+    "dev": "node scripts/dev.mjs",
+    "format": "prettier --write \"app/**/*.{ts,vue,css}\" \"server/**/*.ts\" \"shared/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.{ts,mjs}\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
+    "format:check": "prettier --check \"app/**/*.{ts,vue,css}\" \"server/**/*.ts\" \"shared/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.{ts,mjs}\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
+    "generate": "npm run site:manifest && nuxt generate && pagefind --site .output/public",
     "preview": "nuxt preview",
+    "site:manifest": "node scripts/build-site-manifest.mjs",
     "test:unit": "node --test tests/**/*.test.ts",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "npm run site:manifest && nuxt typecheck"
   },
   "dependencies": {
     "@nuxt/content": "^3.15.0",
     "better-sqlite3": "^12.11.1",
     "nuxt": "^4.4.8",
     "vue": "^3.5.0",
-    "vue-router": "^5.1.0"
+    "vue-router": "^5.1.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",

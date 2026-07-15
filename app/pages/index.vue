@@ -1,34 +1,16 @@
 <script setup lang="ts">
 import { homePath } from '~~/shared/routing/localized-routes';
-import { absoluteSiteUrl } from '~~/shared/site/config';
 import {
   DEFAULT_LOCALE_CODE,
   LOCALE_DEFINITIONS,
   matchCompatibleLocaleCode,
 } from '~~/shared/i18n/locales';
+import { ROOT_PAGE_METADATA } from '~~/shared/site/config';
 
 const languageLinks = LOCALE_DEFINITIONS.map((definition) => ({
   ...definition,
   path: homePath(definition.code),
 }));
-
-useSeoMeta({
-  title: 'Blog',
-  description: 'Choose a language / 选择语言',
-  robots: 'noindex, follow',
-});
-
-useHead({
-  link: [
-    { rel: 'canonical', href: absoluteSiteUrl('/') },
-    ...LOCALE_DEFINITIONS.map((definition) => ({
-      rel: 'alternate',
-      hreflang: definition.code,
-      href: absoluteSiteUrl(homePath(definition.code)),
-    })),
-    { rel: 'alternate', hreflang: 'x-default', href: absoluteSiteUrl('/') },
-  ],
-});
 
 onMounted(() => {
   // GitHub Pages无法在服务端协商语言。逐项检查浏览器偏好，全部不支持时才回退默认语言；
@@ -52,8 +34,8 @@ onMounted(() => {
   <LayoutPageShell>
     <section class="language-entry" aria-labelledby="language-entry-title">
       <p class="prompt">visitor@blog:~$ locale</p>
-      <h1 id="language-entry-title">Blog</h1>
-      <p>Choose a language / 选择语言</p>
+      <h1 id="language-entry-title">{{ ROOT_PAGE_METADATA.title }}</h1>
+      <p>{{ ROOT_PAGE_METADATA.description }}</p>
 
       <ul>
         <li v-for="link in languageLinks" :key="link.code">

@@ -8,6 +8,12 @@ export interface LocalizedSiteMetadata {
   description: string;
 }
 
+/** 语言中立根入口的可见文本与SEO文本共享该来源。 */
+export const ROOT_PAGE_METADATA = {
+  title: 'Blog',
+  description: 'Choose a language / 选择语言',
+} as const;
+
 /** 同时供 Vue页面和构建期机器文件使用，避免 RSS 与页面描述发生漂移。 */
 export const SITE_METADATA: Record<LocaleCode, LocalizedSiteMetadata> = {
   'zh-cn': {
@@ -19,12 +25,3 @@ export const SITE_METADATA: Record<LocaleCode, LocalizedSiteMetadata> = {
     description: 'A developer blog built with Nuxt.',
   },
 };
-
-/** 将站内绝对路径转换为生产站点 URL，并拒绝容易误拼接的相对路径。 */
-export function absoluteSiteUrl(path: string): string {
-  if (!path.startsWith('/')) {
-    throw new Error(`站点路径必须以斜杠开头：“${path}”`);
-  }
-
-  return new URL(path, SITE_ORIGIN).toString();
-}

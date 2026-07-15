@@ -3,7 +3,6 @@ import { formatPostDate, toDateTime } from '~/utils/date';
 import { groupPostVariants, selectPostVariant } from '~/utils/posts';
 import { LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
 import { homePath, postsPath } from '~~/shared/routing/localized-routes';
-import { absoluteSiteUrl } from '~~/shared/site/config';
 
 const { localeCode, messages } = useSiteLocale();
 const { data: posts } = await useAsyncData('home-posts', () =>
@@ -26,30 +25,6 @@ const localeLinks = computed(() =>
     path: homePath(definition.code),
   })),
 );
-
-useSeoMeta({
-  title: () => messages.value.site.title,
-  description: () => messages.value.site.description,
-});
-
-useHead(() => ({
-  link: [
-    {
-      rel: 'canonical',
-      href: absoluteSiteUrl(homePath(localeCode.value)),
-    },
-    ...LOCALE_DEFINITIONS.map((definition) => ({
-      rel: 'alternate',
-      hreflang: definition.code,
-      href: absoluteSiteUrl(homePath(definition.code)),
-    })),
-    {
-      rel: 'alternate',
-      hreflang: 'x-default',
-      href: absoluteSiteUrl('/'),
-    },
-  ],
-}));
 </script>
 
 <template>
@@ -62,7 +37,7 @@ useHead(() => ({
 
     <header class="site-header">
       <p class="prompt">visitor@blog:~$</p>
-      <h1>Blog</h1>
+      <h1>{{ messages.site.title }}</h1>
       <p>{{ messages.home.shellPlaceholder }}</p>
     </header>
 

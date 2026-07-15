@@ -23,6 +23,11 @@ export const SUPPORTED_LOCALE_CODES = LOCALE_DEFINITIONS.map(
   (definition) => definition.code,
 ) as LocaleCode[];
 
+/** 判断字符串是否已经是规范化后的站点语言代码。 */
+export function isLocaleCode(value: string): value is LocaleCode {
+  return SUPPORTED_LOCALE_CODES.some((candidate) => candidate === value);
+}
+
 /**
  * 严格解析站点内部边界使用的语言代码。
  *
