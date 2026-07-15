@@ -1,10 +1,16 @@
 import { readFile } from 'node:fs/promises';
 import { LOCALE_DEFINITIONS } from './shared/i18n/locales';
+import { ROBOTS_PATH, rssPath, SITEMAP_PATH } from './shared/routing/localized-routes';
 
 const localizedEntryRoutes = LOCALE_DEFINITIONS.flatMap((definition) => [
   `/${definition.code}/`,
   `/${definition.code}/posts/`,
 ]);
+const machineRoutes = [
+  SITEMAP_PATH,
+  ROBOTS_PATH,
+  ...LOCALE_DEFINITIONS.map((definition) => rssPath(definition.code)),
+];
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -14,7 +20,7 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: true,
-      routes: ['/', ...localizedEntryRoutes],
+      routes: ['/', ...localizedEntryRoutes, ...machineRoutes],
     },
   },
   hooks: {

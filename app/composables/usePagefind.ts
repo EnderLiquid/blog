@@ -1,4 +1,4 @@
-import { normalizeArticleKeyPath } from '~/utils/localized-routes';
+import { normalizeArticleKeyPath } from '~~/shared/routing/localized-routes';
 import { parsePublicArticlePath } from '~/utils/posts';
 import { parseLocaleCode, type LocaleCode } from '~~/shared/i18n/locales';
 

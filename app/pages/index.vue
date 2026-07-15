@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { homePath } from '~/utils/localized-routes';
+import { homePath } from '~~/shared/routing/localized-routes';
+import { absoluteSiteUrl } from '~~/shared/site/config';
 import {
   DEFAULT_LOCALE_CODE,
   LOCALE_DEFINITIONS,
@@ -19,13 +20,13 @@ useSeoMeta({
 
 useHead({
   link: [
-    { rel: 'canonical', href: '/' },
+    { rel: 'canonical', href: absoluteSiteUrl('/') },
     ...LOCALE_DEFINITIONS.map((definition) => ({
       rel: 'alternate',
       hreflang: definition.code,
-      href: homePath(definition.code),
+      href: absoluteSiteUrl(homePath(definition.code)),
     })),
-    { rel: 'alternate', hreflang: 'x-default', href: '/' },
+    { rel: 'alternate', hreflang: 'x-default', href: absoluteSiteUrl('/') },
   ],
 });
 

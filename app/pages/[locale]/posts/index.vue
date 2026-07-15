@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { homePath, postsPath, switchLocalePath } from '~/utils/localized-routes';
+import { homePath, postsPath, switchLocalePath } from '~~/shared/routing/localized-routes';
 import { DEFAULT_LOCALE_CODE, LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
+import { absoluteSiteUrl } from '~~/shared/site/config';
 
 const route = useRoute();
 const { localeCode, messages } = useSiteLocale();
@@ -25,17 +26,17 @@ useHead(() => ({
   link: [
     {
       rel: 'canonical',
-      href: postsPath(localeCode.value),
+      href: absoluteSiteUrl(postsPath(localeCode.value)),
     },
     ...LOCALE_DEFINITIONS.map((definition) => ({
       rel: 'alternate',
       hreflang: definition.code,
-      href: postsPath(definition.code),
+      href: absoluteSiteUrl(postsPath(definition.code)),
     })),
     {
       rel: 'alternate',
       hreflang: 'x-default',
-      href: postsPath(DEFAULT_LOCALE_CODE),
+      href: absoluteSiteUrl(postsPath(DEFAULT_LOCALE_CODE)),
     },
   ],
 }));

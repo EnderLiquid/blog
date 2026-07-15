@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { NuxtError } from '#app';
-import { homePath, postsPath } from '~/utils/localized-routes';
+import { homePath, postsPath } from '~~/shared/routing/localized-routes';
 
 const props = defineProps<{
   error: NuxtError;

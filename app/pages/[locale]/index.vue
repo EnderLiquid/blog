@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { formatPostDate, toDateTime } from '~/utils/date';
 import { groupPostVariants, selectPostVariant } from '~/utils/posts';
-import { homePath, postsPath } from '~/utils/localized-routes';
 import { LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
+import { homePath, postsPath } from '~~/shared/routing/localized-routes';
+import { absoluteSiteUrl } from '~~/shared/site/config';
 
 const { localeCode, messages } = useSiteLocale();
 const { data: posts } = await useAsyncData('home-posts', () =>
@@ -35,17 +36,17 @@ useHead(() => ({
   link: [
     {
       rel: 'canonical',
-      href: homePath(localeCode.value),
+      href: absoluteSiteUrl(homePath(localeCode.value)),
     },
     ...LOCALE_DEFINITIONS.map((definition) => ({
       rel: 'alternate',
       hreflang: definition.code,
-      href: homePath(definition.code),
+      href: absoluteSiteUrl(homePath(definition.code)),
     })),
     {
       rel: 'alternate',
       hreflang: 'x-default',
-      href: '/',
+      href: absoluteSiteUrl('/'),
     },
   ],
 }));

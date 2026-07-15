@@ -11,3 +11,9 @@
 站点使用 `zh-cn`、`en` 形式的单一 `LocaleCode` 表示语言，并直接用于 URL、内容文件名、HTML lang、hreflang、Intl、messages 和 Pagefind。BCP 47标签不区分大小写，因此不再分别维护 `zh-cn`、`zh-CN` 和 Pagefind语言键；外部系统未来确有不同要求时，只在对应适配器中派生转换。
 
 文章语言由 `content/posts/<articleKeyPath>/<localeCode>.md` 的文件名唯一确定，Frontmatter不再重复保存 locale。共享语言模块提供严格完整解析和兼容基础语言匹配；浏览器候选顺序和最终默认回退由根入口页面负责，保证共享模块不依赖浏览器环境。
+
+# 固定生产源地址并按语言发布摘要订阅源
+
+站点将 `https://blog.enderliquid.top` 作为唯一生产源地址，canonical、hreflang、RSS、Sitemap和robots均从共享配置生成绝对 HTTPS URL。该域名只绑定 `EnderLiquid/blog` 项目仓库，避免改变账户下现有项目站点的域名边界。
+
+RSS采用 `/zh-cn/rss.xml` 与 `/en/rss.xml` 两个永久入口，每个订阅源只包含对应语言的非草稿文章，不做跨语言回退。MVP只发布标题、摘要、日期、标签和永久链接，不渲染完整Markdown正文，以保持阅读器兼容性。Sitemap与robots保持根级单文件，并通过Nitro server routes在静态构建阶段生成；相较引入多个SEO模块，这一方案依赖更少，也能直接复用本站的文章身份和语言规则。

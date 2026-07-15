@@ -1,4 +1,5 @@
 import type { LocaleCode } from '~~/shared/i18n/locales';
+import { SITE_METADATA } from '~~/shared/site/config';
 
 export interface SiteMessages {
   site: {
@@ -48,10 +49,7 @@ export interface SiteMessages {
 
 export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
   'zh-cn': {
-    site: {
-      title: 'Blog',
-      description: '一个使用 Nuxt 构建的开发者博客。',
-    },
+    site: SITE_METADATA['zh-cn'],
     root: {
       title: '选择语言',
       description: '选择你希望浏览的站点语言。',
@@ -93,10 +91,7 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     },
   },
   en: {
-    site: {
-      title: 'Blog',
-      description: 'A developer blog built with Nuxt.',
-    },
+    site: SITE_METADATA.en,
     root: {
       title: 'Choose a language',
       description: 'Choose the language you want to use.',

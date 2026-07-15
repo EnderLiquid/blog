@@ -1,5 +1,6 @@
-import { articlePath, parseLocalizedPath } from '~/utils/localized-routes';
-import { LOCALE_DEFINITIONS, parseLocaleCode, type LocaleCode } from '~~/shared/i18n/locales';
+import { parsePostContentPath } from '~~/shared/content/post-paths';
+import { LOCALE_DEFINITIONS, type LocaleCode } from '~~/shared/i18n/locales';
+import { articlePath, parseLocalizedPath } from '~~/shared/routing/localized-routes';
 
 /** Nuxt Content查询返回的文章版本；语言由内容路径而不是 Frontmatter 决定。 */
 export interface PostVariant {
@@ -22,33 +23,6 @@ export interface LogicalPost {
   variants: Partial<Record<LocaleCode, RoutedPostVariant>>;
 }
 
-export interface ParsedPostContentPath {
-  articleKeyPath: string;
-  localeCode: LocaleCode;
-}
-
-const postContentPathPattern = /^\/posts\/(.+)\/([^/]+)\/?$/;
-
-/** 解析 Nuxt Content内部路径：/posts/<articleKeyPath>/<localeCode>。 */
-export function parsePostContentPath(path: string): ParsedPostContentPath | undefined {
-  const match = path.match(postContentPathPattern);
-  const articleKeyPath = match?.[1];
-  const localeValue = match?.[2];
-
-  if (!articleKeyPath || localeValue === undefined) {
-    return undefined;
-  }
-
-  try {
-    return {
-      articleKeyPath,
-      localeCode: parseLocaleCode(localeValue),
-    };
-  } catch {
-    return undefined;
-  }
-}
-
 /** 从公开文章 URL 中提取稳定的 articleKeyPath。 */
 export function parsePublicArticlePath(path: string): string | undefined {
   const localizedPath = parseLocalizedPath(path);
@@ -59,12 +33,6 @@ export function parsePublicArticlePath(path: string): string | undefined {
 
   const match = localizedPath.pathWithoutLocale.match(/^\/posts\/(.+)\/$/);
   return match?.[1];
-}
-
-/** 生成 Nuxt Content查询使用的内部路径。 */
-export function postContentPath(articleKeyPath: string, localeCode: LocaleCode): string {
-  const normalizedArticleKeyPath = articleKeyPath.replace(/^\/+|\/+$/g, '');
-  return `/posts/${normalizedArticleKeyPath}/${localeCode}`;
 }
 
 /** 将各语言内容版本合并为以 articleKeyPath 标识的逻辑文章。 */

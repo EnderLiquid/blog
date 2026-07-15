@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { formatPostDate, toDateTime } from '~/utils/date';
-import { postContentPath } from '~/utils/posts';
-import { articlePath, normalizeArticleKeyPath, postsPath } from '~/utils/localized-routes';
+import { postContentPath } from '~~/shared/content/post-paths';
+import {
+  articlePath,
+  normalizeArticleKeyPath,
+  postsPath,
+} from '~~/shared/routing/localized-routes';
 import { DEFAULT_LOCALE_CODE, LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
+import { absoluteSiteUrl } from '~~/shared/site/config';
 
 const route = useRoute();
 const { localeCode, messages } = useSiteLocale();
@@ -60,19 +65,19 @@ useHead(() => {
     link: [
       {
         rel: 'canonical',
-        href: articlePath(localeCode.value, articleKeyPath),
+        href: absoluteSiteUrl(articlePath(localeCode.value, articleKeyPath)),
       },
       ...availableTranslations.map((translation) => ({
         rel: 'alternate',
         hreflang: translation.localeCode,
-        href: translation.path,
+        href: absoluteSiteUrl(translation.path),
       })),
       ...(defaultTranslation
         ? [
             {
               rel: 'alternate',
               hreflang: 'x-default',
-              href: defaultTranslation.path,
+              href: absoluteSiteUrl(defaultTranslation.path),
             },
           ]
         : []),

@@ -23,7 +23,7 @@ npm run generate       # 静态生成并建立 Pagefind 索引
 npm run preview        # 预览 Nuxt 构建结果
 ```
 
-静态产物位于 `.output/public/`。
+静态产物位于 `.output/public/`。构建同时生成中英文摘要 RSS、Sitemap、robots.txt和Pagefind索引。
 
 ## 内容
 
@@ -57,12 +57,29 @@ draft: false
 
 `.github/workflows/deploy-pages.yml` 会在 `main` 分支更新时执行格式检查、单元测试、类型检查、静态生成、Pagefind 索引和部署。
 
-创建 GitHub 仓库后，在仓库设置中将 Pages 的 Source 设为 **GitHub Actions**。自定义域名确定后，再配置 DNS 和 GitHub Pages 域名。
+公开仓库使用 `EnderLiquid/blog`，生产地址固定为 `https://blog.enderliquid.top`。创建并推送仓库后：
+
+1. 在仓库设置中将 Pages 的 Source 设为 **GitHub Actions**；
+2. 将 Custom domain 设置为 `blog.enderliquid.top`；
+3. 在域名服务商添加 `blog CNAME enderliquid.github.io`；
+4. 证书签发后启用 **Enforce HTTPS**。
+
+项目使用自定义 GitHub Actions工作流，不需要提交 `CNAME` 文件。
+
+机器入口：
+
+```text
+https://blog.enderliquid.top/zh-cn/rss.xml
+https://blog.enderliquid.top/en/rss.xml
+https://blog.enderliquid.top/sitemap.xml
+https://blog.enderliquid.top/robots.txt
+```
 
 ## 当前边界
 
-- 已接通文章内容、全站语言前缀、静态生成，以及 `/<locale>/posts/` 中的跨语言 Pagefind 搜索。
+- 已接通文章内容、全站语言前缀、静态生成、摘要 RSS、Sitemap、robots.txt，以及 `/<locale>/posts/` 中的跨语言 Pagefind 搜索。
 - URL 是页面语言的唯一来源；`shared/i18n/locales.ts` 统一定义 `LocaleCode` 及严格、兼容两套匹配逻辑。
+- `shared/site/config.ts` 是生产源地址和本地化站点 metadata的唯一配置来源。
 - Pagefind 索引在静态生成后产生，完整搜索需使用 `npm run generate` 后的静态预览验证。
 - 尚未实现主页 Shell 和 Giscus。Giscus 需要先确定 GitHub 仓库及 Discussions 配置。
 - `.npmrc` 使用 npmmirror，以规避当前环境访问 npm 官方源过慢的问题。
