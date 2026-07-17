@@ -1,4 +1,4 @@
-import type { PostMetadata } from '../content/post-schema.ts';
+import type { PostSource } from '../content/post-source.ts';
 import { DEFAULT_LOCALE_CODE, LOCALE_DEFINITIONS, type LocaleCode } from '../i18n/locales.ts';
 import { articlePath, ROBOTS_PATH, rssPath, SITEMAP_PATH } from '../routing/localized-routes.ts';
 import { SITE_ORIGIN } from '../site/config.ts';
@@ -13,21 +13,15 @@ import {
   type SiteResource,
   type StaticPageResource,
 } from './model.ts';
+import { articleResourceId } from './resource-ids.ts';
 import { STATIC_PAGE_DEFINITIONS, type LocalizedStaticPageDefinition } from './static-pages.ts';
-
-export interface PostSource {
-  sourcePath: string;
-  articleKeyPath: string;
-  localeCode: LocaleCode;
-  metadata: PostMetadata;
-}
 
 export interface BuildSiteManifestInput {
   posts: readonly PostSource[];
   siteOrigin?: string;
 }
 
-/** 将所有构建期来源展开为具体、稳定且经过完整校验的站点资源清单。 */
+/** 将所有构建期来源展开为只包含资源拓扑的确定性清单。 */
 export function buildSiteManifest(input: BuildSiteManifestInput): SiteManifest {
   validateCrossLocalePostSources(input.posts);
 
@@ -114,15 +108,11 @@ function buildStaticPageResources(): {
 
   for (const definition of STATIC_PAGE_DEFINITIONS) {
     if (!definition.localized) {
-      const metadata = definition.metadata();
       resources.push({
         kind: 'static-page',
         id: `page:${definition.pageId}`,
         pageId: definition.pageId,
         path: definition.path(),
-        indexability: definition.indexability,
-        title: metadata.title,
-        description: metadata.description,
       });
       continue;
     }
@@ -142,20 +132,14 @@ function buildStaticPageResources(): {
 function buildLocalizedStaticPageResources(
   definition: LocalizedStaticPageDefinition,
 ): StaticPageResource[] {
-  return LOCALE_DEFINITIONS.map(({ code }) => {
-    const metadata = definition.metadata(code);
-    return {
-      kind: 'static-page',
-      id: `page:${definition.pageId}:${code}`,
-      pageId: definition.pageId,
-      path: definition.path(code),
-      localeCode: code,
-      indexability: definition.indexability,
-      localizationGroupId: definition.localizationGroupId,
-      title: metadata.title,
-      description: metadata.description,
-    };
-  });
+  return LOCALE_DEFINITIONS.map(({ code }) => ({
+    kind: 'static-page',
+    id: `page:${definition.pageId}:${code}`,
+    pageId: definition.pageId,
+    path: definition.path(code),
+    localeCode: code,
+    localizationGroupId: definition.localizationGroupId,
+  }));
 }
 
 function buildArticlePageResources(posts: readonly PostSource[]): {
@@ -165,17 +149,11 @@ function buildArticlePageResources(posts: readonly PostSource[]): {
   const publishedPosts = posts.filter((post) => !post.metadata.draft);
   const resources = publishedPosts.map<ArticlePageResource>((post) => ({
     kind: 'article-page',
-    id: `article:${post.articleKeyPath}:${post.localeCode}`,
+    id: articleResourceId(post.articleKeyPath, post.localeCode),
     articleKeyPath: post.articleKeyPath,
     path: articlePath(post.localeCode, post.articleKeyPath),
     localeCode: post.localeCode,
     localizationGroupId: `article:${post.articleKeyPath}`,
-    indexability: 'index',
-    title: post.metadata.title,
-    description: post.metadata.description,
-    publishedAt: post.metadata.publishedAt.toISOString(),
-    updatedAt: post.metadata.updatedAt?.toISOString(),
-    tags: [...post.metadata.tags].sort(),
   }));
   const resourcesByArticle = new Map<string, ArticlePageResource[]>();
 

@@ -1,5 +1,5 @@
 import { escapeXml } from '../../shared/xml/escape.ts';
-import type { RssChannelView, RssItemView } from '../../shared/site-manifest/views.ts';
+import type { RssChannelView, RssItemView } from '../../shared/site-projections/model.ts';
 
 /** 将已经完成语言过滤和排序的摘要视图序列化为 RSS 2.0。 */
 export function renderRssFeed(channel: RssChannelView): string {

@@ -1,5 +1,5 @@
 import { escapeXml } from '../../shared/xml/escape.ts';
-import type { SitemapEntryView } from '../../shared/site-manifest/views.ts';
+import type { SitemapEntryView } from '../../shared/site-projections/model.ts';
 
 /** 将已经完成索引过滤和语言分组的视图序列化为Sitemap XML。 */
 export function renderSitemap(entries: readonly SitemapEntryView[]): string {

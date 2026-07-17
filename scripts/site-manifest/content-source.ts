@@ -3,7 +3,7 @@ import path from 'node:path';
 import { parse } from 'yaml';
 import { ARTICLE_SEGMENT_PATTERN, postMetadataSchema } from '../../shared/content/post-schema.ts';
 import { parseLocaleCode, SUPPORTED_LOCALE_CODES } from '../../shared/i18n/locales.ts';
-import type { PostSource } from '../../shared/site-manifest/build.ts';
+import type { PostSource } from '../../shared/content/post-source.ts';
 
 const frontmatterPattern = /^\uFEFF?---\s*\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
 

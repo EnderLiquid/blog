@@ -37,7 +37,8 @@ const localeLinks = computed(() =>
 
     <header class="site-header">
       <p class="prompt">visitor@blog:~$</p>
-      <h1>{{ messages.site.title }}</h1>
+      <h1>{{ messages.home.title }}</h1>
+      <p>{{ messages.home.description }}</p>
       <p>{{ messages.home.shellPlaceholder }}</p>
     </header>
 

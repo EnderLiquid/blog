@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { buildSiteManifest, type PostSource } from '../../shared/site-manifest/build.ts';
-import {
-  createPageSeoIndexView,
-  createPrerenderRoutesView,
-  createRobotsView,
-  createRssView,
-  createSitemapView,
-} from '../../shared/site-manifest/views.ts';
-import { RSS_ITEM_GUID_PREFIX, SITE_ORIGIN } from '../../shared/site/config.ts';
+import type { PostSource } from '../../shared/content/post-source.ts';
+import { RSS_FEED_DEFINITIONS, RSS_ITEM_GUID_PREFIX } from '../../shared/site-definitions/rss.ts';
+import { buildSiteManifest } from '../../shared/site-manifest/build.ts';
+import { createSiteBuildContext } from '../../shared/site-manifest/context.ts';
+import { createPrerenderRoutesView } from '../../shared/site-projections/prerender.ts';
+import { createRobotsView } from '../../shared/site-projections/robots.ts';
+import { createRssView } from '../../shared/site-projections/rss.ts';
+import { createPageSeoIndexView } from '../../shared/site-projections/seo.ts';
+import { createSitemapView } from '../../shared/site-projections/sitemap.ts';
+import { SITE_ORIGIN } from '../../shared/site/config.ts';
 import { escapeXml } from '../../shared/xml/escape.ts';
 import { renderRobotsTxt } from '../../server/utils/robots.ts';
 import { renderRssFeed } from '../../server/utils/rss.ts';
@@ -39,7 +40,9 @@ const chinesePost: PostSource = {
   },
 };
 
-const manifest = buildSiteManifest({ posts: [englishPost, chinesePost] });
+const posts = [englishPost, chinesePost];
+const manifest = buildSiteManifest({ posts });
+const context = createSiteBuildContext(manifest, posts);
 
 function configuredSiteUrl(path: string): string {
   return new URL(path, SITE_ORIGIN).toString();
@@ -97,7 +100,7 @@ describe('站点资源清单', () => {
 });
 
 describe('站点源地址与XML转义', () => {
-  it('清单采用共享配置中的生产源地址', () => {
+  it('清单采用唯一生产源地址', () => {
     assert.equal(manifest.siteOrigin, SITE_ORIGIN);
   });
 
@@ -108,9 +111,11 @@ describe('站点源地址与XML转义', () => {
 
 describe('PageSeoView', () => {
   it('为文章生成canonical、实际语言版本、x-default和当前语言RSS', () => {
-    const seoIndex = createPageSeoIndexView(manifest);
+    const seoIndex = createPageSeoIndexView(context);
     const seo = seoIndex['/en/posts/examples/xml-and-rss/'];
 
+    assert.equal(seo?.title, englishPost.metadata.title);
+    assert.equal(seo?.description, englishPost.metadata.description);
     assert.equal(seo?.canonicalUrl, configuredSiteUrl('/en/posts/examples/xml-and-rss/'));
     assert.deepEqual(
       seo?.languageAlternates.map((alternate) => alternate.localeCode),
@@ -120,10 +125,11 @@ describe('PageSeoView', () => {
       seo?.feeds.map((feed) => feed.localeCode),
       ['en'],
     );
+    assert.equal(seo?.feeds[0]?.title, RSS_FEED_DEFINITIONS.en.title);
   });
 
   it('根入口声明两个RSS，404不声明canonical、alternate或RSS', () => {
-    const seoIndex = createPageSeoIndexView(manifest);
+    const seoIndex = createPageSeoIndexView(context);
 
     assert.deepEqual(
       seoIndex['/']?.feeds.map((feed) => feed.localeCode),
@@ -137,8 +143,10 @@ describe('PageSeoView', () => {
 
 describe('RSS', () => {
   it('输出摘要、稳定GUID、文章链接、日期、标签和Atom self link', () => {
-    const rss = renderRssFeed(createRssView(manifest, 'en'));
+    const rssView = createRssView(context, 'en');
+    const rss = renderRssFeed(rssView);
 
+    assert.equal(rssView.title, RSS_FEED_DEFINITIONS.en.title);
     assert.match(rss, /<rss version="2\.0"/);
     assert.match(rss, /XML &amp; RSS &lt;notes&gt;/);
     assert.match(rss, /A &quot;short&quot; summary, not the full body\./);
@@ -161,11 +169,12 @@ describe('RSS', () => {
 
   it('生产域名变化时保留GUID，只更新可访问链接', () => {
     const migratedManifest = buildSiteManifest({
-      posts: [englishPost, chinesePost],
+      posts,
       siteOrigin: 'https://enderliquid.com',
     });
-    const originalItem = createRssView(manifest, 'en').items[0];
-    const migratedItem = createRssView(migratedManifest, 'en').items[0];
+    const migratedContext = createSiteBuildContext(migratedManifest, posts);
+    const originalItem = createRssView(context, 'en').items[0];
+    const migratedItem = createRssView(migratedContext, 'en').items[0];
 
     assert.ok(originalItem);
     assert.ok(migratedItem);
@@ -177,7 +186,7 @@ describe('RSS', () => {
 
 describe('Sitemap与robots', () => {
   it('输出可索引页面、文章lastmod和共享的多语言关系', () => {
-    const sitemap = renderSitemap(createSitemapView(manifest));
+    const sitemap = renderSitemap(createSitemapView(context));
 
     assert.match(sitemap, /xmlns:xhtml="http:\/\/www\.w3\.org\/1999\/xhtml"/);
     assert.ok(sitemap.includes(`<loc>${configuredSiteUrl('/zh-cn/')}</loc>`));

@@ -1,17 +1,15 @@
 import type { LocaleCode } from './locales.ts';
-import { SITE_METADATA } from '../site/config.ts';
+
+/** 语言中立根入口的可见文案；不作为SEO metadata使用。 */
+export const ROOT_PAGE_MESSAGES = {
+  title: `Blog`,
+  description: 'Choose a language / 选择语言',
+} as const;
 
 export interface SiteMessages {
-  site: {
-    title: string;
-    description: string;
-  };
-  root: {
-    title: string;
-    description: string;
-    chooseLanguage: string;
-  };
   home: {
+    title: string;
+    description: string;
     shellPlaceholder: string;
     recentPosts: string;
     allPosts: string;
@@ -47,15 +45,12 @@ export interface SiteMessages {
   };
 }
 
+/** Vue模板使用的可见文案；机器metadata不得导入该对象。 */
 export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
   'zh-cn': {
-    site: SITE_METADATA['zh-cn'],
-    root: {
-      title: '选择语言',
-      description: '选择你希望浏览的站点语言。',
-      chooseLanguage: '进入博客',
-    },
     home: {
+      title: 'Blog',
+      description: '这里是 EnderLiquid 的博客。欢迎到访。',
       shellPlaceholder: 'Nuxt 环境已经就绪。Shell 交互将在这里生长。',
       recentPosts: '最近文章',
       allPosts: '查看全部文章',
@@ -91,13 +86,9 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     },
   },
   en: {
-    site: SITE_METADATA.en,
-    root: {
-      title: 'Choose a language',
-      description: 'Choose the language you want to use.',
-      chooseLanguage: 'Enter the blog',
-    },
     home: {
+      title: 'Blog',
+      description: `This is EnderLiquid's Blog. Welcome.`,
       shellPlaceholder: 'Nuxt is ready. The shell experience will grow here.',
       recentPosts: 'Recent posts',
       allPosts: 'View all posts',

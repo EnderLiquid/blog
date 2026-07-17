@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { validateSiteManifest } from './shared/site-manifest/build.ts';
-import { createPrerenderRoutesView } from './shared/site-manifest/views.ts';
+import { createPrerenderRoutesView } from './shared/site-projections/prerender.ts';
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',

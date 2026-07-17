@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import type { NuxtError } from '#app';
 import { homePath, postsPath } from '~~/shared/routing/localized-routes';
+import { RUNTIME_ERROR_SEO_DEFINITIONS } from '~~/shared/site-definitions/page-seo';
 
 const props = defineProps<{
   error: NuxtError;
 }>();
 
-const { localeCode, messages } = useSiteLocale();
+const { localeCode } = useSiteLocale();
 const statusCode = computed(() => props.error.statusCode || 500);
 
+const errorSeo = computed(() => RUNTIME_ERROR_SEO_DEFINITIONS[localeCode.value]);
+
 useSeoMeta({
-  title: () => `${statusCode.value} · ${messages.value.notFound.title}`,
+  title: () => `${statusCode.value} · ${errorSeo.value.title}`,
+  description: () => errorSeo.value.description,
   robots: 'noindex, follow',
 });
 

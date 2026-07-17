@@ -5,7 +5,13 @@ export const TAG_PATTERN = ARTICLE_SEGMENT_PATTERN;
 
 const tagSchema = z.string().regex(TAG_PATTERN, '标签必须使用小写 ASCII kebab-case');
 
-/** Nuxt Content与构建清单共同使用的文章metadata契约。 */
+/**
+ * Nuxt Content与构建投影共同使用的文章metadata契约。
+ *
+ * title与description是当前唯一编辑来源。页面、SEO与RSS投影有意复用这两个字段；
+ * 不得为了方便将其复制进SiteManifest。未来只有在消费者确实需要不同文本时，
+ * 才为该消费者新增专属字段，并保持现有字段语义不变。
+ */
 export const postMetadataSchema = z
   .object({
     title: z.string().min(1, 'title不能为空'),

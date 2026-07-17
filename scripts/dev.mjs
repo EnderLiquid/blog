@@ -11,11 +11,13 @@ const nuxtBin = fileURLToPath(new URL('../node_modules/nuxt/bin/nuxt.mjs', impor
 const manifestScript = fileURLToPath(new URL('./build-site-manifest.mjs', import.meta.url));
 const watchTargets = [
   { path: path.join(projectRoot, 'content', 'posts'), recursive: true },
-  { path: path.join(projectRoot, 'shared', 'i18n'), recursive: true },
+  { path: path.join(projectRoot, 'shared', 'i18n', 'locales.ts'), recursive: false },
   { path: path.join(projectRoot, 'shared', 'routing'), recursive: true },
-  { path: path.join(projectRoot, 'shared', 'content', 'post-schema.ts'), recursive: false },
+  { path: path.join(projectRoot, 'shared', 'content'), recursive: true },
   { path: path.join(projectRoot, 'shared', 'site', 'config.ts'), recursive: false },
+  { path: path.join(projectRoot, 'shared', 'site-definitions'), recursive: true },
   { path: path.join(projectRoot, 'shared', 'site-manifest'), recursive: true },
+  { path: path.join(projectRoot, 'shared', 'site-projections'), recursive: true },
 ];
 
 await rebuildManifest('启动');
@@ -42,7 +44,7 @@ function scheduleManifestRebuild() {
 }
 
 async function rebuildManifest(reason) {
-  // 每次使用独立Node进程，避免ESM模块缓存让静态声明和messages变化后仍读取旧值。
+  // 每次使用独立Node进程，避免ESM模块缓存让构建来源变化后仍读取旧值。
   const { stdout, stderr } = await execFileAsync(process.execPath, [manifestScript], {
     cwd: projectRoot,
     encoding: 'utf8',

@@ -5,7 +5,7 @@ import {
   LOCALE_DEFINITIONS,
   matchCompatibleLocaleCode,
 } from '~~/shared/i18n/locales';
-import { ROOT_PAGE_METADATA } from '~~/shared/site/config';
+import { ROOT_PAGE_MESSAGES } from '~~/shared/i18n/messages';
 
 const languageLinks = LOCALE_DEFINITIONS.map((definition) => ({
   ...definition,
@@ -34,8 +34,8 @@ onMounted(() => {
   <LayoutPageShell>
     <section class="language-entry" aria-labelledby="language-entry-title">
       <p class="prompt">visitor@blog:~$ locale</p>
-      <h1 id="language-entry-title">{{ ROOT_PAGE_METADATA.title }}</h1>
-      <p>{{ ROOT_PAGE_METADATA.description }}</p>
+      <h1 id="language-entry-title">{{ ROOT_PAGE_MESSAGES.title }}</h1>
+      <p>{{ ROOT_PAGE_MESSAGES.description }}</p>
 
       <ul>
         <li v-for="link in languageLinks" :key="link.code">
