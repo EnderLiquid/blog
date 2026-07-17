@@ -37,7 +37,7 @@ function renderRssItem(item: RssItemView): string {
     '<item>',
     indent(`<title>${escapeXml(item.title)}</title>`),
     indent(`<link>${escapeXml(item.url)}</link>`),
-    indent(`<guid isPermaLink="true">${escapeXml(item.url)}</guid>`),
+    indent(`<guid isPermaLink="false">${escapeXml(item.guid)}</guid>`),
     indent(`<pubDate>${toDate(item.publishedAt).toUTCString()}</pubDate>`),
     indent(`<description>${escapeXml(item.description)}</description>`),
     ...item.tags.map((tag) => indent(`<category>${escapeXml(tag)}</category>`)),

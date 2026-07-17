@@ -1,5 +1,5 @@
 import { LOCALE_DEFINITIONS, type LocaleCode } from '../i18n/locales.ts';
-import { SITE_METADATA } from '../site/config.ts';
+import { RSS_ITEM_GUID_PREFIX, SITE_METADATA } from '../site/config.ts';
 import {
   isPageResource,
   type ArticlePageResource,
@@ -41,6 +41,8 @@ export interface SitemapEntryView {
 
 export interface RssItemView {
   articleKeyPath: string;
+  /** 不随生产域名变化的订阅条目身份。 */
+  guid: string;
   title: string;
   description: string;
   url: string;
@@ -165,6 +167,7 @@ export function createRssView(manifest: SiteManifest, localeCode: LocaleCode): R
     .sort((left, right) => Date.parse(right.publishedAt) - Date.parse(left.publishedAt))
     .map((resource) => ({
       articleKeyPath: resource.articleKeyPath,
+      guid: createRssItemGuid(resource.localeCode, resource.articleKeyPath),
       title: resource.title,
       description: resource.description,
       url: absoluteManifestUrl(manifest, resource.path),
@@ -181,6 +184,11 @@ export function createRssView(manifest: SiteManifest, localeCode: LocaleCode): R
     selfUrl: absoluteManifestUrl(manifest, feedResource.path),
     items,
   };
+}
+
+/** 使用稳定文章身份生成域名无关GUID；语言版本是不同的订阅条目。 */
+export function createRssItemGuid(localeCode: LocaleCode, articleKeyPath: string): string {
+  return `${RSS_ITEM_GUID_PREFIX}:${localeCode}:${articleKeyPath}`;
 }
 
 export function createRobotsView(manifest: SiteManifest): RobotsView {

@@ -133,13 +133,20 @@ describe('PageSeoView', () => {
 });
 
 describe('RSS', () => {
-  it('输出摘要、永久链接、日期、标签和Atom self link', () => {
+  it('输出摘要、稳定GUID、文章链接、日期、标签和Atom self link', () => {
     const rss = renderRssFeed(createRssView(manifest, 'en'));
 
     assert.match(rss, /<rss version="2\.0"/);
     assert.match(rss, /XML &amp; RSS &lt;notes&gt;/);
     assert.match(rss, /A &quot;short&quot; summary, not the full body\./);
-    assert.match(rss, /<guid isPermaLink="true">https:\/\/blog\.enderliquid\.top\/en\/posts\//);
+    assert.match(
+      rss,
+      /<guid isPermaLink="false">enderliquid:post:en:examples\/xml-and-rss<\/guid>/,
+    );
+    assert.match(
+      rss,
+      /<link>https:\/\/blog\.enderliquid\.top\/en\/posts\/examples\/xml-and-rss\/<\/link>/,
+    );
     assert.match(rss, /<pubDate>Sun, 12 Jul 2026 00:00:00 GMT<\/pubDate>/);
     assert.match(rss, /<lastBuildDate>Tue, 14 Jul 2026 00:00:00 GMT<\/lastBuildDate>/);
     assert.match(rss, /<category>rss<\/category>/);
@@ -148,6 +155,21 @@ describe('RSS', () => {
       /<atom:link href="https:\/\/blog\.enderliquid\.top\/en\/rss\.xml" rel="self"/,
     );
     assert.doesNotMatch(rss, /只包含摘要/);
+  });
+
+  it('生产域名变化时保留GUID，只更新可访问链接', () => {
+    const migratedManifest = buildSiteManifest({
+      posts: [englishPost, chinesePost],
+      siteOrigin: 'https://enderliquid.com',
+    });
+    const originalItem = createRssView(manifest, 'en').items[0];
+    const migratedItem = createRssView(migratedManifest, 'en').items[0];
+
+    assert.ok(originalItem);
+    assert.ok(migratedItem);
+    assert.equal(migratedItem.guid, originalItem.guid);
+    assert.equal(migratedItem.url, 'https://enderliquid.com/en/posts/examples/xml-and-rss/');
+    assert.notEqual(migratedItem.url, originalItem.url);
   });
 });
 

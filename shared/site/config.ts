@@ -3,6 +3,9 @@ import type { LocaleCode } from '../i18n/locales.ts';
 /** 生产环境唯一公开源地址。所有机器可读 URL 与 SEO metadata 都从这里派生。 */
 export const SITE_ORIGIN = 'https://blog.enderliquid.top';
 
+/** RSS条目的永久身份命名空间；首次发布后不得随域名或品牌展示名称变化。 */
+export const RSS_ITEM_GUID_PREFIX = 'enderliquid:post';
+
 export interface LocalizedSiteMetadata {
   title: string;
   description: string;
