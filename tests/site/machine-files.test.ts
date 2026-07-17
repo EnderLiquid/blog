@@ -8,7 +8,7 @@ import {
   createRssView,
   createSitemapView,
 } from '../../shared/site-manifest/views.ts';
-import { SITE_ORIGIN } from '../../shared/site/config.ts';
+import { RSS_ITEM_GUID_PREFIX, SITE_ORIGIN } from '../../shared/site/config.ts';
 import { escapeXml } from '../../shared/xml/escape.ts';
 import { renderRobotsTxt } from '../../server/utils/robots.ts';
 import { renderRssFeed } from '../../server/utils/rss.ts';
@@ -40,6 +40,10 @@ const chinesePost: PostSource = {
 };
 
 const manifest = buildSiteManifest({ posts: [englishPost, chinesePost] });
+
+function configuredSiteUrl(path: string): string {
+  return new URL(path, SITE_ORIGIN).toString();
+}
 
 describe('站点资源清单', () => {
   it('展开静态页面、文章和机器资源，并建立语言关系', () => {
@@ -93,8 +97,7 @@ describe('站点资源清单', () => {
 });
 
 describe('站点源地址与XML转义', () => {
-  it('清单使用唯一生产源地址', () => {
-    assert.equal(SITE_ORIGIN, 'https://blog.enderliquid.top');
+  it('清单采用共享配置中的生产源地址', () => {
     assert.equal(manifest.siteOrigin, SITE_ORIGIN);
   });
 
@@ -108,7 +111,7 @@ describe('PageSeoView', () => {
     const seoIndex = createPageSeoIndexView(manifest);
     const seo = seoIndex['/en/posts/examples/xml-and-rss/'];
 
-    assert.equal(seo?.canonicalUrl, 'https://blog.enderliquid.top/en/posts/examples/xml-and-rss/');
+    assert.equal(seo?.canonicalUrl, configuredSiteUrl('/en/posts/examples/xml-and-rss/'));
     assert.deepEqual(
       seo?.languageAlternates.map((alternate) => alternate.localeCode),
       ['zh-cn', 'en', 'x-default'],
@@ -139,20 +142,19 @@ describe('RSS', () => {
     assert.match(rss, /<rss version="2\.0"/);
     assert.match(rss, /XML &amp; RSS &lt;notes&gt;/);
     assert.match(rss, /A &quot;short&quot; summary, not the full body\./);
-    assert.match(
-      rss,
-      /<guid isPermaLink="false">enderliquid:post:en:examples\/xml-and-rss<\/guid>/,
+    assert.ok(
+      rss.includes(
+        `<guid isPermaLink="false">${RSS_ITEM_GUID_PREFIX}:en:examples/xml-and-rss</guid>`,
+      ),
     );
-    assert.match(
-      rss,
-      /<link>https:\/\/blog\.enderliquid\.top\/en\/posts\/examples\/xml-and-rss\/<\/link>/,
-    );
+    assert.ok(rss.includes(`<link>${configuredSiteUrl('/en/posts/examples/xml-and-rss/')}</link>`));
     assert.match(rss, /<pubDate>Sun, 12 Jul 2026 00:00:00 GMT<\/pubDate>/);
     assert.match(rss, /<lastBuildDate>Tue, 14 Jul 2026 00:00:00 GMT<\/lastBuildDate>/);
     assert.match(rss, /<category>rss<\/category>/);
-    assert.match(
-      rss,
-      /<atom:link href="https:\/\/blog\.enderliquid\.top\/en\/rss\.xml" rel="self"/,
+    assert.ok(
+      rss.includes(
+        `<atom:link href="${configuredSiteUrl('/en/rss.xml')}" rel="self" type="application/rss+xml" />`,
+      ),
     );
     assert.doesNotMatch(rss, /只包含摘要/);
   });
@@ -178,30 +180,25 @@ describe('Sitemap与robots', () => {
     const sitemap = renderSitemap(createSitemapView(manifest));
 
     assert.match(sitemap, /xmlns:xhtml="http:\/\/www\.w3\.org\/1999\/xhtml"/);
-    assert.match(sitemap, /<loc>https:\/\/blog\.enderliquid\.top\/zh-cn\/<\/loc>/);
-    assert.match(sitemap, /<loc>https:\/\/blog\.enderliquid\.top\/en\/posts\/<\/loc>/);
-    assert.match(
-      sitemap,
-      /<loc>https:\/\/blog\.enderliquid\.top\/en\/posts\/examples\/xml-and-rss\/<\/loc>/,
+    assert.ok(sitemap.includes(`<loc>${configuredSiteUrl('/zh-cn/')}</loc>`));
+    assert.ok(sitemap.includes(`<loc>${configuredSiteUrl('/en/posts/')}</loc>`));
+    assert.ok(
+      sitemap.includes(`<loc>${configuredSiteUrl('/en/posts/examples/xml-and-rss/')}</loc>`),
     );
     assert.match(sitemap, /<lastmod>2026-07-14<\/lastmod>/);
     assert.match(sitemap, /hreflang="zh-cn"/);
     assert.match(sitemap, /hreflang="en"/);
     assert.match(sitemap, /hreflang="x-default"/);
-    assert.doesNotMatch(sitemap, /<loc>https:\/\/blog\.enderliquid\.top\/<\/loc>/);
+    assert.ok(!sitemap.includes(`<loc>${configuredSiteUrl('/')}</loc>`));
     assert.doesNotMatch(sitemap, /404\.html|priority|changefreq/);
   });
 
   it('允许全站抓取并声明清单中的绝对Sitemap URL', () => {
     assert.equal(
       renderRobotsTxt(createRobotsView(manifest)),
-      [
-        'User-agent: *',
-        'Allow: /',
-        '',
-        'Sitemap: https://blog.enderliquid.top/sitemap.xml',
-        '',
-      ].join('\n'),
+      ['User-agent: *', 'Allow: /', '', `Sitemap: ${configuredSiteUrl('/sitemap.xml')}`, ''].join(
+        '\n',
+      ),
     );
   });
 });
