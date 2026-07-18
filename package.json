@@ -6,8 +6,8 @@
     "build": "npm run site:manifest && nuxt build",
     "content:check": "node scripts/validate-content.mjs",
     "dev": "node scripts/dev.mjs",
-    "format": "prettier --write \"app/**/*.{ts,vue,css}\" \"server/**/*.ts\" \"shared/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.{ts,mjs}\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
-    "format:check": "prettier --check \"app/**/*.{ts,vue,css}\" \"server/**/*.ts\" \"shared/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.{ts,mjs}\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
+    "format": "prettier --write \"app/**/*.{ts,vue,css}\" \"public/**/*.css\" \"server/**/*.ts\" \"shared/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.{ts,mjs}\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
+    "format:check": "prettier --check \"app/**/*.{ts,vue,css}\" \"public/**/*.css\" \"server/**/*.ts\" \"shared/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.{ts,mjs}\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
     "generate": "npm run site:manifest && nuxt generate && pagefind --site .output/public",
     "preview": "nuxt preview",
     "site:manifest": "node scripts/build-site-manifest.mjs",
@@ -15,6 +15,7 @@
     "typecheck": "npm run site:manifest && nuxt typecheck"
   },
   "dependencies": {
+    "@giscus/vue": "^3.1.1",
     "@nuxt/content": "^3.15.0",
     "better-sqlite3": "^12.11.1",
     "nuxt": "^4.4.8",

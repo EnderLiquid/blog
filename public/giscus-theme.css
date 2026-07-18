@@ -1,0 +1,106 @@
+@import url('https://giscus.app/themes/preferred_color_scheme.css');
+
+/*
+ * Giscus运行在跨域iframe中，无法读取博客页面的CSS变量。
+ */
+main {
+  --color-btn-text: #252720;
+  --color-btn-bg: #dfdbce;
+  --color-btn-border: #a9aa9d;
+  --color-btn-hover-bg: #d7d2c4;
+  --color-btn-hover-border: #65685d;
+  --color-btn-active-bg: #cec9ba;
+  --color-btn-active-border: #65685d;
+  --color-btn-selected-bg: #d7d2c4;
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #9d2348;
+  --color-btn-primary-border: #9d2348;
+  --color-btn-primary-hover-bg: #861d3d;
+  --color-btn-primary-hover-border: #861d3d;
+  --color-btn-primary-selected-bg: #731934;
+  --color-btn-primary-disabled-text: #7f8177;
+  --color-btn-primary-disabled-bg: #dfdbce;
+  --color-btn-primary-disabled-border: #a9aa9d;
+  --color-fg-default: #252720;
+  --color-fg-muted: #65685d;
+  --color-fg-subtle: #7f8177;
+  --color-canvas-default: #e9e5d8;
+  --color-canvas-overlay: #f2eee2;
+  --color-canvas-inset: #dfdbce;
+  --color-canvas-subtle: #e3ded1;
+  --color-border-default: #a9aa9d;
+  --color-border-muted: #cbc6b9;
+  --color-neutral-muted: #65685d26;
+  --color-segmented-control-bg: #dfdbce;
+  --color-segmented-control-button-bg: #e9e5d8;
+  --color-segmented-control-button-selected-border: #9d2348;
+  --color-accent-fg: #9d2348;
+  --color-accent-emphasis: #9d2348;
+  --color-accent-muted: #9d234866;
+  --color-accent-subtle: #9d23481a;
+  --color-action-list-item-default-hover-bg: var(--color-accent-subtle);
+}
+
+.gsc-main,
+.gsc-main button,
+.gsc-main input,
+.gsc-main select {
+  font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Consolas, monospace !important;
+}
+
+/* 输入和用户生成内容沿用博客正文的衬线字体，界面控件继续保持等宽字体。 */
+.gsc-main textarea,
+.gsc-main .markdown {
+  font-family: Georgia, 'Noto Serif SC', serif !important;
+}
+
+/* 评论容器使用直角边框，头像、标签和按钮仍保留各自的形状。 */
+.gsc-comment-box,
+.gsc-comment > div,
+.gsc-reply-box {
+  border-radius: 0 !important;
+}
+
+/* Giscus内无法切换upvote，只保留可直接操作的emoji reaction。 */
+.gsc-upvote-button {
+  display: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  main {
+    --color-btn-text: #e2dfd2;
+    --color-btn-bg: #30312c;
+    --color-btn-border: #55574e;
+    --color-btn-hover-bg: #3a3b35;
+    --color-btn-hover-border: #aaa99d;
+    --color-btn-active-bg: #42433d;
+    --color-btn-active-border: #aaa99d;
+    --color-btn-selected-bg: #3a3b35;
+    --color-btn-primary-text: #22231f;
+    --color-btn-primary-bg: #f07194;
+    --color-btn-primary-border: #f07194;
+    --color-btn-primary-hover-bg: #f58aaa;
+    --color-btn-primary-hover-border: #f58aaa;
+    --color-btn-primary-selected-bg: #d85f80;
+    --color-btn-primary-disabled-text: #85867d;
+    --color-btn-primary-disabled-bg: #30312c;
+    --color-btn-primary-disabled-border: #55574e;
+    --color-fg-default: #e2dfd2;
+    --color-fg-muted: #aaa99d;
+    --color-fg-subtle: #85867d;
+    --color-canvas-default: #22231f;
+    --color-canvas-overlay: #292a25;
+    --color-canvas-inset: #1c1d1a;
+    --color-canvas-subtle: #292a25;
+    --color-border-default: #55574e;
+    --color-border-muted: #3e4039;
+    --color-neutral-muted: #aaa99d26;
+    --color-segmented-control-bg: #30312c;
+    --color-segmented-control-button-bg: #22231f;
+    --color-segmented-control-button-selected-border: #f07194;
+    --color-accent-fg: #f07194;
+    --color-accent-emphasis: #f07194;
+    --color-accent-muted: #f0719466;
+    --color-accent-subtle: #f071941a;
+  }
+}

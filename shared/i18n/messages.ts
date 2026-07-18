@@ -37,6 +37,10 @@ export interface SiteMessages {
     updated: string;
     tags: string;
   };
+  comments: {
+    title: string;
+    loading: string;
+  };
   notFound: {
     title: string;
     description: string;
@@ -78,6 +82,10 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       updated: '更新于',
       tags: '标签',
     },
+    comments: {
+      title: '评论',
+      loading: '正在加载评论…',
+    },
     notFound: {
       title: '页面不存在',
       description: '你访问的地址不存在或已经失效。',
@@ -115,6 +123,10 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       allPosts: 'All posts',
       updated: 'Updated',
       tags: 'Tags',
+    },
+    comments: {
+      title: 'Comments',
+      loading: 'Loading comments…',
     },
     notFound: {
       title: 'Page not found',

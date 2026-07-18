@@ -26,6 +26,10 @@ npm run preview         # 预览 Nuxt 构建结果
 
 静态产物位于 `.output/public/`。构建同时生成中英文摘要 RSS、Sitemap、robots.txt和Pagefind索引。构建期公开资源拓扑记录在 `.data/site-manifest.json`；SEO、RSS、Sitemap和robots分别生成职责独立的消费者投影，浏览器只打包 `app/generated/site-seo-index.ts`。开发服务器启动及构建来源变化时会自动刷新这些生成产物。
 
+### 本地预览Giscus主题
+
+运行 `npm run dev` 并打开任一文章页面后，Giscus会直接跨域读取开发服务器中的 `/giscus-theme.css`；修改 `public/giscus-theme.css` 后刷新页面即可看到结果，不需要推送。`nuxt.config.ts` 为该公开文件提供Giscus所需的CORS响应头。生产构建仍使用 `shared/comments/giscus.ts` 中基于 `SITE_ORIGIN` 的稳定主题地址。
+
 ## 内容
 
 文章使用 `content/posts/<articleKeyPath>/<locale>.md` 结构：
@@ -78,11 +82,12 @@ https://blog.enderliquid.top/robots.txt
 
 ## 当前边界
 
-- 已接通文章内容、全站语言前缀、静态生成、摘要 RSS、Sitemap、robots.txt，以及 `/<locale>/posts/` 中的跨语言 Pagefind 搜索。
+- 已接通文章内容、全站语言前缀、静态生成、摘要 RSS、Sitemap、robots.txt、Giscus评论，以及 `/<locale>/posts/` 中的跨语言 Pagefind 搜索。
 - URL 是页面语言的唯一来源；`shared/i18n/locales.ts` 统一定义 `LocaleCode` 及严格、兼容两套匹配逻辑。
 - `shared/site/config.ts` 只定义唯一生产源地址；静态页面SEO和RSS协议配置分别位于 `shared/site-definitions/page-seo.ts` 与 `shared/site-definitions/rss.ts`。
 - `shared/site-manifest/` 只负责资源拓扑、关系和构建校验；不保存标题、描述、日期、标签或索引策略。
 - `shared/site-projections/` 分别生成预渲染、页面SEO、RSS、Sitemap和robots视图；各消费者不再自行发现站点结构。
 - Pagefind 索引在静态生成后产生，完整搜索需使用 `npm run generate` 后的静态预览验证。
-- 尚未实现主页 Shell 和 Giscus。Giscus 需要先确定 GitHub 仓库及 Discussions 配置。
+- Giscus公开仓库配置和稳定Discussion映射集中在 `shared/comments/giscus.ts`；中英文版本按 `articleKeyPath` 共享评论。
+- 尚未实现主页 Shell；`public/giscus-theme.css` 暂时验证了Giscus的字体与明暗配色定制能力，正式视觉方案仍待设计。
 - `.npmrc` 使用 npmmirror，以规避当前环境访问 npm 官方源过慢的问题。

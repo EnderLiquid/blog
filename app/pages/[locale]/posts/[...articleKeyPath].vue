@@ -117,6 +117,9 @@ function readArticleKeyPath(value: unknown): string {
 
       <ContentRenderer class="article-content" :value="post" />
     </article>
+
+    <!-- 评论区位于Pagefind正文边界之外，避免第三方界面文案进入文章搜索索引。 -->
+    <CommentsArticleComments :article-key-path="articleKeyPath" />
   </LayoutPageShell>
 </template>
 
