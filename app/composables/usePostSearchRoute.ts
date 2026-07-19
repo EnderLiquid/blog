@@ -89,7 +89,8 @@ export function usePostSearchRoute() {
       nextQuery.sort = 'oldest';
     }
 
-    await router.replace({ query: nextQuery });
+    const canonicalPath = route.path.endsWith('/') ? route.path : `${route.path}/`;
+    await router.replace({ path: canonicalPath, query: nextQuery });
   }
 
   return {

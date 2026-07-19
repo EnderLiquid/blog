@@ -24,7 +24,27 @@ npm run generate        # 生成清单、静态站点及 Pagefind 索引
 npm run preview         # 预览 Nuxt 构建结果
 ```
 
-静态产物位于 `.output/public/`。构建同时生成中英文摘要 RSS、Sitemap、robots.txt和Pagefind索引。构建期公开资源拓扑记录在 `.data/site-manifest.json`；SEO、RSS、Sitemap和robots分别生成职责独立的消费者投影，浏览器只打包 `app/generated/site-seo-index.ts`。开发服务器启动及构建来源变化时会自动刷新这些生成产物。
+静态产物位于 `.output/public/`。构建同时生成中英文摘要 RSS、Sitemap、robots.txt和Pagefind索引。构建期公开资源拓扑记录在 `.data/site-manifest.json`；SEO、RSS、Sitemap、robots和Shell导航分别生成职责独立的消费者投影，浏览器打包 `app/generated/site-seo-index.ts` 与 `app/generated/site-shell-index.ts`。开发服务器启动及构建来源变化时会自动刷新这些生成产物。
+
+### Shell终端MVP
+
+有效的本地化页面左侧提供跨SPA导航保持挂载的Shell工作区。桌面端可展开并拖动宽度，窄屏通过按钮在Shell和普通页面之间切换。会话只保留到浏览器刷新前，不写入本地存储。
+
+MVP命令：
+
+```text
+help
+pwd
+url
+ls [path]
+cd <path>
+search [query]
+lang <zh-cn|en>
+history
+clear
+```
+
+Shell将当前语言目录投影为虚拟根，例如公开地址`/zh-cn/posts/`在Shell中显示为`/posts/`。`ls`和`cd`只消费构建期导航投影；普通页面仍然独立工作。Shell导航通过待处理意图与最终Route对账，不依赖Vue Router内部History状态。MVP不提供Shell内的`back`和`forward`，浏览器工具栏的前进和后退仍会反映到Shell历史。
 
 ### 本地预览Giscus主题
 
@@ -86,8 +106,9 @@ https://blog.enderliquid.top/robots.txt
 - URL 是页面语言的唯一来源；`shared/i18n/locales.ts` 统一定义 `LocaleCode` 及严格、兼容两套匹配逻辑。
 - `shared/site/config.ts` 只定义唯一生产源地址；静态页面SEO和RSS协议配置分别位于 `shared/site-definitions/page-seo.ts` 与 `shared/site-definitions/rss.ts`。
 - `shared/site-manifest/` 只负责资源拓扑、关系和构建校验；不保存标题、描述、日期、标签或索引策略。
-- `shared/site-projections/` 分别生成预渲染、页面SEO、RSS、Sitemap和robots视图；各消费者不再自行发现站点结构。
+- `shared/site-projections/` 分别生成预渲染、页面SEO、RSS、Sitemap、robots和Shell导航视图；各消费者不再自行发现站点结构。
 - Pagefind 索引在静态生成后产生，完整搜索需使用 `npm run generate` 后的静态预览验证。
 - Giscus公开仓库配置和稳定Discussion映射集中在 `shared/comments/giscus.ts`；中英文版本按 `articleKeyPath` 共享评论。
-- 尚未实现主页 Shell；`public/giscus-theme.css` 暂时验证了Giscus的字体与明暗配色定制能力，正式视觉方案仍待设计。
+- Shell终端MVP已经接通路径浏览、页面导航、文章搜索、语言切换、Route反映、桌面分栏和移动端切换；完整首页交互和正式视觉方案仍待设计。
+- `public/giscus-theme.css` 暂时验证了Giscus的字体与明暗配色定制能力，正式视觉方案仍待设计。
 - `.npmrc` 使用 npmmirror，以规避当前环境访问 npm 官方源过慢的问题。

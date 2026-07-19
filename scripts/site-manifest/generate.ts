@@ -12,6 +12,7 @@ import {
 import { createPageSeoIndexView } from '../../shared/site-projections/seo.ts';
 import { createRobotsView } from '../../shared/site-projections/robots.ts';
 import { createRssProjectionView } from '../../shared/site-projections/rss.ts';
+import { createShellNavigationProjection } from '../../shared/site-projections/shell.ts';
 import { createSitemapView } from '../../shared/site-projections/sitemap.ts';
 import { readPostSources } from './content-source.ts';
 
@@ -26,6 +27,12 @@ export const SITE_SEO_INDEX_PATH = path.join(
   'generated',
   'site-seo-index.ts',
 );
+export const SITE_SHELL_INDEX_PATH = path.join(
+  process.cwd(),
+  'app',
+  'generated',
+  'site-shell-index.ts',
+);
 
 let temporaryFileSequence = 0;
 
@@ -34,6 +41,7 @@ export interface GenerateSiteManifestResult {
   articleCount: number;
   manifestPath: string;
   seoIndexPath: string;
+  shellIndexPath: string;
   projectionsDirectory: string;
 }
 
@@ -47,6 +55,7 @@ export async function generateSiteManifest(): Promise<GenerateSiteManifestResult
   const rssProjection = parseRssProjectionView(createRssProjectionView(context));
   const sitemapProjection = parseSitemapProjectionView(createSitemapView(context));
   const robotsProjection = parseRobotsView(createRobotsView(manifest));
+  const shellProjection = createShellNavigationProjection(context);
   const manifestSource = toJsonSource(manifest);
   const rssSource = toJsonSource(rssProjection);
   const sitemapSource = toJsonSource(sitemapProjection);
@@ -55,6 +64,12 @@ export async function generateSiteManifest(): Promise<GenerateSiteManifestResult
     "import type { PageSeoIndexView } from '../../shared/site-projections/model.ts';",
     '',
     `export const SITE_SEO_INDEX: PageSeoIndexView = ${JSON.stringify(seoIndex, null, 2)};`,
+    '',
+  ].join('\n');
+  const shellIndexSource = [
+    "import type { ShellNavigationProjection } from '../../shared/site-projections/shell.ts';",
+    '',
+    `export const SITE_SHELL_INDEX: ShellNavigationProjection = ${JSON.stringify(shellProjection, null, 2)};`,
     '',
   ].join('\n');
 
@@ -66,6 +81,7 @@ export async function generateSiteManifest(): Promise<GenerateSiteManifestResult
   await atomicWriteFile(RSS_PROJECTION_PATH, rssSource);
   await atomicWriteFile(SITEMAP_PROJECTION_PATH, sitemapSource);
   await atomicWriteFile(ROBOTS_PROJECTION_PATH, robotsSource);
+  await atomicWriteFile(SITE_SHELL_INDEX_PATH, shellIndexSource);
   // 浏览器SEO投影最后写入；它触发Vite HMR时，其余同版本构建数据已经完整落盘。
   await atomicWriteFile(SITE_SEO_INDEX_PATH, seoIndexSource);
 
@@ -74,6 +90,7 @@ export async function generateSiteManifest(): Promise<GenerateSiteManifestResult
     articleCount: manifest.resources.filter((resource) => resource.kind === 'article-page').length,
     manifestPath: SITE_MANIFEST_PATH,
     seoIndexPath: SITE_SEO_INDEX_PATH,
+    shellIndexPath: SITE_SHELL_INDEX_PATH,
     projectionsDirectory: SITE_PROJECTIONS_DIRECTORY,
   };
 }

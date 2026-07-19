@@ -7,7 +7,15 @@ import { SITE_SEO_INDEX } from '~/generated/site-seo-index';
  */
 export function useSiteSeo() {
   const route = useRoute();
-  const descriptor = computed(() => SITE_SEO_INDEX[route.path]);
+  const descriptor = computed(() => {
+    const exactDescriptor = SITE_SEO_INDEX[route.path];
+
+    if (exactDescriptor || route.path.endsWith('/')) {
+      return exactDescriptor;
+    }
+
+    return SITE_SEO_INDEX[`${route.path}/`];
+  });
 
   useSeoMeta({
     title: () => descriptor.value?.title,

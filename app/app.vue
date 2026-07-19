@@ -13,5 +13,7 @@ useHead(() => ({
 
 <template>
   <NuxtRouteAnnouncer />
-  <NuxtPage />
+  <ShellWorkspace>
+    <NuxtPage />
+  </ShellWorkspace>
 </template>
