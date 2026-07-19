@@ -40,7 +40,6 @@ ls [path]
 cd <path>
 search [query]
 lang <zh-cn|en>
-history
 clear
 ```
 

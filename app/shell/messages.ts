@@ -28,7 +28,6 @@ export const SHELL_MESSAGES: Record<LocaleCode, ShellMessages> = {
       'cd <path>            导航到页面',
       'search [query]       搜索或浏览全部文章',
       'lang <zh-cn|en>      切换页面语言',
-      'history              显示本次会话命令',
       'clear                清空终端输出',
     ].join('\n'),
     unknownCommand: (command) => `未知命令：“${command}”。输入 help 查看可用命令。`,
@@ -50,7 +49,6 @@ export const SHELL_MESSAGES: Record<LocaleCode, ShellMessages> = {
       'cd <path>            Navigate to a page',
       'search [query]       Search or browse all posts',
       'lang <zh-cn|en>      Switch the page language',
-      'history              Show session commands',
       'clear                Clear terminal output',
     ].join('\n'),
     unknownCommand: (command) =>

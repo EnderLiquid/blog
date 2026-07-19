@@ -76,11 +76,6 @@ export function useShellCommands(
           requireArgumentCount(parsedCommand.args, 1, 'lang <zh-cn|en>');
           navigateToLocale(historyEntry.id, parsedCommand.args[0]!);
           return;
-        case 'history':
-          requireArgumentCount(parsedCommand.args, 0, 'history');
-          session.updateCommandStatus(historyEntry.id, 'completed');
-          session.appendOutput(formatHistory());
-          return;
         case 'clear':
           requireArgumentCount(parsedCommand.args, 0, 'clear');
           session.clearHistory();
@@ -208,16 +203,6 @@ export function useShellCommands(
     }
 
     return resource.title ? `${resource.virtualPath}  ${resource.title}` : resource.virtualPath;
-  }
-
-  function formatHistory(): string {
-    return session.state.history
-      .filter((entry) => entry.type === 'command')
-      .map(
-        (entry) =>
-          `${String(entry.id).padStart(4, '0')}  ${entry.status.padEnd(9)}  ${entry.command}`,
-      )
-      .join('\n');
   }
 
   function requireCurrentLocation() {
