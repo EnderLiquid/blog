@@ -45,9 +45,9 @@ clear
 
 Shell将当前语言目录投影为虚拟根，例如公开地址`/zh-cn/posts/`在Shell中显示为`/posts/`。`ls`和`cd`只消费构建期导航投影；普通页面仍然独立工作。Shell导航通过待处理意图与最终Route对账，不依赖Vue Router内部History状态。MVP不提供Shell内的`back`和`forward`，浏览器工具栏的前进和后退仍会反映到Shell历史。
 
-### 本地预览Giscus主题
+### Giscus主题调试
 
-运行 `npm run dev` 并打开任一文章页面后，Giscus会直接跨域读取开发服务器中的 `/giscus-theme.css`；修改 `public/giscus-theme.css` 后刷新页面即可看到结果，不需要推送。`nuxt.config.ts` 为该公开文件提供Giscus所需的CORS响应头。生产构建仍使用 `shared/comments/giscus.ts` 中基于 `SITE_ORIGIN` 的稳定主题地址。
+开发和生产环境均使用 `shared/comments/giscus.ts` 中基于 `SITE_ORIGIN` 的已部署主题地址。现代浏览器会阻止 `giscus.app` 跨域iframe读取本机loopback资源，因此 `npm run dev` 不会直接加载本地 `/giscus-theme.css`；修改 `public/giscus-theme.css` 后需要部署，或通过独立的公网HTTPS预览流程验证。
 
 ## 内容
 

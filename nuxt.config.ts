@@ -7,14 +7,6 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxt/content'],
   css: ['~/assets/css/main.css'],
-  routeRules: {
-    '/giscus-theme.css': {
-      headers: {
-        // giscus.app通过跨域iframe加载开发服务器中的公开主题文件。
-        'access-control-allow-origin': '*',
-      },
-    },
-  },
   nitro: {
     prerender: {
       crawlLinks: true,

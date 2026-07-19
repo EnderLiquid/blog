@@ -11,17 +11,8 @@ const props = defineProps<{
 }>();
 
 const { localeCode, messages } = useSiteLocale();
-const requestUrl = useRequestURL();
 const discussionTerm = computed(() => createArticleDiscussionTerm(props.articleKeyPath));
 const giscusLanguage = computed(() => toGiscusLanguage(localeCode.value));
-
-/**
- * 开发环境直接从Nuxt本地服务器读取主题，以便修改CSS后刷新即可预览。
- * 生产构建继续使用稳定的公开地址，供giscus.app跨域加载。
- */
-const giscusTheme = computed(() =>
-  import.meta.dev ? new URL('/giscus-theme.css', requestUrl.origin).href : GISCUS_CONFIG.theme,
-);
 
 // 切换语言时重新创建组件，确保iframe中的界面语言与当前URL保持一致。
 const widgetKey = computed(() => `${discussionTerm.value}:${giscusLanguage.value}`);
@@ -47,7 +38,7 @@ const widgetKey = computed(() => `${discussionTerm.value}:${giscusLanguage.value
         :reactions-enabled="GISCUS_CONFIG.reactionsEnabled"
         :emit-metadata="GISCUS_CONFIG.emitMetadata"
         :input-position="GISCUS_CONFIG.inputPosition"
-        :theme="giscusTheme"
+        :theme="GISCUS_CONFIG.theme"
         :lang="giscusLanguage"
         :loading="GISCUS_CONFIG.loading"
       />
