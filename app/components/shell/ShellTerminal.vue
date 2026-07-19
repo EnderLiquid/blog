@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { ShellCommandHistoryEntry, ShellTextHistoryEntry } from '~/shell/types';
 import { useShellRuntime } from '~/shell/runtime-context';
 
 const emit = defineEmits<{
@@ -9,6 +10,7 @@ const { session, coordinator, commands } = useShellRuntime();
 const inputElement = useTemplateRef<HTMLInputElement>('inputElement');
 const historyElement = useTemplateRef<HTMLElement>('historyElement');
 const promptPath = computed(() => coordinator.currentLocation.value?.virtualPath ?? '/');
+const historyGroups = computed(createHistoryGroups);
 let draftBeforeHistory = '';
 
 watch(
@@ -94,31 +96,72 @@ function moveHistoryCursor(direction: -1 | 1): void {
   session.state.inputDraft = history[session.state.commandCursor] ?? '';
 }
 
+function createHistoryGroups(): ShellHistoryGroup[] {
+  const groups: ShellHistoryGroup[] = [];
+
+  for (const entry of session.state.history) {
+    if (entry.type === 'command') {
+      groups.push({ command: entry, textEntries: [] });
+      continue;
+    }
+
+    groups.at(-1)?.textEntries.push(entry);
+  }
+
+  return groups;
+}
+
+function focusFromPointer(): void {
+  const selection = window.getSelection();
+
+  if (selection && !selection.isCollapsed) {
+    return;
+  }
+
+  focus();
+}
+
 function focus(): void {
   inputElement.value?.focus();
+}
+
+interface ShellHistoryGroup {
+  command: ShellCommandHistoryEntry;
+  textEntries: ShellTextHistoryEntry[];
 }
 
 defineExpose({ focus });
 </script>
 
 <template>
-  <div class="terminal" @click="focus">
+  <div class="terminal" @click="focusFromPointer">
     <div ref="historyElement" class="terminal__history" aria-live="polite" aria-atomic="false">
-      <template v-for="entry in session.state.history" :key="entry.id">
+      <div v-for="group in historyGroups" :key="group.command.id" class="terminal__history-group">
         <div
-          v-if="entry.type === 'command'"
           class="terminal__command"
-          :class="[`is-${entry.status}`, { 'is-route': entry.source === 'route' }]"
+          :class="[`is-${group.command.status}`, { 'is-route': group.command.source === 'route' }]"
         >
-          <span class="terminal__prompt">visitor@blog:{{ entry.promptPath }}$</span>
-          <span class="terminal__command-text">{{ entry.command }}</span>
-          <span v-if="entry.status !== 'completed'" class="terminal__status">
-            {{ entry.status === 'pending' ? '…' : entry.status === 'cancelled' ? '×' : '!' }}
+          <span class="terminal__prompt">visitor@blog:{{ group.command.promptPath }}$</span>
+          <span class="terminal__command-body">
+            <span class="terminal__command-text">{{ group.command.command }}</span>
+            <span v-if="group.command.status !== 'completed'" class="terminal__status">
+              {{
+                group.command.status === 'pending'
+                  ? '…'
+                  : group.command.status === 'cancelled'
+                    ? '×'
+                    : '!'
+              }}
+            </span>
           </span>
         </div>
-        <pre v-else-if="entry.type === 'output'" class="terminal__output">{{ entry.content }}</pre>
-        <pre v-else class="terminal__error">{{ entry.content }}</pre>
-      </template>
+        <pre
+          v-for="entry in group.textEntries"
+          :key="entry.id"
+          :class="entry.type === 'output' ? 'terminal__output' : 'terminal__error'"
+          >{{ entry.content }}</pre>
+      </div>
+      <div v-if="historyGroups.length > 0" class="terminal__history-end" aria-hidden="true" />
     </div>
 
     <label class="terminal__input-row">
@@ -151,22 +194,43 @@ defineExpose({ focus });
   min-height: 0;
   flex: 1;
   overflow: auto;
-  padding: 1rem 1rem 2rem;
+  padding: 0 0 2rem;
   scrollbar-color: var(--line) transparent;
+}
+
+.terminal__history-group {
+  background: transparent;
+}
+
+.terminal__history-group + .terminal__history-group {
+  border-top: 1px solid var(--signal);
 }
 
 .terminal__command,
 .terminal__input-row {
-  display: grid;
-  grid-template-columns: max-content minmax(2rem, 1fr) auto;
+  display: flex;
   align-items: baseline;
   gap: 0.6rem;
 }
 
-.terminal__command + .terminal__command,
-.terminal__output + .terminal__command,
-.terminal__error + .terminal__command {
-  margin-top: 0.45rem;
+.terminal__command {
+  flex-wrap: wrap;
+  padding: 0.6rem 1rem;
+  background: transparent;
+}
+
+.terminal__command-body {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 max-content;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+.terminal__command-text {
+  min-width: 0;
+  flex: 1;
 }
 
 .terminal__prompt {
@@ -190,22 +254,28 @@ defineExpose({ focus });
   text-decoration-thickness: 0.06em;
 }
 
-.terminal__command.is-failed,
 .terminal__error {
   color: var(--signal);
 }
 
 .terminal__status {
+  flex: none;
   color: var(--signal);
   font-weight: 700;
 }
 
 .terminal__output,
 .terminal__error {
-  margin: 0.55rem 0 0;
+  margin: 0;
+  padding: 0.55rem 1rem;
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
   font: inherit;
   line-height: 1.55;
   white-space: pre-wrap;
+}
+
+.terminal__history-end {
+  border-top: 1px solid var(--signal);
 }
 
 .terminal__input-row {
@@ -234,15 +304,18 @@ defineExpose({ focus });
 }
 
 @container (max-width: 28rem) {
-  .terminal__command,
-  .terminal__input-row {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
   .terminal__prompt {
-    grid-column: 1 / -1;
     overflow-wrap: anywhere;
     white-space: normal;
+  }
+
+  .terminal__input-row {
+    flex-wrap: wrap;
+  }
+
+  .terminal__input-row .terminal__input {
+    min-width: min(8rem, 100%);
+    flex: 1 1 8rem;
   }
 }
 

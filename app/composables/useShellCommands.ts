@@ -207,7 +207,7 @@ export function useShellCommands(
         .join('\n');
     }
 
-    return `${resource.virtualPath}\n${resource.title ?? resource.publicPath}`;
+    return resource.title ? `${resource.virtualPath}  ${resource.title}` : resource.virtualPath;
   }
 
   function formatHistory(): string {

@@ -61,7 +61,7 @@ defineExpose({ focusTerminal });
 .shell-rail-button span {
   margin-top: 1.15rem;
   font-weight: 700;
-  writing-mode: vertical-rl;
+  white-space: nowrap;
 }
 
 .shell-panel {

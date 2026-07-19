@@ -5,10 +5,12 @@ import { SHELL_RUNTIME_KEY } from '~/shell/runtime-context';
 const session = useShellSession();
 const coordinator = useShellRouteCoordinator(session);
 const commands = useShellCommands(session, coordinator);
+const workspaceElement = useTemplateRef<HTMLElement>('workspace');
 const panel = useTemplateRef<{ focusTerminal: () => void }>('panel');
 const pageOpenButton = useTemplateRef<HTMLButtonElement>('pageOpenButton');
 const isMobile = ref(false);
 let mobileMediaQuery: MediaQueryList | undefined;
+let workspaceResizeObserver: ResizeObserver | undefined;
 
 provide(SHELL_RUNTIME_KEY, {
   session,
@@ -27,14 +29,45 @@ onMounted(() => {
   mobileMediaQuery = window.matchMedia('(max-width: 36rem)');
   updateMobileMode(mobileMediaQuery);
   mobileMediaQuery.addEventListener('change', updateMobileMode);
+
+  workspaceResizeObserver = new ResizeObserver((entries) => {
+    const availableWidth = entries.at(-1)?.contentRect.width;
+
+    if (availableWidth !== undefined) {
+      clampPanelWidth(availableWidth);
+    }
+  });
+
+  if (workspaceElement.value) {
+    workspaceResizeObserver.observe(workspaceElement.value);
+  }
 });
 
 onUnmounted(() => {
   mobileMediaQuery?.removeEventListener('change', updateMobileMode);
+  workspaceResizeObserver?.disconnect();
+});
+
+watch(workspaceElement, (element, previousElement) => {
+  if (!workspaceResizeObserver) {
+    return;
+  }
+
+  if (previousElement) {
+    workspaceResizeObserver.unobserve(previousElement);
+  }
+
+  if (element) {
+    workspaceResizeObserver.observe(element);
+  }
 });
 
 function updateMobileMode(event: MediaQueryList | MediaQueryListEvent): void {
   isMobile.value = event.matches;
+
+  if (!event.matches) {
+    void nextTick(() => clampPanelWidth(workspaceElement.value?.clientWidth));
+  }
 }
 
 function openShell(): void {
@@ -57,18 +90,33 @@ function closeShell(): void {
 }
 
 function resizeShell(width: number): void {
+  const availableWidth = workspaceElement.value?.clientWidth ?? window.innerWidth;
+  session.state.panelWidth = constrainedPanelWidth(width, availableWidth);
+}
+
+function clampPanelWidth(availableWidth = workspaceElement.value?.clientWidth): void {
+  if (availableWidth === undefined || mobileMediaQuery?.matches) {
+    return;
+  }
+
+  session.state.panelWidth = constrainedPanelWidth(session.state.panelWidth, availableWidth);
+}
+
+function constrainedPanelWidth(width: number, availableWidth: number): number {
   const minimumWidth = 256;
   const pageMinimumWidth = 320;
+  const separatorWidth = 6;
   const maximumWidth = Math.max(
     minimumWidth,
-    Math.min(window.innerWidth * 0.45, window.innerWidth - pageMinimumWidth),
+    Math.min(availableWidth * 0.45, availableWidth - pageMinimumWidth - separatorWidth),
   );
-  session.state.panelWidth = Math.min(maximumWidth, Math.max(minimumWidth, width));
+
+  return Math.min(maximumWidth, Math.max(minimumWidth, width));
 }
 </script>
 
 <template>
-  <div v-if="shellEnabled" class="shell-workspace" :style="workspaceStyle">
+  <div v-if="shellEnabled" ref="workspace" class="shell-workspace" :style="workspaceStyle">
     <aside
       class="shell-workspace__panel"
       :class="{ 'is-hidden-mobile': isMobile && session.state.mobilePane !== 'shell' }"
