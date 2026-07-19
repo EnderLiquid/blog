@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { formatPostDate, toDateTime } from '~/utils/date';
 import { postContentPath } from '~~/shared/content/post-paths';
-import {
-  articlePath,
-  normalizeArticleKeyPath,
-  postsPath,
-} from '~~/shared/routing/localized-routes';
-import { LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
+import { normalizeArticleKeyPath } from '~~/shared/routing/localized-routes';
 
 const route = useRoute();
 const { localeCode, messages } = useSiteLocale();
@@ -24,29 +19,6 @@ if (!post.value || post.value.draft) {
   });
 }
 
-const { data: translations } = await useAsyncData(`translations:${articleKeyPath}`, async () => {
-  const candidates = await Promise.all(
-    LOCALE_DEFINITIONS.map(async (definition) => {
-      const translatedPost = await queryCollection('posts')
-        .path(postContentPath(articleKeyPath, definition.code))
-        .first();
-
-      if (!translatedPost || translatedPost.draft) {
-        return undefined;
-      }
-
-      return {
-        localeCode: definition.code,
-        label: definition.label,
-        path: articlePath(definition.code, articleKeyPath),
-      };
-    }),
-  );
-
-  return candidates.filter((candidate) => candidate !== undefined);
-});
-
-const localeLinks = computed(() => translations.value ?? []);
 const postTags = computed(() => post.value?.tags ?? []);
 
 function readArticleKeyPath(value: unknown): string {
@@ -65,19 +37,6 @@ function readArticleKeyPath(value: unknown): string {
 
 <template>
   <LayoutPageShell v-if="post" narrow>
-    <div class="article-navigation">
-      <NuxtLink class="back-link" :to="postsPath(localeCode)">
-        ← {{ messages.article.allPosts }}
-      </NuxtLink>
-
-      <NavigationLocaleLinks
-        v-if="localeLinks.length > 1"
-        :links="localeLinks"
-        :current-locale-code="localeCode"
-        label="Language / 语言"
-      />
-    </div>
-
     <article data-pagefind-body>
       <header class="article-header">
         <h1
@@ -124,16 +83,6 @@ function readArticleKeyPath(value: unknown): string {
 </template>
 
 <style scoped>
-.article-navigation {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.back-link {
-  color: var(--signal);
-}
-
 .article-header {
   margin: 4rem 0;
 }
@@ -180,11 +129,5 @@ function readArticleKeyPath(value: unknown): string {
   padding: 1.25rem;
   color: #e5e1d5;
   background: #292b26;
-}
-
-@media (max-width: 36rem) {
-  .article-navigation {
-    flex-direction: column;
-  }
 }
 </style>

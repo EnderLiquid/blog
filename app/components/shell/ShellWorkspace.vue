@@ -7,8 +7,9 @@ const coordinator = useShellRouteCoordinator(session);
 const commands = useShellCommands(session, coordinator);
 const workspaceElement = useTemplateRef<HTMLElement>('workspace');
 const panel = useTemplateRef<{ focusTerminal: () => void }>('panel');
-const pageOpenButton = useTemplateRef<HTMLButtonElement>('pageOpenButton');
+const navigation = useTemplateRef<{ focusShellToggle: () => void }>('navigation');
 const isMobile = ref(false);
+const mobileScrollbarCompensation = ref(0);
 let mobileMediaQuery: MediaQueryList | undefined;
 let workspaceResizeObserver: ResizeObserver | undefined;
 
@@ -20,9 +21,16 @@ provide(SHELL_RUNTIME_KEY, {
 
 const shellEnabled = computed(() => Boolean(coordinator.currentLocation.value));
 const collapsed = computed(() => session.state.panelMode === 'collapsed');
+const terminalExpanded = computed(() =>
+  isMobile.value ? session.state.mobilePane === 'shell' : !collapsed.value,
+);
+const panelHidden = computed(() =>
+  isMobile.value ? session.state.mobilePane !== 'shell' : collapsed.value,
+);
 const workspaceStyle = computed(() => ({
   '--shell-column': collapsed.value ? '2.75rem' : `${session.state.panelWidth}px`,
   '--shell-separator': collapsed.value ? '0px' : '0.35rem',
+  '--mobile-scrollbar-compensation': `${mobileScrollbarCompensation.value}px`,
 }));
 
 onMounted(() => {
@@ -63,6 +71,17 @@ watch(workspaceElement, (element, previousElement) => {
 });
 
 function updateMobileMode(event: MediaQueryList | MediaQueryListEvent): void {
+  const enteringMobile = event.matches && !isMobile.value;
+  const leavingMobile = !event.matches && isMobile.value;
+
+  if (enteringMobile) {
+    mobileScrollbarCompensation.value = collapsed.value ? 0 : measureRootScrollbarWidth();
+    session.state.mobilePane = collapsed.value ? 'page' : 'shell';
+  } else if (leavingMobile) {
+    session.state.panelMode = session.state.mobilePane === 'shell' ? 'open' : 'collapsed';
+    mobileScrollbarCompensation.value = 0;
+  }
+
   isMobile.value = event.matches;
 
   if (!event.matches) {
@@ -70,8 +89,19 @@ function updateMobileMode(event: MediaQueryList | MediaQueryListEvent): void {
   }
 }
 
+function toggleShell(): void {
+  if (terminalExpanded.value) {
+    closeShell();
+  } else {
+    openShell();
+  }
+}
+
 function openShell(): void {
   if (isMobile.value) {
+    // 页面使用根滚动条，终端使用内部滚动条。切换前保留根滚动条占宽，
+    // 避免导航右侧按钮随滚动条消失而横向跳动。
+    mobileScrollbarCompensation.value = measureRootScrollbarWidth();
     session.state.mobilePane = 'shell';
   } else {
     session.state.panelMode = 'open';
@@ -82,11 +112,13 @@ function openShell(): void {
 
 function closeShell(): void {
   if (isMobile.value) {
+    mobileScrollbarCompensation.value = 0;
     session.state.mobilePane = 'page';
-    void nextTick(() => pageOpenButton.value?.focus());
   } else {
     session.state.panelMode = 'collapsed';
   }
+
+  void nextTick(() => navigation.value?.focusShellToggle());
 }
 
 function resizeShell(width: number): void {
@@ -100,6 +132,10 @@ function clampPanelWidth(availableWidth = workspaceElement.value?.clientWidth): 
   }
 
   session.state.panelWidth = constrainedPanelWidth(session.state.panelWidth, availableWidth);
+}
+
+function measureRootScrollbarWidth(): number {
+  return Math.max(0, window.innerWidth - document.documentElement.clientWidth);
 }
 
 function constrainedPanelWidth(width: number, availableWidth: number): number {
@@ -116,20 +152,20 @@ function constrainedPanelWidth(width: number, availableWidth: number): number {
 </script>
 
 <template>
-  <div v-if="shellEnabled" ref="workspace" class="shell-workspace" :style="workspaceStyle">
+  <div
+    v-if="shellEnabled"
+    ref="workspace"
+    class="shell-workspace"
+    :class="{ 'is-mobile-shell-active': isMobile && terminalExpanded }"
+    :style="workspaceStyle"
+  >
     <aside
       class="shell-workspace__panel"
-      :class="{ 'is-hidden-mobile': isMobile && session.state.mobilePane !== 'shell' }"
-      :inert="isMobile && session.state.mobilePane !== 'shell'"
-      :aria-hidden="isMobile && session.state.mobilePane !== 'shell'"
+      :class="{ 'is-panel-hidden': panelHidden }"
+      :inert="panelHidden"
+      :aria-hidden="panelHidden"
     >
-      <ShellPanel
-        ref="panel"
-        :collapsed="collapsed"
-        :mobile="isMobile"
-        @open="openShell"
-        @close="closeShell"
-      />
+      <ShellPanel ref="panel" @close="closeShell" />
     </aside>
 
     <ShellResizeHandle
@@ -137,6 +173,14 @@ function constrainedPanelWidth(width: number, availableWidth: number): number {
       class="shell-workspace__separator"
       :width="session.state.panelWidth"
       @resize="resizeShell"
+    />
+
+    <NavigationSiteNavigation
+      ref="navigation"
+      class="shell-workspace__navigation"
+      :mobile="isMobile"
+      :terminal-expanded="terminalExpanded"
+      @toggle-terminal="toggleShell"
     />
 
     <div
@@ -147,17 +191,6 @@ function constrainedPanelWidth(width: number, availableWidth: number): number {
     >
       <slot />
     </div>
-
-    <button
-      v-if="isMobile && session.state.mobilePane === 'page'"
-      ref="pageOpenButton"
-      class="shell-workspace__mobile-open"
-      type="button"
-      @click="openShell"
-    >
-      <span aria-hidden="true">&gt;_</span>
-      <span class="shell-workspace__mobile-label">{{ commands.messages.value.open }}</span>
-    </button>
   </div>
 
   <slot v-else />
@@ -168,6 +201,7 @@ function constrainedPanelWidth(width: number, availableWidth: number): number {
   display: grid;
   min-height: 100dvh;
   grid-template-columns: var(--shell-column) var(--shell-separator) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   align-items: start;
 }
 
@@ -177,8 +211,15 @@ function constrainedPanelWidth(width: number, availableWidth: number): number {
   top: 0;
   min-width: 0;
   height: 100dvh;
+  grid-column: 1;
+  grid-row: 1 / 3;
+  overflow: hidden;
   border-right: 1px solid var(--signal);
   background: var(--paper);
+}
+
+.shell-workspace__panel.is-panel-hidden > * {
+  visibility: hidden;
 }
 
 .shell-workspace__separator {
@@ -186,57 +227,65 @@ function constrainedPanelWidth(width: number, availableWidth: number): number {
   z-index: 21;
   top: 0;
   height: 100dvh;
+  grid-column: 2;
+  grid-row: 1 / 3;
+}
+
+.shell-workspace__navigation {
+  position: sticky;
+  z-index: 30;
+  top: 0;
+  grid-column: 3;
+  grid-row: 1;
 }
 
 .shell-workspace__page {
   min-width: 0;
-  min-height: 100dvh;
+  min-height: calc(100dvh - 3.25rem);
   grid-column: 3;
-}
-
-.shell-workspace__mobile-open {
-  display: none;
+  grid-row: 2;
 }
 
 @media (max-width: 36rem) {
   .shell-workspace {
-    display: block;
+    display: grid;
+    min-height: 100dvh;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .shell-workspace.is-mobile-shell-active {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .shell-workspace__navigation {
+    grid-column: 1;
+    grid-row: 1;
   }
 
   .shell-workspace__panel,
   .shell-workspace__page {
     position: static;
     width: 100%;
-    min-height: 100dvh;
+    min-height: 0;
+    grid-column: 1;
+    grid-row: 2;
     border: 0;
   }
 
   .shell-workspace__panel {
-    height: 100dvh;
+    height: 100%;
   }
 
-  .is-hidden-mobile {
+  .shell-workspace__page {
+    min-height: calc(100dvh - 3.25rem);
+  }
+
+  .is-hidden-mobile,
+  .shell-workspace__panel.is-panel-hidden {
     display: none;
-  }
-
-  .shell-workspace__mobile-open {
-    position: fixed;
-    z-index: 30;
-    right: 0.8rem;
-    bottom: max(0.8rem, env(safe-area-inset-bottom));
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 0.75rem;
-    color: var(--paper);
-    border: 1px solid var(--signal);
-    border-radius: 0;
-    background: var(--signal);
-    cursor: pointer;
-  }
-
-  .shell-workspace__mobile-label {
-    font-size: 0.75rem;
   }
 }
 
@@ -252,11 +301,11 @@ function constrainedPanelWidth(width: number, availableWidth: number): number {
   }
 
   .shell-workspace__panel,
-  .shell-workspace__separator,
-  .shell-workspace__mobile-open {
+  .shell-workspace__separator {
     display: none !important;
   }
 
+  .shell-workspace__navigation,
   .shell-workspace__page {
     display: block !important;
   }

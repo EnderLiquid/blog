@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { formatPostDate, toDateTime } from '~/utils/date';
 import { groupPostVariants, selectPostVariant } from '~/utils/posts';
-import { LOCALE_DEFINITIONS } from '~~/shared/i18n/locales';
-import { homePath, postsPath } from '~~/shared/routing/localized-routes';
+import { postsPath } from '~~/shared/routing/localized-routes';
 
 const { localeCode, messages } = useSiteLocale();
 const { data: posts } = await useAsyncData('home-posts', () =>
@@ -17,24 +16,10 @@ const recentPosts = computed(() =>
     )
     .slice(0, 5),
 );
-
-const localeLinks = computed(() =>
-  LOCALE_DEFINITIONS.map((definition) => ({
-    localeCode: definition.code,
-    label: definition.label,
-    path: homePath(definition.code),
-  })),
-);
 </script>
 
 <template>
   <LayoutPageShell>
-    <NavigationLocaleLinks
-      :links="localeLinks"
-      :current-locale-code="localeCode"
-      label="Language / 语言"
-    />
-
     <header class="site-header">
       <p class="prompt">visitor@blog:~$</p>
       <h1>{{ messages.home.title }}</h1>

@@ -4,7 +4,6 @@ interface ShellMessages {
   open: string;
   close: string;
   terminal: string;
-  returnToPage: string;
   inputLabel: string;
   help: string;
   unknownCommand(command: string): string;
@@ -18,7 +17,6 @@ export const SHELL_MESSAGES: Record<LocaleCode, ShellMessages> = {
     open: '打开终端',
     close: '收起终端',
     terminal: '站点终端',
-    returnToPage: '返回页面',
     inputLabel: '输入终端命令',
     help: [
       'help                 显示命令帮助',
@@ -39,7 +37,6 @@ export const SHELL_MESSAGES: Record<LocaleCode, ShellMessages> = {
     open: 'Open terminal',
     close: 'Collapse terminal',
     terminal: 'Site terminal',
-    returnToPage: 'Return to page',
     inputLabel: 'Enter a terminal command',
     help: [
       'help                 Show command help',

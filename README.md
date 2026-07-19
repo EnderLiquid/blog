@@ -28,7 +28,7 @@ npm run preview         # 预览 Nuxt 构建结果
 
 ### Shell终端MVP
 
-有效的本地化页面左侧提供跨SPA导航保持挂载的Shell工作区。桌面端可展开并拖动宽度，窄屏通过按钮在Shell和普通页面之间切换。会话只保留到浏览器刷新前，不写入本地存储。
+有效的本地化页面提供跨SPA导航保持挂载的Shell工作区和粘性顶部导航。桌面端终端可展开并拖动宽度，页面面板被压窄后主导航自动收进汉堡菜单；移动端顶部导航始终可见，通过同一个`>_`按钮在Shell和普通页面之间切换。会话只保留到浏览器刷新前，不写入本地存储。
 
 MVP命令：
 
@@ -108,6 +108,6 @@ https://blog.enderliquid.top/robots.txt
 - `shared/site-projections/` 分别生成预渲染、页面SEO、RSS、Sitemap、robots和Shell导航视图；各消费者不再自行发现站点结构。
 - Pagefind 索引在静态生成后产生，完整搜索需使用 `npm run generate` 后的静态预览验证。
 - Giscus公开仓库配置和稳定Discussion映射集中在 `shared/comments/giscus.ts`；中英文版本按 `articleKeyPath` 共享评论。
-- Shell终端MVP已经接通路径浏览、页面导航、文章搜索、语言切换、Route反映、桌面分栏和移动端切换；完整首页交互和正式视觉方案仍待设计。
+- Shell终端MVP已经接通路径浏览、页面导航、文章搜索、语言切换和Route反映；顶部导航统一提供主页面、语言菜单与终端开关，并根据页面容器宽度切换为汉堡菜单。
 - `public/giscus-theme.css` 暂时验证了Giscus的字体与明暗配色定制能力，正式视觉方案仍待设计。
 - `.npmrc` 使用 npmmirror，以规避当前环境访问 npm 官方源过慢的问题。

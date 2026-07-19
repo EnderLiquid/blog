@@ -7,6 +7,15 @@ export const ROOT_PAGE_MESSAGES = {
 } as const;
 
 export interface SiteMessages {
+  navigation: {
+    label: string;
+    home: string;
+    posts: string;
+    openMenu: string;
+    closeMenu: string;
+    language: string;
+    translationUnavailable: string;
+  };
   home: {
     title: string;
     description: string;
@@ -15,7 +24,6 @@ export interface SiteMessages {
     allPosts: string;
   };
   posts: {
-    backHome: string;
     title: string;
     description: string;
   };
@@ -33,7 +41,6 @@ export interface SiteMessages {
     unavailable: string;
   };
   article: {
-    allPosts: string;
     updated: string;
     tags: string;
   };
@@ -52,6 +59,15 @@ export interface SiteMessages {
 /** Vue模板使用的可见文案；机器metadata不得导入该对象。 */
 export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
   'zh-cn': {
+    navigation: {
+      label: '全站导航',
+      home: '首页',
+      posts: '文章',
+      openMenu: '展开导航菜单',
+      closeMenu: '收起导航菜单',
+      language: '切换语言',
+      translationUnavailable: '暂无译文',
+    },
     home: {
       title: 'Blog',
       description: '这里是 EnderLiquid 的博客。欢迎到访。',
@@ -60,7 +76,6 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       allPosts: '查看全部文章',
     },
     posts: {
-      backHome: '返回首页',
       title: '文章',
       description: '搜索标题和正文，或按发布时间浏览。',
     },
@@ -78,7 +93,6 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       unavailable: '全文搜索暂不可用，当前展示全部文章。',
     },
     article: {
-      allPosts: '全部文章',
       updated: '更新于',
       tags: '标签',
     },
@@ -94,6 +108,15 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     },
   },
   en: {
+    navigation: {
+      label: 'Site navigation',
+      home: 'Home',
+      posts: 'Posts',
+      openMenu: 'Open navigation menu',
+      closeMenu: 'Close navigation menu',
+      language: 'Change language',
+      translationUnavailable: 'Translation unavailable',
+    },
     home: {
       title: 'Blog',
       description: `This is EnderLiquid's Blog. Welcome.`,
@@ -102,7 +125,6 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       allPosts: 'View all posts',
     },
     posts: {
-      backHome: 'Back to home',
       title: 'Posts',
       description: 'Search titles and content, or browse by publication date.',
     },
@@ -120,7 +142,6 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       unavailable: 'Full-text search is unavailable. Showing all posts.',
     },
     article: {
-      allPosts: 'All posts',
       updated: 'Updated',
       tags: 'Tags',
     },

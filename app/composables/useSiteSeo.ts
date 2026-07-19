@@ -1,21 +1,10 @@
-import { SITE_SEO_INDEX } from '~/generated/site-seo-index';
-
 /**
  * 将构建期SEO投影集中映射到Nuxt head。
  *
  * 该适配器只负责响应当前route并注册标签，不重新推导页面、语言组或机器资源。
  */
 export function useSiteSeo() {
-  const route = useRoute();
-  const descriptor = computed(() => {
-    const exactDescriptor = SITE_SEO_INDEX[route.path];
-
-    if (exactDescriptor || route.path.endsWith('/')) {
-      return exactDescriptor;
-    }
-
-    return SITE_SEO_INDEX[`${route.path}/`];
-  });
+  const descriptor = useSitePageDescriptor();
 
   useSeoMeta({
     title: () => descriptor.value?.title,
