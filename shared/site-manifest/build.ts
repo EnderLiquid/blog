@@ -1,11 +1,19 @@
 import type { PostSource } from '../content/post-source.ts';
-import { DEFAULT_LOCALE_CODE, LOCALE_DEFINITIONS, type LocaleCode } from '../i18n/locales.ts';
+import {
+  LOCALE_DEFINITIONS,
+  orderLocaleCodesByPriority,
+  resolveLocalePreference,
+  type LocaleCode,
+} from '../i18n/locales.ts';
 import { articlePath, ROBOTS_PATH, rssPath, SITEMAP_PATH } from '../routing/localized-routes.ts';
 import { SITE_ORIGIN } from '../site/config.ts';
 import {
   SITE_MANIFEST_VERSION,
+  isArticleDeliveryPageResource,
   isPageResource,
   parseSiteManifest,
+  type ArticleDeliveryPageResource,
+  type ArticleFallbackPageResource,
   type ArticlePageResource,
   type LocalizationGroup,
   type MachineResource,
@@ -13,7 +21,7 @@ import {
   type SiteResource,
   type StaticPageResource,
 } from './model.ts';
-import { articleResourceId } from './resource-ids.ts';
+import { articleFallbackResourceId, articleResourceId } from './resource-ids.ts';
 import { STATIC_PAGE_DEFINITIONS, type LocalizedStaticPageDefinition } from './static-pages.ts';
 
 export interface BuildSiteManifestInput {
@@ -77,7 +85,11 @@ export function validateSiteManifest(value: unknown): SiteManifest {
   }
 
   for (const resource of manifest.resources) {
-    if (!isPageResource(resource) || !resource.localizationGroupId) {
+    if (
+      !isPageResource(resource) ||
+      !('localizationGroupId' in resource) ||
+      !resource.localizationGroupId
+    ) {
       continue;
     }
 
@@ -90,6 +102,7 @@ export function validateSiteManifest(value: unknown): SiteManifest {
     }
   }
 
+  validateArticleDeliveryResources(manifest.resources, resourceById, errors);
   validateMachineResources(manifest.resources, errors);
 
   if (errors.length > 0) {
@@ -143,11 +156,11 @@ function buildLocalizedStaticPageResources(
 }
 
 function buildArticlePageResources(posts: readonly PostSource[]): {
-  resources: ArticlePageResource[];
+  resources: ArticleDeliveryPageResource[];
   groups: LocalizationGroup[];
 } {
   const publishedPosts = posts.filter((post) => !post.metadata.draft);
-  const resources = publishedPosts.map<ArticlePageResource>((post) => ({
+  const realResources = publishedPosts.map<ArticlePageResource>((post) => ({
     kind: 'article-page',
     id: articleResourceId(post.articleKeyPath, post.localeCode),
     articleKeyPath: post.articleKeyPath,
@@ -157,32 +170,68 @@ function buildArticlePageResources(posts: readonly PostSource[]): {
   }));
   const resourcesByArticle = new Map<string, ArticlePageResource[]>();
 
-  for (const resource of resources) {
+  for (const resource of realResources) {
     const variants = resourcesByArticle.get(resource.articleKeyPath) ?? [];
     variants.push(resource);
     resourcesByArticle.set(resource.articleKeyPath, variants);
   }
 
-  const groups = [...resourcesByArticle.entries()].map<LocalizationGroup>(
-    ([articleKeyPath, variants]) => {
-      const orderedVariants = LOCALE_DEFINITIONS.flatMap(({ code }) =>
-        variants.filter((variant) => variant.localeCode === code),
-      );
-      const defaultVariant =
-        orderedVariants.find((variant) => variant.localeCode === DEFAULT_LOCALE_CODE) ??
-        orderedVariants[0];
+  const resources: ArticleDeliveryPageResource[] = [];
+  const groups: LocalizationGroup[] = [];
 
-      if (!defaultVariant) {
-        throw new Error(`文章 ${articleKeyPath} 没有可发布语言版本`);
+  for (const [articleKeyPath, variants] of resourcesByArticle) {
+    const variantsByLocale = new Map(variants.map((variant) => [variant.localeCode, variant]));
+    const availableLocaleCodes = variants.map((variant) => variant.localeCode);
+    const orderedVariants = orderLocaleCodesByPriority(availableLocaleCodes).map((localeCode) =>
+      variantsByLocale.get(localeCode)!,
+    );
+
+    resources.push(...orderedVariants);
+
+    const xDefaultLocaleCode = resolveLocalePreference([], availableLocaleCodes);
+    const xDefaultVariant = xDefaultLocaleCode
+      ? variantsByLocale.get(xDefaultLocaleCode)
+      : undefined;
+
+    if (!xDefaultVariant) {
+      throw new Error(`文章 ${articleKeyPath} 没有可发布语言版本`);
+    }
+
+    for (const { code: interfaceLocaleCode } of LOCALE_DEFINITIONS) {
+      if (variantsByLocale.has(interfaceLocaleCode)) {
+        continue;
       }
 
-      return {
-        id: `article:${articleKeyPath}`,
-        memberResourceIds: orderedVariants.map((variant) => variant.id),
-        xDefaultPath: defaultVariant.path,
+      const contentLocaleCode = resolveLocalePreference(
+        [interfaceLocaleCode],
+        availableLocaleCodes,
+      );
+      const sourceResource = contentLocaleCode
+        ? variantsByLocale.get(contentLocaleCode)
+        : undefined;
+
+      if (!sourceResource) {
+        throw new Error(`文章 ${articleKeyPath} 无法为${interfaceLocaleCode}选择正文版本`);
+      }
+
+      const fallbackResource: ArticleFallbackPageResource = {
+        kind: 'article-fallback-page',
+        id: articleFallbackResourceId(articleKeyPath, interfaceLocaleCode),
+        articleKeyPath,
+        path: articlePath(interfaceLocaleCode, articleKeyPath),
+        localeCode: interfaceLocaleCode,
+        sourceResourceId: sourceResource.id,
       };
-    },
-  );
+
+      resources.push(fallbackResource);
+    }
+
+    groups.push({
+      id: `article:${articleKeyPath}`,
+      memberResourceIds: orderedVariants.map((variant) => variant.id),
+      xDefaultPath: xDefaultVariant.path,
+    });
+  }
 
   return { resources, groups };
 }
@@ -250,6 +299,76 @@ function validateCrossLocalePostSources(posts: readonly PostSource[]): void {
   }
 }
 
+function validateArticleDeliveryResources(
+  resources: readonly SiteResource[],
+  resourceById: ReadonlyMap<string, SiteResource>,
+  errors: string[],
+): void {
+  const articleResources = resources.filter(isArticleDeliveryPageResource);
+  const resourcesByArticle = new Map<string, ArticleDeliveryPageResource[]>();
+
+  for (const resource of articleResources) {
+    const articleResourcesForKey = resourcesByArticle.get(resource.articleKeyPath) ?? [];
+    articleResourcesForKey.push(resource);
+    resourcesByArticle.set(resource.articleKeyPath, articleResourcesForKey);
+
+    if (resource.kind !== 'article-fallback-page') {
+      continue;
+    }
+
+    const sourceResource = resourceById.get(resource.sourceResourceId);
+
+    if (!sourceResource || sourceResource.kind !== 'article-page') {
+      errors.push(`${resource.id}: 回退资源来源不是有效真实文章资源“${resource.sourceResourceId}”`);
+      continue;
+    }
+
+    if (sourceResource.articleKeyPath !== resource.articleKeyPath) {
+      errors.push(`${resource.id}: 回退资源与来源文章身份不一致`);
+    }
+
+    if (sourceResource.localeCode === resource.localeCode) {
+      errors.push(`${resource.id}: 回退资源不能使用同一语言的真实来源`);
+    }
+  }
+
+  for (const [articleKeyPath, articleResourcesForKey] of resourcesByArticle) {
+    const localeCodes = new Set<LocaleCode>();
+    const realResources = articleResourcesForKey.filter(
+      (resource): resource is ArticlePageResource => resource.kind === 'article-page',
+    );
+    const realLocaleCodes = realResources.map((resource) => resource.localeCode);
+
+    for (const resource of articleResourcesForKey) {
+      if (localeCodes.has(resource.localeCode)) {
+        errors.push(`${articleKeyPath}: 公开文章页面重复语言“${resource.localeCode}”`);
+      }
+
+      localeCodes.add(resource.localeCode);
+
+      if (resource.kind === 'article-fallback-page') {
+        const expectedContentLocaleCode = resolveLocalePreference(
+          [resource.localeCode],
+          realLocaleCodes,
+        );
+        const expectedSource = realResources.find(
+          (candidate) => candidate.localeCode === expectedContentLocaleCode,
+        );
+
+        if (!expectedSource || resource.sourceResourceId !== expectedSource.id) {
+          errors.push(`${resource.id}: 回退来源不符合统一语言优先级解析结果`);
+        }
+      }
+    }
+
+    for (const { code } of LOCALE_DEFINITIONS) {
+      if (!localeCodes.has(code)) {
+        errors.push(`${articleKeyPath}: 缺少${code}界面语言文章页面`);
+      }
+    }
+  }
+}
+
 function validateSiteOrigin(siteOrigin: string, errors: string[]): void {
   try {
     const url = new URL(siteOrigin);
@@ -287,16 +406,19 @@ function validateLocalizationGroup(
   errors: string[],
 ): void {
   const locales = new Set<LocaleCode>();
+  const memberResources: Exclude<SiteResource, ArticleFallbackPageResource | MachineResource>[] =
+    [];
+  const xDefaultResource = resourceByPath.get(group.xDefaultPath);
 
-  if (!resourceByPath.has(group.xDefaultPath)) {
+  if (!xDefaultResource || !isPageResource(xDefaultResource)) {
     errors.push(`${group.id}: x-default没有对应页面资源：“${group.xDefaultPath}”`);
   }
 
   for (const memberId of group.memberResourceIds) {
     const resource = resourceById.get(memberId);
 
-    if (!resource || !isPageResource(resource)) {
-      errors.push(`${group.id}: 成员不是有效页面资源：“${memberId}”`);
+    if (!resource || !isPageResource(resource) || resource.kind === 'article-fallback-page') {
+      errors.push(`${group.id}: 成员不是有效真实页面资源：“${memberId}”`);
       continue;
     }
 
@@ -310,9 +432,28 @@ function validateLocalizationGroup(
     }
 
     locales.add(resource.localeCode);
+    memberResources.push(resource);
 
     if (resource.localizationGroupId !== group.id) {
       errors.push(`${group.id}: 成员“${memberId}”反向指向了其他语言组`);
+    }
+  }
+
+  const orderedLocaleCodes = orderLocaleCodesByPriority([...locales]);
+  const actualLocaleCodes = memberResources.map((resource) => resource.localeCode!);
+
+  if (!sameValues(orderedLocaleCodes, actualLocaleCodes)) {
+    errors.push(`${group.id}: 语言成员没有按网站优先级排列`);
+  }
+
+  if (memberResources.every((resource) => resource.kind === 'article-page')) {
+    const xDefaultLocaleCode = resolveLocalePreference([], orderedLocaleCodes);
+    const expectedXDefaultResource = memberResources.find(
+      (resource) => resource.localeCode === xDefaultLocaleCode,
+    );
+
+    if (!expectedXDefaultResource || group.xDefaultPath !== expectedXDefaultResource.path) {
+      errors.push(`${group.id}: x-default不是最高优先级的真实文章版本`);
     }
   }
 }

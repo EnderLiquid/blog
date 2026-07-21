@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { formatPostDate, toDateTime } from '~/utils/date';
-import { postContentPath } from '~~/shared/content/post-paths';
-import { normalizeArticleKeyPath } from '~~/shared/routing/localized-routes';
 
-const route = useRoute();
 const { localeCode, messages } = useSiteLocale();
-const articleKeyPath = readArticleKeyPath(route.params.articleKeyPath);
-const currentContentPath = postContentPath(articleKeyPath, localeCode.value);
+const { descriptor } = useArticleDeliveryDescriptor();
+const delivery = descriptor.value;
 
-const { data: post } = await useAsyncData(`post:${currentContentPath}`, () =>
-  queryCollection('posts').path(currentContentPath).first(),
+if (!delivery || delivery.interfaceLocaleCode !== localeCode.value) {
+  throw createError({
+    statusCode: 404,
+    message: messages.value.notFound.title,
+  });
+}
+
+const { data: post } = await useAsyncData(`post:${delivery.path}`, () =>
+  queryCollection('posts').path(delivery.contentPath).first(),
 );
 
 if (!post.value || post.value.draft) {
@@ -20,28 +24,26 @@ if (!post.value || post.value.draft) {
 }
 
 const postTags = computed(() => post.value?.tags ?? []);
-
-function readArticleKeyPath(value: unknown): string {
-  const pathSegments = Array.isArray(value) ? value : [value];
-  const articleKeyPathValue = pathSegments
-    .filter((segment): segment is string => typeof segment === 'string')
-    .join('/');
-
-  if (!articleKeyPathValue) {
-    throw createError({ statusCode: 404, message: '文章不存在' });
-  }
-
-  return normalizeArticleKeyPath(articleKeyPathValue);
-}
+const contentLanguageLabel = computed(() => {
+  const displayNames = new Intl.DisplayNames([localeCode.value], { type: 'language' });
+  return displayNames.of(delivery.contentLocaleCode) ?? delivery.contentLocaleCode;
+});
 </script>
 
 <template>
   <LayoutPageShell v-if="post" narrow>
-    <article data-pagefind-body>
+    <p v-if="delivery.fallback" class="article-fallback" role="note">
+      {{ messages.article.fallbackLanguage(contentLanguageLabel) }}
+    </p>
+
+    <article
+      :lang="delivery.contentLocaleCode"
+      :data-pagefind-body="delivery.fallback ? undefined : ''"
+    >
       <header class="article-header">
         <h1
-          :data-article-key-path="articleKeyPath"
-          :data-locale="localeCode"
+          :data-article-key-path="delivery.articleKeyPath"
+          :data-locale="delivery.contentLocaleCode"
           data-pagefind-meta="title, articleKeyPath[data-article-key-path], locale[data-locale]"
         >
           {{ post.title }}
@@ -78,11 +80,19 @@ function readArticleKeyPath(value: unknown): string {
     </article>
 
     <!-- 评论区位于Pagefind正文边界之外，避免第三方界面文案进入文章搜索索引。 -->
-    <CommentsArticleComments :article-key-path="articleKeyPath" />
+    <CommentsArticleComments :article-key-path="delivery.articleKeyPath" />
   </LayoutPageShell>
 </template>
 
 <style scoped>
+.article-fallback {
+  margin: 2rem 0 -2rem;
+  padding: 0.75rem 1rem;
+  color: var(--muted);
+  border-left: 2px solid var(--signal);
+  background: color-mix(in srgb, var(--ink) 3%, transparent);
+}
+
 .article-header {
   margin: 4rem 0;
 }
@@ -118,7 +128,7 @@ function readArticleKeyPath(value: unknown): string {
   line-height: 1.85;
 }
 
-/* Nuxt Content 生成的正文元素位于子组件中，必须使用 :deep() 才能应用文章排版。 */
+/* Nuxt Content生成的正文元素位于子组件中，必须使用:deep()才能应用文章排版。 */
 .article-content :deep(pre),
 .article-content :deep(code) {
   font-family: var(--font-mono);

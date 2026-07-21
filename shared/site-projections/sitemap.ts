@@ -16,10 +16,15 @@ export function createSitemapView(context: SiteBuildContext): SitemapProjectionV
 }
 
 function isIndexable(resource: PageResource): boolean {
-  return (
-    resource.kind === 'article-page' ||
-    resolveStaticPageSeo(resource.pageId, resource.localeCode).indexability === 'index'
-  );
+  if (resource.kind === 'article-page') {
+    return true;
+  }
+
+  if (resource.kind === 'article-fallback-page') {
+    return false;
+  }
+
+  return resolveStaticPageSeo(resource.pageId, resource.localeCode).indexability === 'index';
 }
 
 function resolveLastModified(

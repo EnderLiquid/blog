@@ -33,6 +33,21 @@ const pageSeoDescriptorSchema = z
 
 const pageSeoIndexSchema = z.record(z.string().startsWith('/'), pageSeoDescriptorSchema);
 
+const articleDeliveryDescriptorSchema = z
+  .object({
+    path: z.string().startsWith('/'),
+    articleKeyPath: z.string().min(1),
+    interfaceLocaleCode: localeCodeSchema,
+    contentLocaleCode: localeCodeSchema,
+    contentPath: z.string().startsWith('/'),
+    fallback: z.boolean(),
+  })
+  .strict();
+const articleDeliveryIndexSchema = z.record(
+  z.string().startsWith('/'),
+  articleDeliveryDescriptorSchema,
+);
+
 const rssItemSchema = z
   .object({
     articleKeyPath: z.string().min(1),
@@ -79,6 +94,8 @@ export type LocalizedAlternateView = z.infer<typeof localizedAlternateSchema>;
 export type FeedDiscoveryView = z.infer<typeof feedDiscoverySchema>;
 export type PageSeoDescriptor = z.infer<typeof pageSeoDescriptorSchema>;
 export type PageSeoIndexView = z.infer<typeof pageSeoIndexSchema>;
+export type ArticleDeliveryDescriptor = z.infer<typeof articleDeliveryDescriptorSchema>;
+export type ArticleDeliveryIndexView = z.infer<typeof articleDeliveryIndexSchema>;
 export type RssItemView = z.infer<typeof rssItemSchema>;
 export type RssChannelView = z.infer<typeof rssChannelSchema>;
 export type RssProjectionView = z.infer<typeof rssProjectionSchema>;
@@ -88,6 +105,10 @@ export type RobotsView = z.infer<typeof robotsViewSchema>;
 
 export function parsePageSeoIndexView(value: unknown): PageSeoIndexView {
   return pageSeoIndexSchema.parse(value);
+}
+
+export function parseArticleDeliveryIndexView(value: unknown): ArticleDeliveryIndexView {
+  return articleDeliveryIndexSchema.parse(value);
 }
 
 export function parseRssProjectionView(value: unknown): RssProjectionView {

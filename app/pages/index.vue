@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { homePath } from '~~/shared/routing/localized-routes';
 import {
-  DEFAULT_LOCALE_CODE,
   LOCALE_DEFINITIONS,
-  matchCompatibleLocaleCode,
+  resolveLocalePreference,
+  SUPPORTED_LOCALE_CODES,
 } from '~~/shared/i18n/locales';
 import { ROOT_PAGE_MESSAGES } from '~~/shared/i18n/messages';
 
@@ -13,20 +13,13 @@ const languageLinks = LOCALE_DEFINITIONS.map((definition) => ({
 }));
 
 onMounted(() => {
-  // GitHub Pages无法在服务端协商语言。逐项检查浏览器偏好，全部不支持时才回退默认语言；
-  // 模板中的普通链接保证禁用 JavaScript时仍然可以进入站点。
-  let browserLocaleCode = DEFAULT_LOCALE_CODE;
+  // GitHub Pages无法在服务端协商语言。共享解析器先完成全部精确匹配，再执行模糊匹配，
+  // 并在完全无法匹配时按网站语言优先级fallback。
+  const browserLocaleCode = resolveLocalePreference(navigator.languages, SUPPORTED_LOCALE_CODES);
 
-  for (const preferredLanguage of navigator.languages) {
-    const matchedLocaleCode = matchCompatibleLocaleCode(preferredLanguage);
-
-    if (matchedLocaleCode) {
-      browserLocaleCode = matchedLocaleCode;
-      break;
-    }
+  if (browserLocaleCode) {
+    void navigateTo(homePath(browserLocaleCode), { replace: true });
   }
-
-  void navigateTo(homePath(browserLocaleCode), { replace: true });
 });
 </script>
 

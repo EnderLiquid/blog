@@ -5,6 +5,7 @@ import { postMetadataSchema } from '../../shared/content/post-schema.ts';
 import { buildSiteManifest, validateSiteManifest } from '../../shared/site-manifest/build.ts';
 import { createSiteBuildContext } from '../../shared/site-manifest/context.ts';
 import type { SiteManifest } from '../../shared/site-manifest/model.ts';
+import { createArticleDeliveryIndexView } from '../../shared/site-projections/article-delivery.ts';
 import { createPageSeoIndexView } from '../../shared/site-projections/seo.ts';
 import { createSitemapView } from '../../shared/site-projections/sitemap.ts';
 
@@ -87,7 +88,7 @@ describe('文章metadata契约', () => {
   });
 });
 
-describe('Manifest v2确定性与职责边界', () => {
+describe('Manifest v3确定性与职责边界', () => {
   it('输入顺序不影响Manifest和消费者投影字节内容', () => {
     const forward = buildSiteManifest({ posts });
     const reversedPosts = [...posts].reverse();
@@ -96,6 +97,10 @@ describe('Manifest v2确定性与职责边界', () => {
     const reversedContext = createSiteBuildContext(reversed, reversedPosts);
 
     assert.equal(JSON.stringify(forward), JSON.stringify(reversed));
+    assert.equal(
+      JSON.stringify(createArticleDeliveryIndexView(forwardContext)),
+      JSON.stringify(createArticleDeliveryIndexView(reversedContext)),
+    );
     assert.equal(
       JSON.stringify(createPageSeoIndexView(forwardContext)),
       JSON.stringify(createPageSeoIndexView(reversedContext)),
@@ -109,14 +114,14 @@ describe('Manifest v2确定性与职责边界', () => {
   it('只保存资源拓扑并拒绝旧Manifest版本', () => {
     const manifest = buildSiteManifest({ posts });
 
-    assert.equal(manifest.version, 2);
+    assert.equal(manifest.version, 3);
     for (const resource of manifest.resources) {
       for (const field of forbiddenManifestFields) {
         assert.equal(field in resource, false, `${resource.id}不应包含${field}`);
       }
     }
 
-    assert.throws(() => validateSiteManifest({ ...manifest, version: 1 }));
+    assert.throws(() => validateSiteManifest({ ...manifest, version: 2 }));
   });
 
   it('拒绝重复path、失效x-default、非HTTPS源地址和缺失RSS', () => {
@@ -155,11 +160,46 @@ describe('Manifest v2确定性与职责边界', () => {
             sourcePath: 'missing-resource/en.md',
           },
         ]),
-      /没有对应Manifest资源/,
+      /没有对应真实Manifest资源/,
     );
   });
 
-  it('PageSeoView与SitemapView共享完全相同的语言关系', () => {
+  it('为缺失语言生成显式回退资源和正文投递关系', () => {
+    const manifest = buildSiteManifest({ posts });
+    const context = createSiteBuildContext(manifest, posts);
+    const fallbackResource = manifest.resources.find(
+      (resource) =>
+        resource.kind === 'article-fallback-page' && resource.path === '/en/posts/first/',
+    );
+    const firstGroup = manifest.localizationGroups.find((group) => group.id === 'article:first');
+    const delivery = createArticleDeliveryIndexView(context)['/en/posts/first/'];
+    const seo = createPageSeoIndexView(context)['/en/posts/first/'];
+    const sitemap = createSitemapView(context);
+
+    assert.equal(fallbackResource?.sourceResourceId, 'article:first:zh-cn');
+    assert.deepEqual(firstGroup?.memberResourceIds, ['article:first:zh-cn']);
+    assert.equal(delivery?.contentLocaleCode, 'zh-cn');
+    assert.equal(delivery?.fallback, true);
+    assert.equal(seo?.indexability, 'noindex');
+    assert.equal(seo?.canonicalUrl?.endsWith('/zh-cn/posts/first/'), true);
+    assert.equal(
+      sitemap.some((entry) => entry.url.endsWith('/en/posts/first/')),
+      false,
+    );
+  });
+
+  it('拒绝损坏的回退来源关系', () => {
+    const invalidManifest = cloneManifest(buildSiteManifest({ posts }));
+    const fallbackResource = invalidManifest.resources.find(
+      (resource) => resource.kind === 'article-fallback-page',
+    );
+
+    assert.ok(fallbackResource && fallbackResource.kind === 'article-fallback-page');
+    fallbackResource.sourceResourceId = 'article:missing:zh-cn';
+    assert.throws(() => validateSiteManifest(invalidManifest), /回退资源来源不是有效真实文章资源/);
+  });
+
+  it('PageSeoView与SitemapView共享完全相同的真实语言关系', () => {
     const manifest = buildSiteManifest({ posts });
     const context = createSiteBuildContext(manifest, posts);
     const seoIndex = createPageSeoIndexView(context);

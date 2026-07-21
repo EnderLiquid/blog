@@ -69,12 +69,12 @@ const resultSummary = computed(() => {
       <li v-for="item in displayPosts" :key="item.articleKeyPath">
         <article :lang="item.post.localeCode">
           <h2>
-            <NuxtLink :to="item.post.path">{{ item.post.title }}</NuxtLink>
+            <NuxtLink :to="item.displayPath">{{ item.post.title }}</NuxtLink>
           </h2>
           <p>{{ item.post.description }}</p>
           <footer>
             <time :datetime="toDateTime(item.post.publishedAt)">
-              {{ formatPostDate(item.post.publishedAt, item.post.localeCode) }}
+              {{ formatPostDate(item.post.publishedAt, localeCode) }}
             </time>
             <span v-for="tag in item.post.tags ?? []" :key="tag">#{{ tag }}</span>
           </footer>

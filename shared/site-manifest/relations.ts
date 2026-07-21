@@ -1,6 +1,8 @@
 import type { LocaleCode } from '../i18n/locales.ts';
 import {
   isPageResource,
+  type ArticleDeliveryPageResource,
+  type ArticlePageResource,
   type LocalizationGroup,
   type MachineResource,
   type PageResource,
@@ -28,6 +30,26 @@ export function findPageByPath(manifest: SiteManifest, path: string): PageResour
   }
 
   return resource;
+}
+
+export function findCanonicalArticleResource(
+  manifest: SiteManifest,
+  resource: ArticleDeliveryPageResource,
+): ArticlePageResource {
+  if (resource.kind === 'article-page') {
+    return resource;
+  }
+
+  const sourceResource = manifest.resources.find(
+    (candidate): candidate is ArticlePageResource =>
+      candidate.id === resource.sourceResourceId && candidate.kind === 'article-page',
+  );
+
+  if (!sourceResource) {
+    throw new Error(`${resource.id}: 找不到真实文章来源“${resource.sourceResourceId}”`);
+  }
+
+  return sourceResource;
 }
 
 export function findMachineResource(
@@ -106,6 +128,13 @@ function findLocalizationGroupForPage(
   manifest: SiteManifest,
   resource: PageResource,
 ): LocalizationGroup | undefined {
+  if (resource.kind === 'article-fallback-page') {
+    const canonicalResource = findCanonicalArticleResource(manifest, resource);
+    return manifest.localizationGroups.find(
+      (group) => group.id === canonicalResource.localizationGroupId,
+    );
+  }
+
   if (resource.localizationGroupId) {
     return manifest.localizationGroups.find((group) => group.id === resource.localizationGroupId);
   }

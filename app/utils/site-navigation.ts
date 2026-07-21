@@ -1,6 +1,6 @@
-import type { PageSeoDescriptor } from '../../shared/site-projections/model.ts';
 import { LOCALE_DEFINITIONS, type LocaleCode } from '../../shared/i18n/locales.ts';
 import { parseLocalizedPath, switchLocalePath } from '../../shared/routing/localized-routes.ts';
+import type { ArticleDeliveryIndexView } from '../../shared/site-projections/model.ts';
 
 export type PrimaryNavigationSection = 'home' | 'posts';
 
@@ -19,24 +19,33 @@ export function resolvePrimaryNavigationSection(path: string): PrimaryNavigation
 }
 
 /**
- * 为语言菜单生成可导航目标。
+ * 为语言菜单生成界面语言目标。
  *
- * 首页和文章列表可以直接替换语言段；文章详情必须使用SEO投影中已经验证过的
- * 多语言关系，避免为不存在的译文构造404地址。
+ * 静态页面直接替换URL语言段；文章详情消费Article Delivery投影，因此真实译文和
+ * 回退投递页面都可以切换。菜单顺序始终继承网站语言优先级，不借用SEO hreflang。
  */
 export function createLocaleNavigationTargets(
   currentFullPath: string,
-  descriptor?: PageSeoDescriptor,
+  articleDeliveryIndex: ArticleDeliveryIndexView,
 ): LocaleNavigationTarget[] {
   const currentUrl = new URL(currentFullPath, 'https://blog.local');
   const localizedPath = parseLocalizedPath(currentUrl.pathname);
   const currentLocaleCode = localizedPath?.localeCode;
-  const articlePage = isArticleDetailPath(localizedPath?.pathWithoutLocale);
+  const currentDelivery = articleDeliveryIndex[normalizeArticlePagePath(currentUrl.pathname)];
 
   return LOCALE_DEFINITIONS.map((definition) => {
     const current = definition.code === currentLocaleCode;
-    const path = articlePage
-      ? articleTranslationPath(definition.code, currentUrl, descriptor)
+    const articleTarget = currentDelivery
+      ? Object.values(articleDeliveryIndex).find(
+          (candidate) =>
+            candidate.articleKeyPath === currentDelivery.articleKeyPath &&
+            candidate.interfaceLocaleCode === definition.code,
+        )
+      : undefined;
+    const path = currentDelivery
+      ? articleTarget
+        ? `${articleTarget.path}${currentUrl.search}${currentUrl.hash}`
+        : undefined
       : switchLocalePath(currentFullPath, definition.code);
 
     return {
@@ -49,23 +58,6 @@ export function createLocaleNavigationTargets(
   });
 }
 
-function isArticleDetailPath(pathWithoutLocale: string | undefined): boolean {
-  return Boolean(pathWithoutLocale?.startsWith('/posts/') && pathWithoutLocale !== '/posts/');
-}
-
-function articleTranslationPath(
-  targetLocaleCode: LocaleCode,
-  currentUrl: URL,
-  descriptor: PageSeoDescriptor | undefined,
-): string | undefined {
-  const alternate = descriptor?.languageAlternates.find(
-    (candidate) => candidate.localeCode === targetLocaleCode,
-  );
-
-  if (!alternate) {
-    return undefined;
-  }
-
-  const targetUrl = new URL(alternate.url);
-  return `${targetUrl.pathname}${currentUrl.search}${currentUrl.hash}`;
+function normalizeArticlePagePath(path: string): string {
+  return path.endsWith('/') ? path : `${path}/`;
 }

@@ -2,10 +2,15 @@ import { LOCALE_DEFINITIONS } from '../i18n/locales.ts';
 import { resolveStaticPageSeo } from '../site-definitions/page-seo.ts';
 import { RSS_FEED_DEFINITIONS } from '../site-definitions/rss.ts';
 import { findPostSource, type SiteBuildContext } from '../site-manifest/context.ts';
-import { isPageResource, type PageResource } from '../site-manifest/model.ts';
+import {
+  isPageResource,
+  type ArticleDeliveryPageResource,
+  type PageResource,
+} from '../site-manifest/model.ts';
 import {
   absoluteManifestUrl,
   createLocalizedAlternates,
+  findCanonicalArticleResource,
   findMachineResource,
 } from '../site-manifest/relations.ts';
 import type { FeedDiscoveryView, PageSeoDescriptor, PageSeoIndexView } from './model.ts';
@@ -32,10 +37,7 @@ export function createPageSeoView(
     title: metadata.title,
     description: metadata.description,
     indexability: metadata.indexability,
-    canonicalUrl:
-      resource.kind === 'static-page' && resource.pageId === 'not-found'
-        ? undefined
-        : absoluteManifestUrl(context.manifest, resource.path),
+    canonicalUrl: createCanonicalUrl(context, resource),
     languageAlternates: createLocalizedAlternates(context.manifest, resource),
     feeds: createFeedDiscoveryView(context, resource),
   };
@@ -43,7 +45,7 @@ export function createPageSeoView(
 
 function resolveArticleSeo(
   context: SiteBuildContext,
-  resource: Extract<PageResource, { kind: 'article-page' }>,
+  resource: ArticleDeliveryPageResource,
 ): Pick<PageSeoDescriptor, 'title' | 'description' | 'indexability'> {
   const post = findPostSource(context, resource);
 
@@ -51,8 +53,21 @@ function resolveArticleSeo(
   return {
     title: post.metadata.title,
     description: post.metadata.description,
-    indexability: 'index',
+    indexability: resource.kind === 'article-page' ? 'index' : 'noindex',
   };
+}
+
+function createCanonicalUrl(context: SiteBuildContext, resource: PageResource): string | undefined {
+  if (resource.kind === 'static-page' && resource.pageId === 'not-found') {
+    return undefined;
+  }
+
+  if (resource.kind === 'article-fallback-page') {
+    const canonicalResource = findCanonicalArticleResource(context.manifest, resource);
+    return absoluteManifestUrl(context.manifest, canonicalResource.path);
+  }
+
+  return absoluteManifestUrl(context.manifest, resource.path);
 }
 
 function createFeedDiscoveryView(

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ARTICLE_DELIVERY_INDEX } from '~/utils/article-delivery';
 import { homePath, postsPath } from '~~/shared/routing/localized-routes';
 import {
   createLocaleNavigationTargets,
@@ -17,7 +18,6 @@ const emit = defineEmits<{
 
 const route = useRoute();
 const { localeCode, messages } = useSiteLocale();
-const descriptor = useSitePageDescriptor();
 const { commands } = useShellRuntime();
 const navigationElement = useTemplateRef<HTMLElement>('navigationElement');
 const compactMenuButton = useTemplateRef<HTMLButtonElement>('compactMenuButton');
@@ -44,7 +44,7 @@ const activeSection = computed(() => resolvePrimaryNavigationSection(route.path)
 const localeTargets = computed(() =>
   createLocaleNavigationTargets(
     hydrated.value ? route.fullPath : route.fullPath.split('#')[0]!,
-    descriptor.value,
+    ARTICLE_DELIVERY_INDEX,
   ),
 );
 const shellToggleLabel = computed(() =>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { findArticleDelivery } from '~/utils/article-delivery';
 import { formatPostDate, toDateTime } from '~/utils/date';
-import { groupPostVariants, selectPostVariant } from '~/utils/posts';
+import { groupPostVariants, requirePostVariant } from '~/utils/posts';
 import { postsPath } from '~~/shared/routing/localized-routes';
 
 const { localeCode, messages } = useSiteLocale();
@@ -10,9 +11,22 @@ const { data: posts } = await useAsyncData('home-posts', () =>
 
 const recentPosts = computed(() =>
   groupPostVariants(posts.value ?? [])
-    .map((logicalPost) => selectPostVariant(logicalPost, localeCode.value))
+    .map((logicalPost) => {
+      const delivery = findArticleDelivery(logicalPost.articleKeyPath, localeCode.value);
+
+      if (!delivery) {
+        throw new Error(`文章 ${logicalPost.articleKeyPath} 缺少${localeCode.value}投递页面`);
+      }
+
+      return {
+        articleKeyPath: logicalPost.articleKeyPath,
+        displayPath: delivery.path,
+        post: requirePostVariant(logicalPost, delivery.contentLocaleCode),
+      };
+    })
     .sort(
-      (left, right) => new Date(right.publishedAt).getTime() - new Date(left.publishedAt).getTime(),
+      (left, right) =>
+        new Date(right.post.publishedAt).getTime() - new Date(left.post.publishedAt).getTime(),
     )
     .slice(0, 5),
 );
@@ -34,11 +48,11 @@ const recentPosts = computed(() =>
       </h2>
 
       <ul class="post-list">
-        <li v-for="post in recentPosts" :key="post.path">
-          <NuxtLink :to="post.path">
-            <span>{{ post.title }}</span>
-            <time :datetime="toDateTime(post.publishedAt)">
-              {{ formatPostDate(post.publishedAt, post.localeCode) }}
+        <li v-for="item in recentPosts" :key="item.articleKeyPath">
+          <NuxtLink :to="item.displayPath">
+            <span :lang="item.post.localeCode">{{ item.post.title }}</span>
+            <time :datetime="toDateTime(item.post.publishedAt)">
+              {{ formatPostDate(item.post.publishedAt, localeCode) }}
             </time>
           </NuxtLink>
         </li>

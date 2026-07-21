@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { isLocaleCode, type LocaleCode } from '../i18n/locales.ts';
 
-export const SITE_MANIFEST_VERSION = 2 as const;
+export const SITE_MANIFEST_VERSION = 3 as const;
 export const STATIC_PAGE_IDS = ['root', 'home', 'posts', 'not-found'] as const;
 
 const localeCodeSchema = z
@@ -31,6 +31,15 @@ export const articlePageResourceSchema = resourceBaseSchema
   })
   .strict();
 
+export const articleFallbackPageResourceSchema = resourceBaseSchema
+  .extend({
+    kind: z.literal('article-fallback-page'),
+    articleKeyPath: z.string().min(1),
+    localeCode: localeCodeSchema,
+    sourceResourceId: z.string().min(1),
+  })
+  .strict();
+
 export const machineResourceSchema = resourceBaseSchema
   .extend({
     kind: z.literal('machine'),
@@ -42,6 +51,7 @@ export const machineResourceSchema = resourceBaseSchema
 export const siteResourceSchema = z.discriminatedUnion('kind', [
   staticPageResourceSchema,
   articlePageResourceSchema,
+  articleFallbackPageResourceSchema,
   machineResourceSchema,
 ]);
 
@@ -65,11 +75,13 @@ export const siteManifestSchema = z
 export type StaticPageId = z.infer<typeof staticPageIdSchema>;
 export type StaticPageResource = z.infer<typeof staticPageResourceSchema>;
 export type ArticlePageResource = z.infer<typeof articlePageResourceSchema>;
+export type ArticleFallbackPageResource = z.infer<typeof articleFallbackPageResourceSchema>;
+export type ArticleDeliveryPageResource = ArticlePageResource | ArticleFallbackPageResource;
 export type MachineResource = z.infer<typeof machineResourceSchema>;
 export type SiteResource = z.infer<typeof siteResourceSchema>;
 export type LocalizationGroup = z.infer<typeof localizationGroupSchema>;
 export type SiteManifest = z.infer<typeof siteManifestSchema>;
-export type PageResource = StaticPageResource | ArticlePageResource;
+export type PageResource = StaticPageResource | ArticleDeliveryPageResource;
 export type MachineType = MachineResource['machineType'];
 
 export function parseSiteManifest(value: unknown): SiteManifest {
@@ -77,5 +89,11 @@ export function parseSiteManifest(value: unknown): SiteManifest {
 }
 
 export function isPageResource(resource: SiteResource): resource is PageResource {
-  return resource.kind === 'static-page' || resource.kind === 'article-page';
+  return resource.kind !== 'machine';
+}
+
+export function isArticleDeliveryPageResource(
+  resource: SiteResource,
+): resource is ArticleDeliveryPageResource {
+  return resource.kind === 'article-page' || resource.kind === 'article-fallback-page';
 }

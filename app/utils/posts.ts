@@ -1,5 +1,5 @@
 import { parsePostContentPath } from '~~/shared/content/post-paths';
-import { LOCALE_DEFINITIONS, type LocaleCode } from '~~/shared/i18n/locales';
+import type { LocaleCode } from '~~/shared/i18n/locales';
 import { articlePath, parseLocalizedPath } from '~~/shared/routing/localized-routes';
 
 /** Nuxt Content查询返回的文章版本；语言由内容路径而不是 Frontmatter 决定。 */
@@ -63,27 +63,16 @@ export function groupPostVariants(posts: PostVariant[]): LogicalPost[] {
   return [...groups.values()];
 }
 
-/**
- * 优先选择当前页面语言版本；缺失时按语言注册表顺序选择第一个可用版本。
- * 返回值携带实际 localeCode，调用方必须据此生成链接和日期语言。
- */
-export function selectPostVariant(
+/** 按Article Delivery已经解析出的正文语言读取真实内容版本。 */
+export function requirePostVariant(
   post: LogicalPost,
-  preferredLocaleCode: LocaleCode,
+  contentLocaleCode: LocaleCode,
 ): RoutedPostVariant {
-  const preferredVariant = post.variants[preferredLocaleCode];
+  const selectedVariant = post.variants[contentLocaleCode];
 
-  if (preferredVariant) {
-    return preferredVariant;
+  if (!selectedVariant) {
+    throw new Error(`文章 ${post.articleKeyPath} 缺少${contentLocaleCode}真实内容版本`);
   }
 
-  for (const definition of LOCALE_DEFINITIONS) {
-    const fallbackVariant = post.variants[definition.code];
-
-    if (fallbackVariant) {
-      return fallbackVariant;
-    }
-  }
-
-  throw new Error(`文章 ${post.articleKeyPath} 没有可展示的语言版本`);
+  return selectedVariant;
 }

@@ -31,6 +31,18 @@ const posts: PostSource[] = [
     },
   },
   {
+    sourcePath: 'notes/zh-cn.md',
+    articleKeyPath: 'notes',
+    localeCode: 'zh-cn',
+    metadata: {
+      title: '仅中文随笔',
+      description: '单语言文章',
+      publishedAt: new Date('2026-07-02T00:00:00.000Z'),
+      tags: [],
+      draft: false,
+    },
+  },
+  {
     sourcePath: 'draft/zh-cn.md',
     articleKeyPath: 'draft',
     localeCode: 'zh-cn',
@@ -57,12 +69,14 @@ describe('Shell导航投影', () => {
         resource.kind,
       ]),
       [
-        ['en', '/', 'home'],
-        ['en', '/posts/', 'posts'],
-        ['en', '/posts/examples/hello-world/', 'article'],
         ['zh-cn', '/', 'home'],
         ['zh-cn', '/posts/', 'posts'],
         ['zh-cn', '/posts/examples/hello-world/', 'article'],
+        ['zh-cn', '/posts/notes/', 'article'],
+        ['en', '/', 'home'],
+        ['en', '/posts/', 'posts'],
+        ['en', '/posts/examples/hello-world/', 'article'],
+        ['en', '/posts/notes/', 'article'],
       ],
     );
     assert.equal(
@@ -70,6 +84,12 @@ describe('Shell导航投影', () => {
         (resource) => resource.localeCode === 'zh-cn' && resource.kind === 'article',
       )?.title,
       '环境已经就绪',
+    );
+    assert.equal(
+      projection.resources.find(
+        (resource) => resource.localeCode === 'en' && resource.virtualPath === '/posts/notes/',
+      )?.title,
+      '仅中文随笔',
     );
     assert.equal(
       projection.resources.some((resource) => resource.virtualPath.includes('draft')),

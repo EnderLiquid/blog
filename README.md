@@ -24,7 +24,7 @@ npm run generate        # 生成清单、静态站点及 Pagefind 索引
 npm run preview         # 预览 Nuxt 构建结果
 ```
 
-静态产物位于 `.output/public/`。构建同时生成中英文摘要 RSS、Sitemap、robots.txt和Pagefind索引。构建期公开资源拓扑记录在 `.data/site-manifest.json`；SEO、RSS、Sitemap、robots和Shell导航分别生成职责独立的消费者投影，浏览器打包 `app/generated/site-seo-index.ts` 与 `app/generated/site-shell-index.ts`。开发服务器启动及构建来源变化时会自动刷新这些生成产物。
+静态产物位于 `.output/public/`。构建同时生成中英文摘要 RSS、Sitemap、robots.txt和Pagefind索引。构建期公开资源拓扑记录在 `.data/site-manifest.json`；文章投递、SEO、RSS、Sitemap、robots和Shell导航分别生成职责独立的消费者投影，浏览器打包 `app/generated/site-article-delivery-index.ts`、`app/generated/site-seo-index.ts` 与 `app/generated/site-shell-index.ts`。开发服务器启动及构建来源变化时会自动刷新这些生成产物。
 
 ### Shell终端MVP
 
@@ -51,14 +51,14 @@ Shell将当前语言目录投影为虚拟根，例如公开地址`/zh-cn/posts/`
 
 ## 内容
 
-文章使用 `content/posts/<articleKeyPath>/<locale>.md` 结构：
+文章使用 `content/posts/<articleKeyPath>/<contentLocaleCode>.md` 结构：
 
 ```text
 content/posts/projects/pi/pi-context/zh-cn.md
 content/posts/projects/pi/pi-context/en.md
 ```
 
-对应 `/zh-cn/posts/projects/pi/pi-context/` 和 `/en/posts/projects/pi/pi-context/`。语言是全站 URL 前缀，`/` 仅用于选择语言。Frontmatter 格式：
+对应 `/zh-cn/posts/projects/pi/pi-context/` 和 `/en/posts/projects/pi/pi-context/`。URL前缀表示界面语言；文章缺少该语言版本时，构建会生成回退投递页面并加载优先级解析器选择的真实正文。正文容器会通过`lang`声明实际内容语言，回退页面不会进入Sitemap、RSS或Pagefind正文索引。`/`仅用于选择语言。Frontmatter格式：
 
 ```yaml
 ---
@@ -75,7 +75,7 @@ draft: false
 ---
 ```
 
-`updatedAt` 和 `image` 是可选字段，其他字段必须填写。文章语言由文件名唯一决定，Frontmatter不再重复保存 locale；`zh-cn` 和 `en` 是站点统一使用的小写 BCP 47语言代码。文章路径段和标签统一使用小写 ASCII kebab-case，同一文章的所有语言版本必须使用相同标签集合。`title` 与 `description` 是文章当前唯一编辑来源，页面、SEO和RSS投影有意复用它们，但不会将其复制到站点资源清单中。
+`updatedAt` 和 `image` 是可选字段，其他字段必须填写。文章正文语言由文件名唯一决定，Frontmatter不再重复保存 locale；`zh-cn` 和 `en` 是站点统一使用的小写 BCP 47语言代码。`shared/i18n/locales.ts`中的语言注册顺序是唯一网站优先级：用户偏好先进行全部精确匹配，再进行全部模糊匹配，最后按网站优先级fallback。文章路径段和标签统一使用小写 ASCII kebab-case，同一文章的所有语言版本必须使用相同标签集合。`title` 与 `description` 是文章当前唯一编辑来源，页面、SEO和RSS投影有意复用它们，但不会将其复制到站点资源清单中。
 
 ## GitHub Pages
 
@@ -102,12 +102,13 @@ https://blog.enderliquid.top/robots.txt
 ## 当前边界
 
 - 已接通文章内容、全站语言前缀、静态生成、摘要 RSS、Sitemap、robots.txt、Giscus评论，以及 `/<locale>/posts/` 中的跨语言 Pagefind 搜索。
-- URL 是页面语言的唯一来源；`shared/i18n/locales.ts` 统一定义 `LocaleCode` 及严格、兼容两套匹配逻辑。
+- `shared/i18n/locales.ts`统一定义`LocaleCode`、网站语言优先级和两轮偏好解析；不再维护独立默认语言。
+- URL前缀是界面语言，文章正文语言由构建期Article Delivery投影确定；单语言文章会为其他界面语言生成noindex回退投递页面。
 - `shared/site/config.ts` 只定义唯一生产源地址；静态页面SEO和RSS协议配置分别位于 `shared/site-definitions/page-seo.ts` 与 `shared/site-definitions/rss.ts`。
 - `shared/site-manifest/` 只负责资源拓扑、关系和构建校验；不保存标题、描述、日期、标签或索引策略。
 - `shared/site-projections/` 分别生成预渲染、页面SEO、RSS、Sitemap、robots和Shell导航视图；各消费者不再自行发现站点结构。
 - Pagefind 索引在静态生成后产生，完整搜索需使用 `npm run generate` 后的静态预览验证。
-- Giscus公开仓库配置和稳定Discussion映射集中在 `shared/comments/giscus.ts`；中英文版本按 `articleKeyPath` 共享评论。
+- Giscus公开仓库配置和稳定Discussion映射集中在 `shared/comments/giscus.ts`；评论界面跟随界面语言，所有正文投递页面按 `articleKeyPath` 共享评论。
 - Shell终端MVP已经接通路径浏览、页面导航、文章搜索、语言切换和Route反映；顶部导航统一提供主页面、语言菜单与终端开关，并根据页面容器宽度切换为汉堡菜单。
 - `public/giscus-theme.css` 暂时验证了Giscus的字体与明暗配色定制能力，正式视觉方案仍待设计。
 - `.npmrc` 使用 npmmirror，以规避当前环境访问 npm 官方源过慢的问题。

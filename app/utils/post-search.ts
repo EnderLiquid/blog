@@ -1,5 +1,5 @@
-import type { LogicalPost, RoutedPostVariant } from '~/utils/posts';
-import { selectPostVariant } from '~/utils/posts';
+import { findArticleDelivery } from '~/utils/article-delivery';
+import { requirePostVariant, type LogicalPost, type RoutedPostVariant } from '~/utils/posts';
 import type { LocaleCode } from '~~/shared/i18n/locales';
 
 export type PostSortMode = 'relevance' | 'latest' | 'oldest';
@@ -7,6 +7,7 @@ export type PostSortMode = 'relevance' | 'latest' | 'oldest';
 export interface DisplayPost {
   articleKeyPath: string;
   post: RoutedPostVariant;
+  displayPath: string;
   score: number;
 }
 
@@ -24,11 +25,20 @@ export function createDisplayPosts(
       ? logicalPosts.filter((post) => searchScores.has(post.articleKeyPath))
       : logicalPosts;
 
-  const displayPosts = visiblePosts.map((logicalPost) => ({
-    articleKeyPath: logicalPost.articleKeyPath,
-    post: selectPostVariant(logicalPost, preferredLocaleCode),
-    score: searchScores.get(logicalPost.articleKeyPath) ?? 0,
-  }));
+  const displayPosts = visiblePosts.map((logicalPost) => {
+    const delivery = findArticleDelivery(logicalPost.articleKeyPath, preferredLocaleCode);
+
+    if (!delivery) {
+      throw new Error(`文章 ${logicalPost.articleKeyPath} 缺少${preferredLocaleCode}投递页面`);
+    }
+
+    return {
+      articleKeyPath: logicalPost.articleKeyPath,
+      post: requirePostVariant(logicalPost, delivery.contentLocaleCode),
+      displayPath: delivery.path,
+      score: searchScores.get(logicalPost.articleKeyPath) ?? 0,
+    };
+  });
 
   return displayPosts.sort((left, right) =>
     compareDisplayPosts(left, right, queryActive, searchAvailable, sortMode),

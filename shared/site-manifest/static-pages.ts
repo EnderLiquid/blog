@@ -1,4 +1,8 @@
-import { DEFAULT_LOCALE_CODE, type LocaleCode } from '../i18n/locales.ts';
+import {
+  resolveLocalePreference,
+  SUPPORTED_LOCALE_CODES,
+  type LocaleCode,
+} from '../i18n/locales.ts';
 import { homePath, postsPath } from '../routing/localized-routes.ts';
 import type { StaticPageId } from './model.ts';
 
@@ -37,7 +41,7 @@ export const STATIC_PAGE_DEFINITIONS = [
     pageId: 'posts',
     path: postsPath,
     localizationGroupId: 'page:posts',
-    xDefaultPath: () => postsPath(DEFAULT_LOCALE_CODE),
+    xDefaultPath: () => postsPath(requireHighestPriorityLocaleCode()),
   },
   {
     localized: false,
@@ -45,3 +49,13 @@ export const STATIC_PAGE_DEFINITIONS = [
     path: () => '/404.html',
   },
 ] as const satisfies readonly StaticPageDefinition[];
+
+function requireHighestPriorityLocaleCode(): LocaleCode {
+  const localeCode = resolveLocalePreference([], SUPPORTED_LOCALE_CODES);
+
+  if (!localeCode) {
+    throw new Error('站点语言注册表不能为空');
+  }
+
+  return localeCode;
+}

@@ -1,5 +1,10 @@
 import type { PostSource } from '../content/post-source.ts';
-import type { ArticlePageResource, SiteManifest } from './model.ts';
+import {
+  isArticleDeliveryPageResource,
+  type ArticleDeliveryPageResource,
+  type ArticlePageResource,
+  type SiteManifest,
+} from './model.ts';
 import { articleResourceId } from './resource-ids.ts';
 
 export interface SiteBuildContext {
@@ -7,7 +12,7 @@ export interface SiteBuildContext {
   postSourcesByResourceId: ReadonlyMap<string, PostSource>;
 }
 
-/** 建立拓扑资源与原始文章来源的一对一构建期关联。 */
+/** 建立资源拓扑与原始文章来源的构建期关联；一个来源可以被多个投递页面消费。 */
 export function createSiteBuildContext(
   manifest: SiteManifest,
   posts: readonly PostSource[],
@@ -29,20 +34,32 @@ export function createSiteBuildContext(
     postSourcesByResourceId.set(resourceId, post);
   }
 
-  const articleResources = manifest.resources.filter(
-    (resource): resource is ArticlePageResource => resource.kind === 'article-page',
+  const articleResources = manifest.resources.filter(isArticleDeliveryPageResource);
+  const realArticleResourceIds = new Set(
+    articleResources
+      .filter((resource): resource is ArticlePageResource => resource.kind === 'article-page')
+      .map((resource) => resource.id),
   );
-  const articleResourceIds = new Set(articleResources.map((resource) => resource.id));
 
   for (const resource of articleResources) {
-    if (!postSourcesByResourceId.has(resource.id)) {
-      errors.push(`${resource.id}: 找不到对应的非草稿文章来源`);
+    const sourceResourceId =
+      resource.kind === 'article-page' ? resource.id : resource.sourceResourceId;
+
+    if (!postSourcesByResourceId.has(sourceResourceId)) {
+      errors.push(`${resource.id}: 找不到对应的非草稿文章来源“${sourceResourceId}”`);
+    }
+
+    if (
+      resource.kind === 'article-fallback-page' &&
+      !realArticleResourceIds.has(resource.sourceResourceId)
+    ) {
+      errors.push(`${resource.id}: 回退资源来源不是Manifest中的真实文章资源`);
     }
   }
 
   for (const [resourceId, post] of postSourcesByResourceId) {
-    if (!articleResourceIds.has(resourceId)) {
-      errors.push(`${post.sourcePath}: 非草稿文章来源没有对应Manifest资源“${resourceId}”`);
+    if (!realArticleResourceIds.has(resourceId)) {
+      errors.push(`${post.sourcePath}: 非草稿文章来源没有对应真实Manifest资源“${resourceId}”`);
     }
   }
 
@@ -58,12 +75,14 @@ export function createSiteBuildContext(
 
 export function findPostSource(
   context: SiteBuildContext,
-  resource: ArticlePageResource,
+  resource: ArticleDeliveryPageResource,
 ): PostSource {
-  const post = context.postSourcesByResourceId.get(resource.id);
+  const sourceResourceId =
+    resource.kind === 'article-page' ? resource.id : resource.sourceResourceId;
+  const post = context.postSourcesByResourceId.get(sourceResourceId);
 
   if (!post) {
-    throw new Error(`${resource.id}: 构建上下文缺少文章来源`);
+    throw new Error(`${resource.id}: 构建上下文缺少文章来源“${sourceResourceId}”`);
   }
 
   return post;

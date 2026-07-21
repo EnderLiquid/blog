@@ -167,6 +167,21 @@ describe('RSS', () => {
     assert.doesNotMatch(rss, /只包含摘要/);
   });
 
+  it('回退投递页面不会进入缺失语言RSS', () => {
+    const singleLanguagePosts = [chinesePost];
+    const singleLanguageManifest = buildSiteManifest({ posts: singleLanguagePosts });
+    const singleLanguageContext = createSiteBuildContext(
+      singleLanguageManifest,
+      singleLanguagePosts,
+    );
+
+    assert.equal(createRssView(singleLanguageContext, 'en').items.length, 0);
+    assert.deepEqual(
+      createRssView(singleLanguageContext, 'zh-cn').items.map((item) => item.articleKeyPath),
+      ['examples/xml-and-rss'],
+    );
+  });
+
   it('生产域名变化时保留GUID，只更新可访问链接', () => {
     const migratedManifest = buildSiteManifest({
       posts,
@@ -200,6 +215,25 @@ describe('Sitemap与robots', () => {
     assert.match(sitemap, /hreflang="x-default"/);
     assert.ok(!sitemap.includes(`<loc>${configuredSiteUrl('/')}</loc>`));
     assert.doesNotMatch(sitemap, /404\.html|priority|changefreq/);
+  });
+
+  it('Sitemap只包含单语言文章的真实页面', () => {
+    const singleLanguagePosts = [chinesePost];
+    const singleLanguageManifest = buildSiteManifest({ posts: singleLanguagePosts });
+    const singleLanguageContext = createSiteBuildContext(
+      singleLanguageManifest,
+      singleLanguagePosts,
+    );
+    const sitemap = createSitemapView(singleLanguageContext);
+
+    assert.equal(
+      sitemap.some((entry) => entry.url.endsWith('/zh-cn/posts/examples/xml-and-rss/')),
+      true,
+    );
+    assert.equal(
+      sitemap.some((entry) => entry.url.endsWith('/en/posts/examples/xml-and-rss/')),
+      false,
+    );
   });
 
   it('允许全站抓取并声明清单中的绝对Sitemap URL', () => {

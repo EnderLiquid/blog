@@ -1,7 +1,7 @@
 import { parseLocalizedPath } from '../routing/localized-routes.ts';
 import { findPostSource, type SiteBuildContext } from '../site-manifest/context.ts';
-import type { ArticlePageResource, StaticPageResource } from '../site-manifest/model.ts';
-import type { LocaleCode } from '../i18n/locales.ts';
+import type { ArticleDeliveryPageResource, StaticPageResource } from '../site-manifest/model.ts';
+import { SUPPORTED_LOCALE_CODES, type LocaleCode } from '../i18n/locales.ts';
 
 export const SHELL_NAVIGATION_PROJECTION_VERSION = 1 as const;
 
@@ -32,7 +32,7 @@ export function createShellNavigationProjection(
 ): ShellNavigationProjection {
   const resources = context.manifest.resources
     .flatMap((resource): ShellNavigationResource[] => {
-      if (resource.kind === 'article-page') {
+      if (resource.kind === 'article-page' || resource.kind === 'article-fallback-page') {
         return [createArticleResource(context, resource)];
       }
 
@@ -70,7 +70,7 @@ function createStaticResource(
 
 function createArticleResource(
   context: SiteBuildContext,
-  resource: ArticlePageResource,
+  resource: ArticleDeliveryPageResource,
 ): ShellNavigationResource {
   const post = findPostSource(context, resource);
 
@@ -113,7 +113,8 @@ function compareShellResources(
   right: ShellNavigationResource,
 ): number {
   return (
-    left.localeCode.localeCompare(right.localeCode) ||
+    SUPPORTED_LOCALE_CODES.indexOf(left.localeCode) -
+      SUPPORTED_LOCALE_CODES.indexOf(right.localeCode) ||
     left.virtualPath.localeCompare(right.virtualPath) ||
     left.resourceId.localeCompare(right.resourceId)
   );
