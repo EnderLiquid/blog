@@ -45,6 +45,10 @@ clear
 
 Shell将当前语言目录投影为虚拟根，例如公开地址`/zh-cn/posts/`在Shell中显示为`/posts/`。`ls`和`cd`只消费构建期导航投影；普通页面仍然独立工作。Shell导航通过待处理意图与最终Route对账，不依赖Vue Router内部History状态。MVP不提供Shell内的`back`和`forward`，浏览器工具栏的前进和后退仍会反映到Shell历史。
 
+### About个人页
+
+`/zh-cn/about/`和`/en/about/`提供双语个人介绍，并接入顶部导航、Manifest、SEO、Sitemap和Shell虚拟路径`/about/`。页面采用作者扉页式不对称布局，Shell压窄页面或进入移动端时通过容器查询切换为单栏。GitHub与哔哩哔哩公开主页集中定义在`shared/site-definitions/profile.ts`，Logo使用本地内联SVG和`currentColor`适配明暗模式。
+
 ### Giscus主题调试
 
 开发和生产环境均使用 `shared/comments/giscus.ts` 中基于 `SITE_ORIGIN` 的已部署主题地址。现代浏览器会阻止 `giscus.app` 跨域iframe读取本机loopback资源，因此 `npm run dev` 不会直接加载本地 `/giscus-theme.css`；修改 `public/giscus-theme.css` 后需要部署，或通过独立的公网HTTPS预览流程验证。
@@ -110,5 +114,6 @@ https://blog.enderliquid.top/robots.txt
 - Pagefind 索引在静态生成后产生，完整搜索需使用 `npm run generate` 后的静态预览验证。
 - Giscus公开仓库配置和稳定Discussion映射集中在 `shared/comments/giscus.ts`；评论界面跟随界面语言，所有正文投递页面按 `articleKeyPath` 共享评论。
 - Shell终端MVP已经接通路径浏览、页面导航、文章搜索、语言切换和Route反映；顶部导航统一提供主页面、语言菜单与终端开关，并根据页面容器宽度切换为汉堡菜单。
-- `public/giscus-theme.css` 暂时验证了Giscus的字体与明暗配色定制能力，正式视觉方案仍待设计。
+- About个人页已经建立首个正式静态页面视觉样板；主页、文章列表与Markdown正文的统一设计仍待完成。
+- `public/giscus-theme.css` 暂时验证了Giscus的字体与明暗配色定制能力，后续会随全站视觉系统继续调整。
 - `.npmrc` 使用 npmmirror，以规避当前环境访问 npm 官方源过慢的问题。

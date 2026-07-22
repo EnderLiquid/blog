@@ -11,6 +11,7 @@ export interface SiteMessages {
     label: string;
     home: string;
     posts: string;
+    about: string;
     openMenu: string;
     closeMenu: string;
     language: string;
@@ -26,6 +27,17 @@ export interface SiteMessages {
   posts: {
     title: string;
     description: string;
+  };
+  about: {
+    title: string;
+    name: string;
+    identity: readonly string[];
+    quote: readonly string[];
+    reflection: string;
+    java: string;
+    linksLabel: string;
+    github: string;
+    bilibili: string;
   };
   search: {
     label: string;
@@ -64,6 +76,7 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       label: '全站导航',
       home: '首页',
       posts: '文章',
+      about: '关于',
       openMenu: '展开导航菜单',
       closeMenu: '收起导航菜单',
       language: '切换语言',
@@ -79,6 +92,18 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     posts: {
       title: '文章',
       description: '搜索标题和正文，或按发布时间浏览。',
+    },
+    about: {
+      title: 'ABOUT',
+      name: 'EnderLiquid',
+      identity: ['软件工程本科在读，', 'Java母语者。'],
+      quote: ['“要是能把这个想法', '变成现实就好了”'],
+      reflection:
+        '我总是像这样莫名其妙地开始。果然，我常常以一个半成品收场，也带走一些或许比成品更珍贵的收获。偶尔，我也真能把一时兴起的想法变成能够运行、也能被人看见的东西。',
+      java: 'Java给了我理解系统的第一套框架。现在接触其他语言时，我也在学着少带一点Java口音。',
+      linksLabel: '外部坐标',
+      github: 'GitHub',
+      bilibili: '哔哩哔哩',
     },
     search: {
       label: '搜索文章',
@@ -114,6 +139,7 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       label: 'Site navigation',
       home: 'Home',
       posts: 'Posts',
+      about: 'About',
       openMenu: 'Open navigation menu',
       closeMenu: 'Close navigation menu',
       language: 'Change language',
@@ -129,6 +155,18 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     posts: {
       title: 'Posts',
       description: 'Search titles and content, or browse by publication date.',
+    },
+    about: {
+      title: 'ABOUT',
+      name: 'EnderLiquid',
+      identity: ['Software engineering undergraduate.', 'Java is my native programming language.'],
+      quote: ['“What if I could make this idea real?”'],
+      reflection:
+        'That is how I keep starting things, for no particularly good reason. Predictably, I often end up with a half-finished project and lessons that may be worth more than the finished thing. Every now and then, though, I do manage to turn a passing idea into something that runs—and that other people can see.',
+      java: 'Java gave me my first framework for understanding systems. As I work with other languages, I’m also learning to speak them with a little less of a Java accent.',
+      linksLabel: 'Elsewhere',
+      github: 'GitHub',
+      bilibili: 'Bilibili',
     },
     search: {
       label: 'Search posts',

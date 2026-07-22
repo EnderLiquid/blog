@@ -16,6 +16,11 @@ export function postsPath(localeCode: LocaleCode): string {
   return `/${localeCode}/posts/`;
 }
 
+/** 生成指定语言的个人介绍页地址。 */
+export function aboutPath(localeCode: LocaleCode): string {
+  return `/${localeCode}/about/`;
+}
+
 /** 生成指定语言的 RSS 2.0订阅地址。 */
 export function rssPath(localeCode: LocaleCode): string {
   return `/${localeCode}/rss.xml`;

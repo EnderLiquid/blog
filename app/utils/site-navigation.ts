@@ -2,7 +2,7 @@ import { LOCALE_DEFINITIONS, type LocaleCode } from '../../shared/i18n/locales.t
 import { parseLocalizedPath, switchLocalePath } from '../../shared/routing/localized-routes.ts';
 import type { ArticleDeliveryIndexView } from '../../shared/site-projections/model.ts';
 
-export type PrimaryNavigationSection = 'home' | 'posts';
+export type PrimaryNavigationSection = 'home' | 'posts' | 'about';
 
 export interface LocaleNavigationTarget {
   localeCode: LocaleCode;
@@ -15,7 +15,16 @@ export interface LocaleNavigationTarget {
 /** 根据公开路径判断顶部导航中应标记的主要页面分区。 */
 export function resolvePrimaryNavigationSection(path: string): PrimaryNavigationSection {
   const localizedPath = parseLocalizedPath(path);
-  return localizedPath?.pathWithoutLocale.startsWith('/posts/') ? 'posts' : 'home';
+
+  if (localizedPath?.pathWithoutLocale.startsWith('/posts/')) {
+    return 'posts';
+  }
+
+  if (localizedPath?.pathWithoutLocale === '/about/') {
+    return 'about';
+  }
+
+  return 'home';
 }
 
 /**

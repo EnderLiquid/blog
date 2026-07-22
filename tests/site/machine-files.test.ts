@@ -54,9 +54,12 @@ describe('站点资源清单', () => {
     const articleGroup = manifest.localizationGroups.find(
       (group) => group.id === 'article:examples/xml-and-rss',
     );
+    const aboutGroup = manifest.localizationGroups.find((group) => group.id === 'page:about');
 
     assert.ok(routes.includes('/'));
     assert.ok(routes.includes('/404.html'));
+    assert.ok(routes.includes('/zh-cn/about/'));
+    assert.ok(routes.includes('/en/about/'));
     assert.ok(routes.includes('/en/posts/examples/xml-and-rss/'));
     assert.ok(routes.includes('/zh-cn/rss.xml'));
     assert.deepEqual(articleGroup?.memberResourceIds, [
@@ -64,6 +67,8 @@ describe('站点资源清单', () => {
       'article:examples/xml-and-rss:en',
     ]);
     assert.equal(articleGroup?.xDefaultPath, '/zh-cn/posts/examples/xml-and-rss/');
+    assert.deepEqual(aboutGroup?.memberResourceIds, ['page:about:zh-cn', 'page:about:en']);
+    assert.equal(aboutGroup?.xDefaultPath, '/zh-cn/about/');
   });
 
   it('排除草稿公开资源，但仍接受它作为已校验来源', () => {
@@ -126,6 +131,24 @@ describe('PageSeoView', () => {
       ['en'],
     );
     assert.equal(seo?.feeds[0]?.title, RSS_FEED_DEFINITIONS.en.title);
+  });
+
+  it('为About生成独立SEO和完整语言关系', () => {
+    const seoIndex = createPageSeoIndexView(context);
+    const about = seoIndex['/zh-cn/about/'];
+
+    assert.equal(about?.title, '关于 EnderLiquid');
+    assert.equal(about?.description, '软件工程本科在读，Java母语者。');
+    assert.equal(about?.indexability, 'index');
+    assert.equal(about?.canonicalUrl, configuredSiteUrl('/zh-cn/about/'));
+    assert.deepEqual(
+      about?.languageAlternates.map((alternate) => alternate.localeCode),
+      ['zh-cn', 'en', 'x-default'],
+    );
+    assert.deepEqual(
+      about?.feeds.map((feed) => feed.localeCode),
+      ['zh-cn'],
+    );
   });
 
   it('根入口声明两个RSS，404不声明canonical、alternate或RSS', () => {
@@ -206,6 +229,7 @@ describe('Sitemap与robots', () => {
     assert.match(sitemap, /xmlns:xhtml="http:\/\/www\.w3\.org\/1999\/xhtml"/);
     assert.ok(sitemap.includes(`<loc>${configuredSiteUrl('/zh-cn/')}</loc>`));
     assert.ok(sitemap.includes(`<loc>${configuredSiteUrl('/en/posts/')}</loc>`));
+    assert.ok(sitemap.includes(`<loc>${configuredSiteUrl('/en/about/')}</loc>`));
     assert.ok(
       sitemap.includes(`<loc>${configuredSiteUrl('/en/posts/examples/xml-and-rss/')}</loc>`),
     );

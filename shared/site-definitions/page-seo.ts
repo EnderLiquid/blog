@@ -13,6 +13,7 @@ interface StaticPageSeoDefinitions {
   root: PageSeoDefinition;
   home: LocalizedPageSeoDefinitions;
   posts: LocalizedPageSeoDefinitions;
+  about: LocalizedPageSeoDefinitions;
   'not-found': PageSeoDefinition;
 }
 
@@ -51,6 +52,18 @@ export const STATIC_PAGE_SEO_DEFINITIONS: StaticPageSeoDefinitions = {
       indexability: 'index',
     },
   },
+  about: {
+    'zh-cn': {
+      title: '关于 EnderLiquid',
+      description: '软件工程本科在读，Java母语者。',
+      indexability: 'index',
+    },
+    en: {
+      title: 'About EnderLiquid',
+      description: 'Software engineering undergraduate and native Java speaker.',
+      indexability: 'index',
+    },
+  },
   'not-found': {
     title: '404 · 页面不存在',
     description: '你访问的地址不存在或已经失效。',
@@ -76,7 +89,7 @@ export function resolveStaticPageSeo(
   pageId: StaticPageId,
   localeCode?: LocaleCode,
 ): PageSeoDefinition {
-  if (pageId === 'home' || pageId === 'posts') {
+  if (pageId === 'home' || pageId === 'posts' || pageId === 'about') {
     if (!localeCode) {
       throw new Error(`本地化静态页面“${pageId}”缺少localeCode`);
     }

@@ -5,7 +5,7 @@ import { SUPPORTED_LOCALE_CODES, type LocaleCode } from '../i18n/locales.ts';
 
 export const SHELL_NAVIGATION_PROJECTION_VERSION = 1 as const;
 
-export type ShellNavigationResourceKind = 'home' | 'posts' | 'article';
+export type ShellNavigationResourceKind = 'home' | 'posts' | 'about' | 'article';
 
 export interface ShellNavigationResource {
   resourceId: string;
@@ -56,7 +56,7 @@ export function createShellNavigationProjection(
 function createStaticResource(
   resource: StaticPageResource,
   localeCode: LocaleCode,
-  kind: 'home' | 'posts',
+  kind: 'home' | 'posts' | 'about',
 ): ShellNavigationResource {
   return {
     resourceId: resource.id,
@@ -64,7 +64,7 @@ function createStaticResource(
     virtualPath: virtualPathFromPublicPath(resource.path, localeCode),
     localeCode,
     kind,
-    ...(kind === 'posts' ? { navigableParentPath: '/' } : {}),
+    ...(kind === 'posts' || kind === 'about' ? { navigableParentPath: '/' } : {}),
   };
 }
 
@@ -86,13 +86,17 @@ function createArticleResource(
   };
 }
 
-function staticPageKind(resource: StaticPageResource): 'home' | 'posts' | undefined {
+function staticPageKind(resource: StaticPageResource): 'home' | 'posts' | 'about' | undefined {
   if (resource.pageId === 'home') {
     return 'home';
   }
 
   if (resource.pageId === 'posts') {
     return 'posts';
+  }
+
+  if (resource.pageId === 'about') {
+    return 'about';
   }
 
   return undefined;

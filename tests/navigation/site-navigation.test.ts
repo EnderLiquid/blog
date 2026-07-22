@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import { aboutPath } from '../../shared/routing/localized-routes.ts';
 import type { ArticleDeliveryIndexView } from '../../shared/site-projections/model.ts';
 import {
   createLocaleNavigationTargets,
@@ -42,10 +43,13 @@ const articleDeliveryIndex: ArticleDeliveryIndexView = {
 };
 
 describe('顶部主导航', () => {
-  it('将首页和文章页面映射到对应主导航分区', () => {
+  it('将首页、文章和About页面映射到对应主导航分区', () => {
     assert.equal(resolvePrimaryNavigationSection('/zh-cn/'), 'home');
     assert.equal(resolvePrimaryNavigationSection('/en/posts/'), 'posts');
     assert.equal(resolvePrimaryNavigationSection('/zh-cn/posts/examples/hello-world/'), 'posts');
+    assert.equal(resolvePrimaryNavigationSection('/en/about/'), 'about');
+    assert.equal(aboutPath('zh-cn'), '/zh-cn/about/');
+    assert.equal(aboutPath('en'), '/en/about/');
   });
 });
 
@@ -56,9 +60,15 @@ describe('顶部语言菜单', () => {
       articleDeliveryIndex,
     );
     const english = targets.find((target) => target.localeCode === 'en');
+    const aboutTargets = createLocaleNavigationTargets(
+      '/zh-cn/about/?from=profile#links',
+      articleDeliveryIndex,
+    );
+    const englishAbout = aboutTargets.find((target) => target.localeCode === 'en');
 
     assert.equal(english?.available, true);
     assert.equal(english?.path, '/en/posts/?q=nuxt&sort=oldest#result');
+    assert.equal(englishAbout?.path, '/en/about/?from=profile#links');
   });
 
   it('真实文章详情切换界面语言时保留query与Hash', () => {

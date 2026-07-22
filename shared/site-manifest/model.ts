@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { isLocaleCode, type LocaleCode } from '../i18n/locales.ts';
 
 export const SITE_MANIFEST_VERSION = 3 as const;
-export const STATIC_PAGE_IDS = ['root', 'home', 'posts', 'not-found'] as const;
+export const STATIC_PAGE_IDS = ['root', 'home', 'posts', 'about', 'not-found'] as const;
 
 const localeCodeSchema = z
   .string()

@@ -57,7 +57,7 @@ const posts: PostSource[] = [
 ];
 
 describe('Shell导航投影', () => {
-  it('只投影本地化首页、文章列表和非草稿文章', () => {
+  it('只投影本地化首页、About、文章列表和非草稿文章', () => {
     const manifest = buildSiteManifest({ posts });
     const projection = createShellNavigationProjection(createSiteBuildContext(manifest, posts));
 
@@ -70,10 +70,12 @@ describe('Shell导航投影', () => {
       ]),
       [
         ['zh-cn', '/', 'home'],
+        ['zh-cn', '/about/', 'about'],
         ['zh-cn', '/posts/', 'posts'],
         ['zh-cn', '/posts/examples/hello-world/', 'article'],
         ['zh-cn', '/posts/notes/', 'article'],
         ['en', '/', 'home'],
+        ['en', '/about/', 'about'],
         ['en', '/posts/', 'posts'],
         ['en', '/posts/examples/hello-world/', 'article'],
         ['en', '/posts/notes/', 'article'],
@@ -90,6 +92,12 @@ describe('Shell导航投影', () => {
         (resource) => resource.localeCode === 'en' && resource.virtualPath === '/posts/notes/',
       )?.title,
       '仅中文随笔',
+    );
+    assert.equal(
+      projection.resources.find(
+        (resource) => resource.localeCode === 'zh-cn' && resource.kind === 'about',
+      )?.navigableParentPath,
+      '/',
     );
     assert.equal(
       projection.resources.some((resource) => resource.virtualPath.includes('draft')),

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ARTICLE_DELIVERY_INDEX } from '~/utils/article-delivery';
-import { homePath, postsPath } from '~~/shared/routing/localized-routes';
+import { aboutPath, homePath, postsPath } from '~~/shared/routing/localized-routes';
 import {
   createLocaleNavigationTargets,
   resolvePrimaryNavigationSection,
@@ -189,6 +189,12 @@ defineExpose({ focusShellToggle });
             :aria-current="activeSection === 'posts' ? 'page' : undefined"
           >
             {{ messages.navigation.posts }}
+          </NuxtLink>
+          <NuxtLink
+            :to="aboutPath(localeCode)"
+            :aria-current="activeSection === 'about' ? 'page' : undefined"
+          >
+            {{ messages.navigation.about }}
           </NuxtLink>
         </div>
       </div>

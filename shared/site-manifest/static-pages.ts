@@ -3,7 +3,7 @@ import {
   SUPPORTED_LOCALE_CODES,
   type LocaleCode,
 } from '../i18n/locales.ts';
-import { homePath, postsPath } from '../routing/localized-routes.ts';
+import { aboutPath, homePath, postsPath } from '../routing/localized-routes.ts';
 import type { StaticPageId } from './model.ts';
 
 export interface LocalizedStaticPageDefinition {
@@ -42,6 +42,13 @@ export const STATIC_PAGE_DEFINITIONS = [
     path: postsPath,
     localizationGroupId: 'page:posts',
     xDefaultPath: () => postsPath(requireHighestPriorityLocaleCode()),
+  },
+  {
+    localized: true,
+    pageId: 'about',
+    path: aboutPath,
+    localizationGroupId: 'page:about',
+    xDefaultPath: () => aboutPath(requireHighestPriorityLocaleCode()),
   },
   {
     localized: false,
