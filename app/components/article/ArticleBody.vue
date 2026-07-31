@@ -65,31 +65,6 @@ defineProps<{
   margin-top: 0;
 }
 
-.article-body :deep(h1 > a),
-.article-body :deep(h2 > a),
-.article-body :deep(h3 > a),
-.article-body :deep(h4 > a),
-.article-body :deep(h5 > a),
-.article-body :deep(h6 > a) {
-  color: inherit;
-  text-decoration: none;
-}
-
-.article-body :deep(h1 > a:hover),
-.article-body :deep(h1 > a:focus-visible),
-.article-body :deep(h2 > a:hover),
-.article-body :deep(h2 > a:focus-visible),
-.article-body :deep(h3 > a:hover),
-.article-body :deep(h3 > a:focus-visible),
-.article-body :deep(h4 > a:hover),
-.article-body :deep(h4 > a:focus-visible),
-.article-body :deep(h5 > a:hover),
-.article-body :deep(h5 > a:focus-visible),
-.article-body :deep(h6 > a:hover),
-.article-body :deep(h6 > a:focus-visible) {
-  color: var(--signal);
-}
-
 .article-body :deep(p) {
   margin: 0 0 1.35rem;
 }

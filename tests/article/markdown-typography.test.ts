@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { describe, test } from 'node:test';
 import {
+  MARKDOWN_HEADING_ANCHOR_LINKS,
   MARKDOWN_HIGHLIGHT_LANGUAGES,
   MARKDOWN_HIGHLIGHT_THEME,
 } from '../../shared/content/markdown.ts';
@@ -20,6 +21,17 @@ describe('Markdown代码高亮配置', () => {
     for (const language of ['typescript', 'vue', 'java', 'kotlin', 'c', 'cpp', 'python']) {
       assert.ok(MARKDOWN_HIGHLIGHT_LANGUAGES.includes(language));
     }
+  });
+
+  test('关闭所有Markdown标题锚点', () => {
+    assert.deepEqual(Object.values(MARKDOWN_HEADING_ANCHOR_LINKS), [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
   });
 });
 

@@ -3,6 +3,16 @@ import type { BundledLanguage } from 'shiki';
 
 export const MARKDOWN_HIGHLIGHT_THEME = 'github-dark';
 
+/** 标题保持普通文本，避免整段链接干扰拖选和复制。 */
+export const MARKDOWN_HEADING_ANCHOR_LINKS = {
+  h1: false,
+  h2: false,
+  h3: false,
+  h4: false,
+  h5: false,
+  h6: false,
+} as const;
+
 /**
  * 使用Shiki完整语言包登记的全部规范语言ID。
  *

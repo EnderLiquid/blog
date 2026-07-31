@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import {
+  MARKDOWN_HEADING_ANCHOR_LINKS,
   MARKDOWN_HIGHLIGHT_LANGUAGES,
   MARKDOWN_HIGHLIGHT_THEME,
 } from './shared/content/markdown.ts';
@@ -12,6 +13,9 @@ export default defineNuxtConfig({
   modules: ['@nuxt/content'],
   css: ['~/assets/css/main.css'],
   content: {
+    renderer: {
+      anchorLinks: MARKDOWN_HEADING_ANCHOR_LINKS,
+    },
     build: {
       markdown: {
         highlight: {
