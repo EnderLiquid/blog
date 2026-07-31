@@ -39,6 +39,10 @@ main {
   --color-accent-muted: #9d234866;
   --color-accent-subtle: #9d23481a;
   --color-action-list-item-default-hover-bg: var(--color-accent-subtle);
+  --borderRadius-small: 0;
+  --borderRadius-medium: 0;
+  --borderRadius-large: 0;
+  --borderRadius-full: 0;
 }
 
 .gsc-main,
@@ -54,11 +58,18 @@ main {
   font-family: Georgia, 'Noto Serif SC', serif !important;
 }
 
-/* 评论容器使用直角边框，头像、标签和按钮仍保留各自的形状。 */
-.gsc-comment-box,
-.gsc-comment > div,
-.gsc-reply-box {
+/* 站点界面以直角边框为基调，统一覆盖Giscus及其伪元素的圆角。 */
+.gsc-main,
+.gsc-main *,
+.gsc-main *::before,
+.gsc-main *::after {
   border-radius: 0 !important;
+}
+
+/* 用户头像保留Giscus默认的圆形识别方式。 */
+.gsc-comment-author-avatar img,
+.gsc-reply-author-avatar img {
+  border-radius: 50% !important;
 }
 
 /* Giscus内无法切换upvote，只保留可直接操作的emoji reaction。 */
@@ -102,5 +113,9 @@ main {
     --color-accent-emphasis: #f07194;
     --color-accent-muted: #f0719466;
     --color-accent-subtle: #f071941a;
+    --borderRadius-small: 0;
+    --borderRadius-medium: 0;
+    --borderRadius-large: 0;
+    --borderRadius-full: 0;
   }
 }
