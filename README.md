@@ -81,6 +81,12 @@ draft: false
 
 `updatedAt` 和 `image` 是可选字段，其他字段必须填写。文章正文语言由文件名唯一决定，Frontmatter不再重复保存 locale；`zh-cn` 和 `en` 是站点统一使用的小写 BCP 47语言代码。`shared/i18n/locales.ts`中的语言注册顺序是唯一网站优先级：用户偏好先进行全部精确匹配，再进行全部模糊匹配，最后按网站优先级fallback。文章路径段和标签统一使用小写 ASCII kebab-case，同一文章的所有语言版本必须使用相同标签集合。`title` 与 `description` 是文章当前唯一编辑来源，页面、SEO和RSS投影有意复用它们，但不会将其复制到站点资源清单中。
 
+### Markdown排版
+
+`app/components/article/ArticleBody.vue`是文章正文的唯一渲染与样式边界；文章路由只负责查询、头部、Pagefind边界和评论挂载。纯样式需求通过该组件内有边界的`:deep()`处理；只有代码块和表格需要额外结构，因此分别覆写`app/components/content/ProsePre.vue`与`ProseTable.vue`。
+
+代码块固定使用深色面板和`github-dark` Shiki主题，避免本站`prefers-color-scheme`机制与Shiki默认`html.dark`类切换产生“浅色Token + 深色背景”。主题和显式加载语言维护在`shared/content/markdown.ts`。长代码与宽表格只在自身容器内横向滚动，不得通过隐藏页面溢出来掩盖布局问题。
+
 ## GitHub Pages
 
 `.github/workflows/deploy-pages.yml` 会在 `main` 分支更新时执行格式检查、单元测试、站点清单生成、类型检查、静态生成、Pagefind索引和部署。
@@ -114,6 +120,6 @@ https://blog.enderliquid.top/robots.txt
 - Pagefind 索引在静态生成后产生，完整搜索需使用 `npm run generate` 后的静态预览验证。
 - Giscus公开仓库配置和稳定Discussion映射集中在 `shared/comments/giscus.ts`；评论界面跟随界面语言，所有正文投递页面按 `articleKeyPath` 共享评论。
 - Shell终端MVP已经接通路径浏览、页面导航、文章搜索、语言切换和Route反映；顶部导航统一提供主页面、语言菜单与终端开关，并根据页面容器宽度切换为汉堡菜单。
-- About个人页已经建立首个正式静态页面视觉样板；主页、文章列表与Markdown正文的统一设计仍待完成。
+- About个人页与主页已经建立正式静态页面视觉样板；Markdown正文已建立第一版正式排版，文章列表与其他页面仍需继续统一。
 - `public/giscus-theme.css` 暂时验证了Giscus的字体与明暗配色定制能力，后续会随全站视觉系统继续调整。
 - `.npmrc` 使用 npmmirror，以规避当前环境访问 npm 官方源过慢的问题。

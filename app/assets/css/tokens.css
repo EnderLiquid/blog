@@ -5,6 +5,10 @@
   --muted: #65685d;
   --line: #a9aa9d;
   --signal: #9d2348;
+  --code-paper: #20221e;
+  --code-ink: #e7e3d6;
+  --code-muted: #a6a99d;
+  --code-line: #4a4d45;
   --font-mono: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Consolas, monospace;
   --font-serif: Georgia, 'Noto Serif SC', serif;
 }
@@ -16,5 +20,9 @@
     --muted: #aaa99d;
     --line: #55574e;
     --signal: #f07194;
+    --code-paper: #171915;
+    --code-ink: #e7e3d6;
+    --code-muted: #989b90;
+    --code-line: #3f423b;
   }
 }

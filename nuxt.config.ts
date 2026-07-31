@@ -1,4 +1,8 @@
 import { readFile } from 'node:fs/promises';
+import {
+  MARKDOWN_HIGHLIGHT_LANGUAGES,
+  MARKDOWN_HIGHLIGHT_THEME,
+} from './shared/content/markdown.ts';
 import { validateSiteManifest } from './shared/site-manifest/build.ts';
 import { createPrerenderRoutesView } from './shared/site-projections/prerender.ts';
 
@@ -7,6 +11,17 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxt/content'],
   css: ['~/assets/css/main.css'],
+  content: {
+    build: {
+      markdown: {
+        highlight: {
+          // 代码面板固定为深色，因此构建期只生成与其匹配的Token颜色。
+          theme: MARKDOWN_HIGHLIGHT_THEME,
+          langs: [...MARKDOWN_HIGHLIGHT_LANGUAGES],
+        },
+      },
+    },
+  },
   nitro: {
     prerender: {
       crawlLinks: true,

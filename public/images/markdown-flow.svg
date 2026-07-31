@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" role="img" aria-labelledby="title description">
+  <title id="title">Markdown文章构建流程</title>
+  <desc id="description">Markdown经过Nuxt Content和静态生成，最终成为可搜索的文章页面。</desc>
+  <rect width="960" height="360" fill="#d9d4c5"/>
+  <g fill="none" stroke="#9d2348" stroke-width="3">
+    <rect x="54" y="104" width="214" height="152"/>
+    <rect x="373" y="104" width="214" height="152"/>
+    <rect x="692" y="104" width="214" height="152"/>
+    <path d="M268 180h105m214 0h105"/>
+    <path d="m352 165 21 15-21 15m319-30 21 15-21 15"/>
+  </g>
+  <g fill="#252720" font-family="ui-monospace, Cascadia Code, Consolas, monospace" text-anchor="middle">
+    <text x="161" y="174" font-size="30">Markdown</text>
+    <text x="480" y="164" font-size="27">Nuxt Content</text>
+    <text x="480" y="203" font-size="18">+ generate</text>
+    <text x="799" y="174" font-size="30">HTML</text>
+    <text x="799" y="211" font-size="18">+ Pagefind</text>
+  </g>
+</svg>

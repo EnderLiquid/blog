@@ -1,0 +1,358 @@
+<script setup lang="ts">
+import type { Collections } from '@nuxt/content';
+
+// 文章正文的唯一渲染边界。路由页面只负责查询文章和组织头部、评论区。
+defineProps<{
+  value: Collections['posts'];
+}>();
+</script>
+
+<template>
+  <ContentRenderer class="article-body" :value="value" />
+</template>
+
+<style scoped>
+.article-body {
+  font-family: var(--font-serif);
+  font-size: 1.08rem;
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+
+.article-body :deep(h1),
+.article-body :deep(h2),
+.article-body :deep(h3),
+.article-body :deep(h4),
+.article-body :deep(h5),
+.article-body :deep(h6) {
+  margin: 3.4rem 0 1rem;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+  scroll-margin-top: 5rem;
+}
+
+.article-body :deep(h1) {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.article-body :deep(h2) {
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--signal);
+  font-size: clamp(1.75rem, 4.2vw, 2.45rem);
+}
+
+.article-body :deep(h3) {
+  color: var(--signal);
+  font-size: clamp(1.45rem, 3.5vw, 2rem);
+}
+
+.article-body :deep(h4),
+.article-body :deep(h5),
+.article-body :deep(h6) {
+  font-size: 1.35rem;
+}
+
+.article-body :deep(h1:first-child),
+.article-body :deep(h2:first-child),
+.article-body :deep(h3:first-child),
+.article-body :deep(h4:first-child),
+.article-body :deep(h5:first-child),
+.article-body :deep(h6:first-child) {
+  margin-top: 0;
+}
+
+.article-body :deep(h1 > a),
+.article-body :deep(h2 > a),
+.article-body :deep(h3 > a),
+.article-body :deep(h4 > a),
+.article-body :deep(h5 > a),
+.article-body :deep(h6 > a) {
+  color: inherit;
+  text-decoration: none;
+}
+
+.article-body :deep(h1 > a:hover),
+.article-body :deep(h1 > a:focus-visible),
+.article-body :deep(h2 > a:hover),
+.article-body :deep(h2 > a:focus-visible),
+.article-body :deep(h3 > a:hover),
+.article-body :deep(h3 > a:focus-visible),
+.article-body :deep(h4 > a:hover),
+.article-body :deep(h4 > a:focus-visible),
+.article-body :deep(h5 > a:hover),
+.article-body :deep(h5 > a:focus-visible),
+.article-body :deep(h6 > a:hover),
+.article-body :deep(h6 > a:focus-visible) {
+  color: var(--signal);
+}
+
+.article-body :deep(p) {
+  margin: 0 0 1.35rem;
+}
+
+.article-body :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.article-body :deep(a) {
+  color: var(--signal);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.2em;
+}
+
+.article-body :deep(a:hover),
+.article-body :deep(a:focus-visible) {
+  color: var(--ink);
+}
+
+.article-body :deep(strong) {
+  font-weight: 700;
+}
+
+.article-body :deep(del) {
+  color: var(--muted);
+}
+
+.article-body :deep(ul),
+.article-body :deep(ol) {
+  margin: 0 0 1.5rem;
+  padding-left: 1.5em;
+}
+
+.article-body :deep(li) {
+  padding-left: 0.25rem;
+}
+
+.article-body :deep(li + li) {
+  margin-top: 0.35rem;
+}
+
+.article-body :deep(li > ul),
+.article-body :deep(li > ol) {
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.article-body :deep(.contains-task-list) {
+  padding-left: 0;
+  list-style: none;
+}
+
+.article-body :deep(.task-list-item) {
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.55rem;
+  padding-left: 0;
+}
+
+.article-body :deep(.task-list-item input[type='checkbox']) {
+  width: 0.9rem;
+  height: 0.9rem;
+  margin: 0.45em 0 0;
+  accent-color: var(--signal);
+  pointer-events: none;
+}
+
+.article-body :deep(blockquote) {
+  margin: 2rem 0;
+  padding: 0.15rem 1.25rem;
+  color: var(--muted);
+  border-left: 2px solid var(--signal);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+.article-body :deep(blockquote > :last-child) {
+  margin-bottom: 0;
+}
+
+.article-body :deep(hr) {
+  margin: 3rem 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.article-body :deep(code) {
+  padding: 0.08em 0.3em;
+  color: var(--signal);
+  border: 1px solid color-mix(in srgb, var(--signal) 28%, var(--line));
+  background: color-mix(in srgb, var(--signal) 7%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  overflow-wrap: anywhere;
+}
+
+.article-body :deep(pre code) {
+  padding: 0;
+  color: inherit;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  overflow-wrap: normal;
+}
+
+.article-body :deep(.article-code-block) {
+  margin: 2rem 0;
+  overflow: hidden;
+  color: var(--code-ink);
+  border: 1px solid var(--code-line);
+  background: var(--code-paper);
+}
+
+.article-body :deep(.article-code-block__pre) {
+  max-width: 100%;
+  margin: 0;
+  overflow-x: auto;
+  padding: 1.15rem 1.25rem;
+  color: var(--code-ink);
+  background: var(--code-paper);
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  line-height: 1.65;
+  tab-size: 2;
+  scrollbar-color: var(--code-line) transparent;
+}
+
+.article-body :deep(.article-code-block__pre code) {
+  font: inherit;
+}
+
+.article-body :deep(.article-code-block__pre .line) {
+  display: block;
+  min-height: 1.65em;
+}
+
+.article-body :deep(.article-code-block__pre .line.highlight) {
+  margin: 0 -1.25rem;
+  padding: 0 1.25rem;
+  background: color-mix(in srgb, var(--signal) 16%, var(--code-paper));
+  box-shadow: inset 2px 0 var(--signal);
+}
+
+.article-body :deep(.article-code-block__pre ::selection) {
+  color: var(--code-paper);
+  background: var(--signal);
+}
+
+.article-body :deep(.article-table-scroll) {
+  max-width: 100%;
+  margin: 2rem 0;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+}
+
+.article-body :deep(table) {
+  width: 100%;
+  min-width: 32rem;
+  border-collapse: collapse;
+  font-size: 0.92em;
+}
+
+.article-body :deep(th),
+.article-body :deep(td) {
+  padding: 0.65rem 0.8rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+
+.article-body :deep(th) {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  font-weight: 700;
+}
+
+.article-body :deep(tr:last-child td) {
+  border-bottom: 0;
+}
+
+.article-body :deep(img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 2rem auto;
+  border: 1px solid var(--line);
+}
+
+.article-body :deep(figure) {
+  margin: 2rem 0;
+}
+
+.article-body :deep(figure img) {
+  margin: 0 auto;
+}
+
+.article-body :deep(figcaption) {
+  margin-top: 0.6rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  text-align: center;
+}
+
+.article-body :deep(kbd) {
+  padding: 0.1em 0.35em;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+}
+
+.article-body :deep(mark) {
+  padding: 0.05em 0.15em;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--signal) 25%, var(--paper));
+}
+
+.article-body :deep(sub),
+.article-body :deep(sup) {
+  line-height: 0;
+}
+
+@media (max-width: 36rem) {
+  .article-body {
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+
+  .article-body :deep(h1),
+  .article-body :deep(h2),
+  .article-body :deep(h3),
+  .article-body :deep(h4),
+  .article-body :deep(h5),
+  .article-body :deep(h6) {
+    scroll-margin-top: 4rem;
+  }
+
+  .article-body :deep(blockquote) {
+    margin-right: 0;
+    margin-left: 0;
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+
+  .article-body :deep(.article-code-block__pre) {
+    padding-right: 1rem;
+    padding-left: 1rem;
+    font-size: 0.8em;
+  }
+
+  .article-body :deep(.article-code-block__pre .line.highlight) {
+    margin-right: -1rem;
+    margin-left: -1rem;
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+
+  .article-body :deep(table) {
+    min-width: 28rem;
+  }
+}
+</style>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ArticleBody from '~/components/article/ArticleBody.vue';
 import { formatPostDate, toDateTime } from '~/utils/date';
 
 const { localeCode, messages } = useSiteLocale();
@@ -76,7 +77,7 @@ const contentLanguageLabel = computed(() => {
         </ul>
       </header>
 
-      <ContentRenderer class="article-content" :value="post" />
+      <ArticleBody class="article-content" :value="post" />
     </article>
 
     <!-- 评论区位于Pagefind正文边界之外，避免第三方界面文案进入文章搜索索引。 -->
@@ -120,24 +121,5 @@ const contentLanguageLabel = computed(() => {
   color: var(--muted);
   font-size: 0.8rem;
   list-style: none;
-}
-
-.article-content {
-  font-family: var(--font-serif);
-  font-size: 1.08rem;
-  line-height: 1.85;
-}
-
-/* Nuxt Content生成的正文元素位于子组件中，必须使用:deep()才能应用文章排版。 */
-.article-content :deep(pre),
-.article-content :deep(code) {
-  font-family: var(--font-mono);
-}
-
-.article-content :deep(pre) {
-  overflow-x: auto;
-  padding: 1.25rem;
-  color: #e5e1d5;
-  background: #292b26;
 }
 </style>
