@@ -85,7 +85,7 @@ draft: false
 
 `app/components/article/ArticleBody.vue`是文章正文的唯一渲染与样式边界；文章路由只负责查询、头部、Pagefind边界和评论挂载。纯样式需求通过该组件内有边界的`:deep()`处理；只有代码块和表格需要额外结构，因此分别覆写`app/components/content/ProsePre.vue`与`ProseTable.vue`。
 
-代码块固定使用深色面板和`github-dark` Shiki主题，避免本站`prefers-color-scheme`机制与Shiki默认`html.dark`类切换产生“浅色Token + 深色背景”。主题和显式加载语言维护在`shared/content/markdown.ts`。长代码与宽表格只在自身容器内横向滚动，不得通过隐藏页面溢出来掩盖布局问题。
+代码块固定使用深色面板和`github-dark` Shiki主题，避免本站`prefers-color-scheme`机制与Shiki默认`html.dark`类切换产生“浅色Token + 深色背景”。主题和全量Shiki规范语言集合维护在`shared/content/markdown.ts`，语言集合从`shiki/bundle/full`自动取得，别名由Shiki注册表提供。长代码与宽表格只在自身容器内横向滚动，不得通过隐藏页面溢出来掩盖布局问题。
 
 ## GitHub Pages
 

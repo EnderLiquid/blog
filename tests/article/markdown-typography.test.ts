@@ -14,8 +14,10 @@ describe('Markdown代码高亮配置', () => {
     assert.equal(MARKDOWN_HIGHLIGHT_THEME, 'github-dark');
   });
 
-  test('显式加载博客近期使用的技术语言', () => {
-    for (const language of ['ts', 'vue', 'java', 'kotlin', 'c', 'cpp', 'python'] as const) {
+  test('加载Shiki全部规范语言ID并覆盖博客常用语言', () => {
+    assert.ok(MARKDOWN_HIGHLIGHT_LANGUAGES.length >= 200);
+
+    for (const language of ['typescript', 'vue', 'java', 'kotlin', 'c', 'cpp', 'python']) {
       assert.ok(MARKDOWN_HIGHLIGHT_LANGUAGES.includes(language));
     }
   });
