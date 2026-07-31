@@ -4,6 +4,10 @@ import process from 'node:process';
 import { buildSiteManifest, validateSiteManifest } from '../../shared/site-manifest/build.ts';
 import { createSiteBuildContext } from '../../shared/site-manifest/context.ts';
 import {
+  FEATURED_ARTICLE_KEYS,
+  validateFeaturedArticleKeys,
+} from '../../shared/site-definitions/home.ts';
+import {
   parseArticleDeliveryIndexView,
   parsePageSeoIndexView,
   parseRobotsView,
@@ -59,6 +63,7 @@ export interface GenerateSiteManifestResult {
 export async function generateSiteManifest(): Promise<GenerateSiteManifestResult> {
   const postsDirectory = path.join(process.cwd(), 'content', 'posts');
   const posts = await readPostSources(postsDirectory);
+  validateFeaturedArticleKeys(FEATURED_ARTICLE_KEYS, posts);
   const manifest = validateSiteManifest(buildSiteManifest({ posts }));
   const context = createSiteBuildContext(manifest, posts);
   const articleDeliveryIndex = parseArticleDeliveryIndexView(

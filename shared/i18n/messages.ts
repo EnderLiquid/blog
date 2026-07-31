@@ -18,11 +18,12 @@ export interface SiteMessages {
     translationUnavailable: string;
   };
   home: {
-    title: string;
-    description: string;
-    shellPlaceholder: string;
-    recentPosts: string;
-    allPosts: string;
+    welcome: readonly string[];
+    featuredPosts: string;
+    postsEntryTitle: string;
+    postsEntryDescription: string;
+    aboutEntryTitle: string;
+    aboutEntryDescription: string;
   };
   posts: {
     title: string;
@@ -83,11 +84,12 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       translationUnavailable: '暂无译文',
     },
     home: {
-      title: 'Blog',
-      description: '这里是 EnderLiquid 的博客。欢迎到访。',
-      shellPlaceholder: 'Nuxt 环境已经就绪。Shell 交互将在这里生长。',
-      recentPosts: '最近文章',
-      allPosts: '查看全部文章',
+      welcome: ['这里是 EnderLiquid 的博客。', '欢迎到访。'],
+      featuredPosts: '精选文章',
+      postsEntryTitle: '文章',
+      postsEntryDescription: '搜索和浏览所有文章',
+      aboutEntryTitle: '关于',
+      aboutEntryDescription: '关于 EnderLiquid',
     },
     posts: {
       title: '文章',
@@ -146,11 +148,12 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       translationUnavailable: 'Translation unavailable',
     },
     home: {
-      title: 'Blog',
-      description: `This is EnderLiquid's Blog. Welcome.`,
-      shellPlaceholder: 'Nuxt is ready. The shell experience will grow here.',
-      recentPosts: 'Recent posts',
-      allPosts: 'View all posts',
+      welcome: [`This is EnderLiquid's Blog.`, 'Welcome.'],
+      featuredPosts: 'Featured posts',
+      postsEntryTitle: 'Posts',
+      postsEntryDescription: 'Search and browse all posts',
+      aboutEntryTitle: 'About',
+      aboutEntryDescription: 'About EnderLiquid',
     },
     posts: {
       title: 'Posts',

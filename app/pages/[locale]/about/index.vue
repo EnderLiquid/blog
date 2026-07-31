@@ -121,6 +121,8 @@ function updateContentRowOffset(): void {
 }
 
 .about-heading {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--signal);
   grid-area: heading;
 }
 
@@ -254,7 +256,7 @@ function updateContentRowOffset(): void {
   color: currentColor;
 }
 
-@container about-page (max-width: 38rem) {
+@container about-page (max-width: 45rem) {
   .about-layout {
     min-height: 0;
     grid-template-areas:
@@ -288,7 +290,8 @@ function updateContentRowOffset(): void {
   }
 
   .about-links {
-    width: min(100%, 22rem);
+    width: 100%;
+    justify-self: stretch;
   }
 }
 

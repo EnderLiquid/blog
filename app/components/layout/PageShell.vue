@@ -2,15 +2,17 @@
 withDefaults(
   defineProps<{
     narrow?: boolean;
+    wide?: boolean;
   }>(),
   {
     narrow: false,
+    wide: false,
   },
 );
 </script>
 
 <template>
-  <main class="page-shell" :class="{ 'page-shell--narrow': narrow }">
+  <main class="page-shell" :class="{ 'page-shell--narrow': narrow, 'page-shell--wide': wide }">
     <slot />
   </main>
 </template>
@@ -26,9 +28,14 @@ withDefaults(
   width: min(44rem, calc(100% - 3rem));
 }
 
+.page-shell--wide {
+  width: min(68rem, calc(100% - 3rem));
+}
+
 @media (max-width: 36rem) {
   .page-shell,
-  .page-shell--narrow {
+  .page-shell--narrow,
+  .page-shell--wide {
     width: min(100% - 2rem, 48rem);
     padding-top: 4rem;
   }
