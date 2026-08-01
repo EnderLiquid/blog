@@ -189,7 +189,33 @@ defineProps<{
   font-size: 0.86em;
   line-height: 1.65;
   tab-size: 2;
-  scrollbar-color: var(--code-line) transparent;
+}
+
+/* Firefox使用标准属性；Chromium改由下方伪元素精确控制悬浮状态。 */
+@supports not selector(::-webkit-scrollbar) {
+  .article-body :deep(.article-code-block__pre) {
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+}
+
+.article-body :deep(.article-code-block__pre::-webkit-scrollbar) {
+  height: 0.65rem;
+}
+
+.article-body :deep(.article-code-block__pre::-webkit-scrollbar-track) {
+  background: transparent;
+}
+
+.article-body :deep(.article-code-block__pre::-webkit-scrollbar-thumb) {
+  border: 2px solid transparent;
+  border-radius: 0;
+  background: var(--scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+.article-body :deep(.article-code-block__pre::-webkit-scrollbar-thumb:hover) {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
 }
 
 .article-body :deep(.article-code-block__pre code) {

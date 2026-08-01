@@ -39,6 +39,8 @@ main {
   --color-accent-muted: #9d234866;
   --color-accent-subtle: #9d23481a;
   --color-action-list-item-default-hover-bg: var(--color-accent-subtle);
+  --gsc-code-scrollbar-thumb: #a9aa9e;
+  --gsc-code-scrollbar-thumb-hover: #7b7b72;
   --borderRadius-small: 0;
   --borderRadius-medium: 0;
   --borderRadius-large: 0;
@@ -70,6 +72,39 @@ main {
 .gsc-comment-author-avatar img,
 .gsc-reply-author-avatar img {
   border-radius: 50% !important;
+}
+
+/* Firefox使用标准属性；Chromium改由下方伪元素精确控制悬浮状态。 */
+@supports not selector(::-webkit-scrollbar) {
+  .gsc-main .markdown pre,
+  .gsc-main .markdown .highlight pre {
+    scrollbar-color: var(--gsc-code-scrollbar-thumb) transparent;
+  }
+}
+
+/* Chromium浏览器需要伪元素规则才能绘制与正文一致的代码滚动条。 */
+.gsc-main .markdown pre::-webkit-scrollbar,
+.gsc-main .markdown .highlight pre::-webkit-scrollbar {
+  height: 0.65rem;
+}
+
+.gsc-main .markdown pre::-webkit-scrollbar-track,
+.gsc-main .markdown .highlight pre::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.gsc-main .markdown pre::-webkit-scrollbar-thumb,
+.gsc-main .markdown .highlight pre::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 0;
+  background: var(--gsc-code-scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+.gsc-main .markdown pre::-webkit-scrollbar-thumb:hover,
+.gsc-main .markdown .highlight pre::-webkit-scrollbar-thumb:hover {
+  background: var(--gsc-code-scrollbar-thumb-hover);
+  background-clip: padding-box;
 }
 
 /* Giscus内无法切换upvote，只保留可直接操作的emoji reaction。 */
@@ -113,6 +148,8 @@ main {
     --color-accent-emphasis: #f07194;
     --color-accent-muted: #f0719466;
     --color-accent-subtle: #f071941a;
+    --gsc-code-scrollbar-thumb: #55574e;
+    --gsc-code-scrollbar-thumb-hover: #aaa99d;
     --borderRadius-small: 0;
     --borderRadius-medium: 0;
     --borderRadius-large: 0;
