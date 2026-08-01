@@ -44,6 +44,7 @@ onUnmounted(stopResize);
 <template>
   <div
     class="shell-resize-handle"
+    :class="{ 'is-dragging': isDragging }"
     role="separator"
     aria-orientation="vertical"
     aria-label="调整终端宽度"
@@ -53,15 +54,27 @@ onUnmounted(stopResize);
 
 <style scoped>
 .shell-resize-handle {
+  position: relative;
   width: 0.35rem;
   cursor: col-resize;
-  background: var(--line);
+  background: transparent;
   touch-action: none;
+}
+
+.shell-resize-handle::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 3rem;
+  content: '';
+  background: color-mix(in srgb, var(--signal) 45%, transparent);
+  transform: translate(-50%, -50%);
   transition: background-color 120ms ease;
 }
 
-.shell-resize-handle:hover,
-.shell-resize-handle:active {
+.shell-resize-handle:hover::before,
+.shell-resize-handle.is-dragging::before {
   background: var(--signal);
 }
 
