@@ -40,6 +40,8 @@ main {
   --color-accent-muted: #9d234866;
   --color-accent-subtle: #9d23481a;
   --color-action-list-item-default-hover-bg: var(--color-accent-subtle);
+  --color-social-reaction-bg-hover: var(--color-action-list-item-default-hover-bg);
+  --color-social-reaction-bg-reacted-hover: var(--color-action-list-item-default-hover-bg);
   --scrollbar-size: 0.65rem;
   --scrollbar-track: transparent;
   --scrollbar-thumb: #a9aa9e;
