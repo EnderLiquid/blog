@@ -4,6 +4,8 @@
   --ink: #252720;
   --muted: #65685d;
   --line: #a9aa9d;
+  --scrollbar-size: 0.65rem;
+  --scrollbar-track: transparent;
   --scrollbar-thumb: #a9aa9e;
   --scrollbar-thumb-hover: #7b7b72;
   --signal: #9d2348;

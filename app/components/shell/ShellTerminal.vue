@@ -135,7 +135,12 @@ defineExpose({ focus });
 
 <template>
   <div class="terminal" @click="focusFromPointer">
-    <div ref="historyElement" class="terminal__history" aria-live="polite" aria-atomic="false">
+    <div
+      ref="historyElement"
+      class="terminal__history scrollbar-themed"
+      aria-live="polite"
+      aria-atomic="false"
+    >
       <div v-for="group in historyGroups" :key="group.command.id" class="terminal__history-group">
         <div
           class="terminal__command"
@@ -195,7 +200,6 @@ defineExpose({ focus });
   flex: 1;
   overflow: auto;
   padding: 0 0 2rem;
-  scrollbar-color: var(--line) transparent;
 }
 
 .terminal__history-group {

@@ -46,13 +46,14 @@ describe('文章正文组件边界', () => {
     assert.doesNotMatch(articlePage, /article-content :deep\(pre\)/);
   });
 
-  test('代码和表格组件提供结构化滚动边界', async () => {
+  test('代码和表格组件提供结构化滚动边界并接入统一主题', async () => {
     const prosePre = await readProjectFile('app/components/content/ProsePre.vue');
     const proseTable = await readProjectFile('app/components/content/ProseTable.vue');
 
     assert.match(prosePre, /article-code-block__filename/);
+    assert.match(prosePre, /scrollbar-themed/);
     assert.match(prosePre, /<pre[^>]*><slot \/><\/pre>/);
-    assert.match(proseTable, /class="article-table-scroll"/);
+    assert.match(proseTable, /class="article-table-scroll scrollbar-themed"/);
     assert.match(proseTable, /<table>/);
   });
 });

@@ -1,0 +1,40 @@
+/* 根页面与标记为统一主题的局部容器共用同一套滚动条外观。 */
+@supports selector(::-webkit-scrollbar) {
+  html::-webkit-scrollbar,
+  .scrollbar-themed::-webkit-scrollbar {
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
+  }
+
+  html::-webkit-scrollbar-track,
+  .scrollbar-themed::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  html::-webkit-scrollbar-thumb,
+  .scrollbar-themed::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 0;
+    background: var(--scrollbar-thumb);
+    background-clip: padding-box;
+  }
+
+  html::-webkit-scrollbar-thumb:hover,
+  .scrollbar-themed::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+    background-clip: padding-box;
+  }
+
+  html::-webkit-scrollbar-corner,
+  .scrollbar-themed::-webkit-scrollbar-corner {
+    background: var(--scrollbar-track);
+  }
+}
+
+/* Firefox使用标准属性；Chromium由上方伪元素精确控制悬浮状态。 */
+@supports not selector(::-webkit-scrollbar) {
+  html,
+  .scrollbar-themed {
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+}

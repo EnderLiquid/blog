@@ -31,7 +31,7 @@ const props = withDefaults(
     </div>
     <!-- pre元素内的模板空白会成为代码文本，必须让slot与标签保持相邻。 -->
     <!-- prettier-ignore -->
-    <pre :class="['article-code-block__pre', props.class]" :data-language="props.language || undefined"><slot /></pre>
+    <pre :class="['article-code-block__pre', 'scrollbar-themed', props.class]" :data-language="props.language || undefined"><slot /></pre>
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="article-table-scroll">
+  <div class="article-table-scroll scrollbar-themed">
     <table>
       <slot />
     </table>
@@ -10,6 +10,5 @@
 .article-table-scroll {
   max-width: 100%;
   overflow-x: auto;
-  scrollbar-color: var(--line) transparent;
 }
 </style>
