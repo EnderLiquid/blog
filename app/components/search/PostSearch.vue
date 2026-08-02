@@ -44,6 +44,7 @@ const sortOptions = computed<SortOption[]>(() => {
 const sortMenuOpen = ref(false);
 const sortControl = ref<HTMLElement | null>(null);
 const sortTrigger = ref<HTMLButtonElement | null>(null);
+const queryInput = ref<HTMLInputElement | null>(null);
 
 interface SortOption {
   mode: PostSortMode;
@@ -55,6 +56,11 @@ const sortLabels = computed<Record<PostSortMode, string>>(() => ({
   latest: searchMessages.value.latest,
   oldest: searchMessages.value.oldest,
 }));
+
+function clearQuery(): void {
+  query.value = '';
+  void nextTick(() => queryInput.value?.focus());
+}
 
 function toggleSortMenu(): void {
   if (!hasQuery.value) {
@@ -111,20 +117,33 @@ onBeforeUnmount(() => {
   <section class="post-search">
     <div class="post-search__toolbar">
       <form class="controls" role="search" @submit.prevent>
-        <label class="query-control">
-          <span class="visually-hidden">{{ searchMessages.label }}</span>
+        <div class="query-control">
+          <label class="visually-hidden" for="post-search-query">{{ searchMessages.label }}</label>
           <svg class="query-control__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <circle cx="10.8" cy="10.8" r="5.8" />
             <path d="m15.2 15.2 4 4" />
           </svg>
           <input
+            id="post-search-query"
+            ref="queryInput"
             v-model="query"
             type="search"
             name="q"
             :placeholder="searchMessages.placeholder"
             autocomplete="off"
           />
-        </label>
+          <button
+            v-if="query"
+            class="query-control__clear"
+            type="button"
+            :aria-label="searchMessages.clear"
+            @click="clearQuery"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="m6.5 6.5 11 11m0-11-11 11" />
+            </svg>
+          </button>
+        </div>
       </form>
 
       <div class="post-search__toolbar-meta">
@@ -254,7 +273,7 @@ onBeforeUnmount(() => {
 .controls input {
   width: 100%;
   min-height: 2.35rem;
-  padding: 0.25rem 0.6rem 0.25rem 2.25rem;
+  padding: 0.25rem 2.35rem 0.25rem 2.25rem;
   border: 1px solid var(--line);
   border-radius: 0;
   color: var(--ink);
@@ -264,6 +283,47 @@ onBeforeUnmount(() => {
 
 .controls input:focus-visible {
   outline: 0;
+}
+
+.controls input[type='search']::-webkit-search-cancel-button {
+  display: none;
+  appearance: none;
+}
+
+.query-control__clear {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  display: grid;
+  width: 2.35rem;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  color: var(--muted);
+  opacity: 0;
+  place-items: center;
+  background: transparent;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.query-control__clear svg {
+  width: 0.8rem;
+  height: 0.8rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: square;
+  stroke-width: 2.25;
+}
+
+.query-control__clear:focus-visible {
+  outline: 0;
+}
+
+.query-control:hover .query-control__clear,
+.query-control:focus-within .query-control__clear {
+  color: var(--signal);
+  opacity: 1;
 }
 
 .query-control:hover input,
@@ -537,6 +597,7 @@ onBeforeUnmount(() => {
   .query-control,
   .controls input,
   .query-control__icon,
+  .query-control__clear,
   .post-record h2 a::after {
     transition:
       color 120ms ease,

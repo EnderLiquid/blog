@@ -42,6 +42,7 @@ export interface SiteMessages {
   };
   search: {
     label: string;
+    clear: string;
     placeholder: string;
     sortLabel: string;
     relevance: string;
@@ -109,6 +110,7 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     },
     search: {
       label: '搜索文章',
+      clear: '清除搜索',
       placeholder: '搜索标题和正文…',
       sortLabel: '排序',
       relevance: '相关度',
@@ -173,6 +175,7 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     },
     search: {
       label: 'Search posts',
+      clear: 'Clear search',
       placeholder: 'Search titles and content…',
       sortLabel: 'Sort by',
       relevance: 'Relevance',
