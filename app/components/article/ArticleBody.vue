@@ -50,10 +50,32 @@ defineProps<{
   font-size: clamp(1.45rem, 3.5vw, 2rem);
 }
 
-.article-body :deep(h4),
-.article-body :deep(h5),
+.article-body :deep(h4) {
+  margin: 2.4rem 0 0.65rem;
+  font-size: clamp(1.2rem, 2.75vw, 1.45rem);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.article-body :deep(h5) {
+  margin: 2rem 0 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+}
+
 .article-body :deep(h6) {
-  font-size: 1.35rem;
+  margin: 1.65rem 0 0.45rem;
+  padding-left: 0.65rem;
+  color: var(--muted);
+  border-left: 1px solid color-mix(in srgb, var(--signal) 50%, var(--line));
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
 }
 
 .article-body :deep(h1:first-child),
