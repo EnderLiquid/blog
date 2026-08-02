@@ -33,15 +33,14 @@ const contentLanguageLabel = computed(() => {
 
 <template>
   <LayoutPageShell v-if="post" narrow>
-    <p v-if="delivery.fallback" class="article-fallback" role="note">
-      {{ messages.article.fallbackLanguage(contentLanguageLabel) }}
-    </p>
-
     <article
       :lang="delivery.contentLocaleCode"
       :data-pagefind-body="delivery.fallback ? undefined : ''"
     >
       <header class="article-header">
+        <p v-if="delivery.fallback" class="article-header__fallback" role="note">
+          {{ messages.article.fallbackLanguage(contentLanguageLabel) }}
+        </p>
         <div class="article-header__metadata">
           <p class="article-header__dates">
             <time
@@ -52,6 +51,7 @@ const contentLanguageLabel = computed(() => {
               {{ formatPostDate(post.publishedAt, localeCode) }}
             </time>
             <span v-if="post.updatedAt" class="article-header__updated">
+              <span class="article-header__separator" aria-hidden="true">·</span>
               <span>{{ messages.article.updated }}</span>
               <time :datetime="toDateTime(post.updatedAt)">
                 {{ formatPostDate(post.updatedAt, localeCode) }}
@@ -94,12 +94,11 @@ const contentLanguageLabel = computed(() => {
 </template>
 
 <style scoped>
-.article-fallback {
-  margin: 2rem 0 -2rem;
-  padding: 0.75rem 1rem;
-  color: var(--muted);
-  border-left: 2px solid var(--signal);
-  background: color-mix(in srgb, var(--ink) 3%, transparent);
+.article-header__fallback {
+  margin: 0 0 0.65rem;
+  color: var(--signal);
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 article {
@@ -116,7 +115,8 @@ article {
 .article-header__metadata {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.2rem 0.65rem;
+  row-gap: clamp(0.65rem, 1.5cqi, 0.9rem);
+  column-gap: 0.65rem;
   align-items: center;
   min-width: 0;
 }
@@ -149,7 +149,7 @@ article {
 .article-header__dates {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 1rem;
+  gap: 0.6em;
   margin: 0;
   color: var(--muted);
   font-size: 0.78rem;
@@ -158,7 +158,7 @@ article {
 
 .article-header__updated {
   display: flex;
-  gap: 0.3rem;
+  gap: 0.6em;
 }
 
 .article-tags {

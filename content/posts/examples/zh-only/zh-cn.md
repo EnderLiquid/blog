@@ -2,6 +2,7 @@
 title: 仅中文测试
 description: 仅中文测试
 publishedAt: 2026-07-20
+updatedAt: 2026-08-02
 tags:
   - chinese
   - tag1

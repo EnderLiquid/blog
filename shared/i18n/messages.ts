@@ -123,7 +123,7 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     article: {
       updated: '更新于',
       tags: '标签',
-      fallbackLanguage: (languageLabel) => `本文当前仅提供${languageLabel}版本。`,
+      fallbackLanguage: (languageLabel) => `仅提供${languageLabel}版本。`,
     },
     comments: {
       title: '评论',
@@ -187,8 +187,7 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     article: {
       updated: 'Updated',
       tags: 'Tags',
-      fallbackLanguage: (languageLabel) =>
-        `This article is currently available in ${languageLabel}.`,
+      fallbackLanguage: (languageLabel) => `Available in ${languageLabel} only.`,
     },
     comments: {
       title: 'Comments',

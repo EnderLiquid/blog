@@ -410,7 +410,8 @@ onBeforeUnmount(() => {
 .post-record__metadata {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.2rem 0.65rem;
+  row-gap: clamp(0.65rem, 1.5cqi, 0.9rem);
+  column-gap: 0.65rem;
   align-items: center;
   min-width: 0;
   grid-area: metadata;
