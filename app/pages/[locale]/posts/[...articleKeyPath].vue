@@ -42,20 +42,7 @@ const contentLanguageLabel = computed(() => {
       :data-pagefind-body="delivery.fallback ? undefined : ''"
     >
       <header class="article-header">
-        <div class="article-header__copy">
-          <h1
-            :data-article-key-path="delivery.articleKeyPath"
-            :data-locale="delivery.contentLocaleCode"
-            data-pagefind-meta="title, articleKeyPath[data-article-key-path], locale[data-locale]"
-          >
-            {{ post.title }}
-          </h1>
-          <p class="article-header__description" data-pagefind-meta="description">
-            {{ post.description }}
-          </p>
-        </div>
-
-        <div class="article-header__register">
+        <div class="article-header__metadata">
           <p class="article-header__dates">
             <time
               :datetime="toDateTime(post.publishedAt)"
@@ -71,6 +58,7 @@ const contentLanguageLabel = computed(() => {
               </time>
             </span>
           </p>
+
           <ul v-if="postTags.length" class="article-tags" :aria-label="messages.article.tags">
             <li
               v-for="tag in postTags"
@@ -81,6 +69,19 @@ const contentLanguageLabel = computed(() => {
               #{{ tag }}
             </li>
           </ul>
+        </div>
+
+        <div class="article-header__copy">
+          <h1
+            :data-article-key-path="delivery.articleKeyPath"
+            :data-locale="delivery.contentLocaleCode"
+            data-pagefind-meta="title, articleKeyPath[data-article-key-path], locale[data-locale]"
+          >
+            {{ post.title }}
+          </h1>
+          <p class="article-header__description" data-pagefind-meta="description">
+            {{ post.description }}
+          </p>
         </div>
       </header>
 
@@ -107,18 +108,22 @@ article {
 }
 
 .article-header {
-  display: grid;
-  grid-template-areas: 'register copy';
-  grid-template-columns: minmax(6.25rem, 8rem) minmax(0, 1fr);
-  gap: clamp(1.5rem, 5cqi, 3.5rem);
   margin: clamp(2.75rem, 7cqi, 4.75rem) 0 clamp(3rem, 7cqi, 4.75rem);
-  padding-bottom: clamp(1.25rem, 3cqi, 1.75rem);
-  border-bottom: 1px solid var(--line);
+  padding: clamp(0.75rem, 1.5cqi, 1rem) 0 clamp(0.75rem, 1.5cqi, 1rem) clamp(1.5rem, 5cqi, 3rem);
+  border-left: 2px solid var(--signal);
+}
+
+.article-header__metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.65rem;
+  align-items: center;
+  min-width: 0;
 }
 
 .article-header__copy {
   min-width: 0;
-  grid-area: copy;
+  margin-top: clamp(1rem, 2.25cqi, 1.5rem);
 }
 
 .article-header h1 {
@@ -141,17 +146,10 @@ article {
   line-height: 1.6;
 }
 
-.article-header__register {
-  align-self: start;
-  min-width: 0;
-  padding: 0.15rem 0 0 0.85rem;
-  border-left: 2px solid var(--signal);
-  grid-area: register;
-}
-
 .article-header__dates {
-  display: grid;
-  gap: 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
   margin: 0;
   color: var(--muted);
   font-size: 0.78rem;
@@ -159,16 +157,18 @@ article {
 }
 
 .article-header__updated {
-  display: grid;
-  gap: 0.15rem;
+  display: flex;
+  gap: 0.3rem;
 }
 
 .article-tags {
-  display: grid;
-  gap: 0.35rem;
-  margin: 1.1rem 0 0;
-  padding: 0.85rem 0 0;
-  border-top: 1px dotted var(--line);
+  display: flex;
+  flex: 0 1 max-content;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.4rem;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
   color: var(--muted);
   font-size: 0.78rem;
   line-height: 1.45;
@@ -176,49 +176,14 @@ article {
 }
 
 .article-tags li {
+  padding: 0.18rem 0.4rem;
   overflow-wrap: anywhere;
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
 }
 
 @container article (max-width: 34rem) {
-  .article-header {
-    grid-template-areas:
-      'copy'
-      'register';
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.5rem;
-  }
-
   .article-header h1 {
     font-size: clamp(2.7rem, 14cqi, 3.9rem);
-  }
-
-  .article-header__register {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.85rem 1.5rem;
-    align-items: start;
-    padding: 0;
-    border: 0;
-  }
-
-  .article-header__dates {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem 1rem;
-  }
-
-  .article-header__updated {
-    display: flex;
-    gap: 0.3rem;
-  }
-
-  .article-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem 0.75rem;
-    margin: 0;
-    padding: 0;
-    border: 0;
   }
 }
 </style>

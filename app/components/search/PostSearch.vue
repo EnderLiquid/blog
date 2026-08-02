@@ -181,9 +181,15 @@ onBeforeUnmount(() => {
     <ul v-else class="results">
       <li v-for="item in displayPosts" :key="item.articleKeyPath">
         <article class="post-record" :lang="item.post.localeCode">
-          <time class="post-record__date" :datetime="toDateTime(item.post.publishedAt)">
-            {{ formatPostDate(item.post.publishedAt, localeCode) }}
-          </time>
+          <div class="post-record__metadata">
+            <time class="post-record__date" :datetime="toDateTime(item.post.publishedAt)">
+              {{ formatPostDate(item.post.publishedAt, localeCode) }}
+            </time>
+
+            <footer class="post-record__tags">
+              <span v-for="tag in item.post.tags ?? []" :key="tag">#{{ tag }}</span>
+            </footer>
+          </div>
 
           <div class="post-record__copy">
             <h2>
@@ -191,10 +197,6 @@ onBeforeUnmount(() => {
             </h2>
             <p>{{ item.post.description }}</p>
           </div>
-
-          <footer class="post-record__tags">
-            <span v-for="tag in item.post.tags ?? []" :key="tag">#{{ tag }}</span>
-          </footer>
         </article>
       </li>
     </ul>
@@ -398,20 +400,27 @@ onBeforeUnmount(() => {
   position: relative;
   display: grid;
   grid-template-areas:
-    'date tags'
-    'copy copy';
-  grid-template-columns: max-content minmax(0, 1fr);
-  column-gap: 0.65rem;
+    'metadata'
+    'copy';
+  grid-template-columns: minmax(0, 1fr);
   row-gap: clamp(0.9rem, 2cqi, 1.25rem);
   padding: clamp(1.875rem, 4.25cqi, 3rem) 0;
 }
 
+.post-record__metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.65rem;
+  align-items: center;
+  min-width: 0;
+  grid-area: metadata;
+}
+
 .post-record__date {
-  align-self: center;
+  flex: 0 0 auto;
   color: var(--muted);
   font-size: 0.78rem;
   line-height: 1.45;
-  grid-area: date;
 }
 
 .post-record__copy {
@@ -459,14 +468,14 @@ onBeforeUnmount(() => {
 
 .post-record__tags {
   display: flex;
+  flex: 0 1 max-content;
   flex-wrap: wrap;
   gap: 0.2rem 0.4rem;
-  align-self: center;
+  max-width: 100%;
   padding: 0;
   color: var(--muted);
   font-size: 0.78rem;
   line-height: 1.45;
-  grid-area: tags;
 }
 
 .post-record__tags span {
