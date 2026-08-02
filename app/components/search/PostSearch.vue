@@ -291,7 +291,7 @@ onBeforeUnmount(() => {
   padding: 0.2rem 0;
   border: 0;
   color: var(--ink);
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   line-height: 1.25;
   background: transparent;
   cursor: pointer;
