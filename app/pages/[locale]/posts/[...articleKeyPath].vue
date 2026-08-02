@@ -197,9 +197,8 @@ article {
     flex-wrap: wrap;
     gap: 0.85rem 1.5rem;
     align-items: start;
-    padding: 0.9rem 0 0;
-    border-top: 1px solid var(--signal);
-    border-left: 0;
+    padding: 0;
+    border: 0;
   }
 
   .article-header__dates {

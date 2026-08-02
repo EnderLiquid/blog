@@ -24,13 +24,11 @@ const { data: posts } = await useAsyncData('all-posts', () =>
 }
 
 .posts-page__header {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(12rem, 0.9fr);
-  gap: clamp(1.5rem, 6cqi, 4rem);
-  align-items: end;
-  margin: clamp(2rem, 6cqi, 4.5rem) 0 clamp(2.75rem, 7cqi, 4.5rem);
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem clamp(1.5rem, 4cqi, 3.5rem);
+  align-items: baseline;
+  margin: clamp(0.5rem, 1.5cqi, 1.25rem) 0 clamp(2.5rem, 6cqi, 4.5rem);
 }
 
 .posts-page__header h1 {
@@ -43,23 +41,17 @@ const { data: posts } = await useAsyncData('all-posts', () =>
 }
 
 .posts-page__header p {
-  max-width: 24rem;
+  max-width: 32rem;
   margin: 0 0 0.2rem;
   color: var(--muted);
   font-family: var(--font-serif);
-  font-size: 1.05rem;
-  line-height: 1.55;
+  font-size: 0.98rem;
+  line-height: 1.5;
 }
 
 @container (max-width: 36rem) {
   .posts-page__header {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.25rem;
-    margin-top: 2rem;
-  }
-
-  .posts-page__header h1 {
-    font-size: clamp(3rem, 16cqi, 4.25rem);
+    margin-top: 0.5rem;
   }
 }
 </style>
