@@ -71,6 +71,16 @@ describe('文章正文组件边界', () => {
     assert.doesNotMatch(prosePre, /copyCodeFailed|is-error/);
     assert.match(prosePre, /article-code-block__copy/);
   });
+  test('任务列表使用静态的方形状态标记', async () => {
+    const articleBody = await readProjectFile('app/components/article/ArticleBody.vue');
+
+    assert.match(articleBody, /\.task-list-item input\[type='checkbox'\]/);
+    assert.match(articleBody, /appearance: none/);
+    assert.match(articleBody, /input\[type='checkbox'\]:checked/);
+    assert.match(articleBody, /border-color: var\(--signal\)/);
+    assert.match(articleBody, /:checked::after/);
+    assert.match(articleBody, /pointer-events: none/);
+  });
 });
 
 describe('Markdown排版验收文章', () => {

@@ -148,11 +148,36 @@ defineProps<{
 }
 
 .article-body :deep(.task-list-item input[type='checkbox']) {
-  width: 0.9rem;
-  height: 0.9rem;
-  margin: 0.45em 0 0;
-  accent-color: var(--signal);
+  display: grid;
+  width: 0.95rem;
+  height: 0.95rem;
+  margin: 0.43em 0 0;
+  appearance: none;
+  border: 1px solid var(--line);
+  color: var(--paper);
+  opacity: 1;
+  place-content: center;
+  -webkit-appearance: none;
+  background: var(--paper);
   pointer-events: none;
+}
+
+.article-body :deep(.task-list-item input[type='checkbox']:checked) {
+  border-color: var(--signal);
+  background: var(--signal);
+}
+
+.article-body :deep(.task-list-item input[type='checkbox']:checked::after) {
+  width: 0.25rem;
+  height: 0.5rem;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  content: '';
+  transform: translateY(-0.06rem) rotate(45deg);
+}
+
+.article-body :deep(.task-list-item input[type='checkbox']:disabled) {
+  cursor: default;
 }
 
 .article-body :deep(blockquote) {
