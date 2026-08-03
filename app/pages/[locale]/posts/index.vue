@@ -28,7 +28,7 @@ const { data: posts } = await useAsyncData('all-posts', () =>
   flex-wrap: wrap;
   gap: 0.5rem clamp(1.5rem, 4cqi, 3.5rem);
   align-items: baseline;
-  margin: clamp(0.5rem, 1.5cqi, 1.25rem) 0 clamp(2.5rem, 6cqi, 4.5rem);
+  margin: var(--page-intro-offset) 0 clamp(2.5rem, 6cqi, 4.5rem);
 }
 
 .posts-page__header h1 {
@@ -47,11 +47,5 @@ const { data: posts } = await useAsyncData('all-posts', () =>
   font-family: var(--font-serif);
   font-size: 0.98rem;
   line-height: 1.5;
-}
-
-@container (max-width: 36rem) {
-  .posts-page__header {
-    margin-top: 0.5rem;
-  }
 }
 </style>

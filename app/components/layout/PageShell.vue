@@ -19,6 +19,7 @@ withDefaults(
 
 <style scoped>
 .page-shell {
+  --page-intro-offset: clamp(0.5rem, calc(1.5vw - 0.045rem), 0.72rem);
   width: min(48rem, calc(100% - 3rem));
   margin: 0 auto;
   padding: 12vh 0 5rem;
@@ -30,6 +31,12 @@ withDefaults(
 
 .page-shell--wide {
   width: min(68rem, calc(100% - 3rem));
+}
+
+@media (max-width: 39rem) {
+  .page-shell {
+    --page-intro-offset: 0.5rem;
+  }
 }
 
 @media (max-width: 36rem) {

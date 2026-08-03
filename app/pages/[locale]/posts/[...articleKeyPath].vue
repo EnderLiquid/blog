@@ -107,7 +107,7 @@ article {
 }
 
 .article-header {
-  margin: clamp(2.75rem, 7cqi, 4.75rem) 0 clamp(3rem, 7cqi, 4.75rem);
+  margin: var(--page-intro-offset) 0 clamp(3rem, 7cqi, 4.75rem);
   padding: clamp(0.75rem, 1.5cqi, 1rem) 0 clamp(0.75rem, 1.5cqi, 1rem) clamp(1.5rem, 5cqi, 3rem);
   border-left: 2px solid var(--signal);
 }
