@@ -50,11 +50,26 @@ describe('文章正文组件边界', () => {
     const prosePre = await readProjectFile('app/components/content/ProsePre.vue');
     const proseTable = await readProjectFile('app/components/content/ProseTable.vue');
 
-    assert.match(prosePre, /article-code-block__filename/);
+    assert.match(prosePre, /article-code-block__label/);
     assert.match(prosePre, /scrollbar-themed/);
     assert.match(prosePre, /<pre[^>]*><slot \/><\/pre>/);
     assert.match(proseTable, /class="article-table-scroll scrollbar-themed"/);
     assert.match(proseTable, /<table>/);
+  });
+
+  test('代码块将高亮与长行保持在同一滚动宽度并提供复制入口', async () => {
+    const articleBody = await readProjectFile('app/components/article/ArticleBody.vue');
+    const prosePre = await readProjectFile('app/components/content/ProsePre.vue');
+
+    assert.match(articleBody, /\.article-code-block__pre code/);
+    assert.match(articleBody, /width: max-content/);
+    assert.match(articleBody, /min-width: 100%/);
+    assert.match(prosePre, /props\.code/);
+    assert.match(prosePre, /navigator\.clipboard\.writeText/);
+    assert.match(prosePre, /article-code-block__action-divider/);
+    assert.match(prosePre, /<svg/);
+    assert.doesNotMatch(prosePre, /copyCodeFailed|is-error/);
+    assert.match(prosePre, /article-code-block__copy/);
   });
 });
 

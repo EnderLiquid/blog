@@ -60,6 +60,8 @@ export interface SiteMessages {
     updated: string;
     tags: string;
     fallbackLanguage: (languageLabel: string) => string;
+    copyCode: string;
+    codeCopied: string;
   };
   comments: {
     title: string;
@@ -135,6 +137,8 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       updated: '更新于',
       tags: '标签',
       fallbackLanguage: (languageLabel) => `仅提供${languageLabel}版本。`,
+      copyCode: '复制代码',
+      codeCopied: '已复制',
     },
     comments: {
       title: '评论',
@@ -207,6 +211,8 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       updated: 'Updated',
       tags: 'Tags',
       fallbackLanguage: (languageLabel) => `Available in ${languageLabel} only.`,
+      copyCode: 'Copy code',
+      codeCopied: 'Copied',
     },
     comments: {
       title: 'Comments',

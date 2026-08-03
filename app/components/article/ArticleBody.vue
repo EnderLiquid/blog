@@ -214,6 +214,9 @@ defineProps<{
 }
 
 .article-body :deep(.article-code-block__pre code) {
+  display: block;
+  width: max-content;
+  min-width: 100%;
   font: inherit;
 }
 

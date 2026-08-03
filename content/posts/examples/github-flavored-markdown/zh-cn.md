@@ -9,7 +9,7 @@ tags:
 draft: false
 ---
 
-> 本文正文复制自 [suan/github-flavored-markdown-test](https://github.com/suan/github-flavored-markdown-test/blob/master/README.md)，用于本站 Markdown 渲染验收。
+> 本文前半部分复制自 [suan/github-flavored-markdown-test](https://github.com/suan/github-flavored-markdown-test/blob/master/README.md)，用于本站 GitHub Flavored Markdown 基础排版验收；文末补充本站扩展功能的验收样本。
 
 ### This README can be used as a reference for github-flavored-markdown styling (and possibly behavior).
 
@@ -121,3 +121,78 @@ var test = function this_is(){
 > here is blockquote
 
 [Relative image link](afu.png)
+
+---
+
+## 本站扩展验收
+
+这一节用于验证文章详情页在基础 GFM 之外提供的阅读体验。数学公式和 Mermaid 图表会在对应功能接入后，以本节内容作为最终验收样本。
+
+### 扩展文字与列表
+
+这里包含 ~~删除线~~、<mark>高亮文字</mark>、H<sub>2</sub>O、2<sup>10</sup>，以及 <kbd>Ctrl</kbd> + <kbd>K</kbd> 这类键盘按键标记。
+
+- [x] 已完成的任务应保持清晰但不过分抢眼。
+- [ ] 未完成的任务应与已完成项有可辨识的状态差异。
+- 嵌套列表应维持稳定的缩进节奏。
+  - 第二层项目。
+  - 第二层中的 `inline code`。
+
+### 带元数据的代码块
+
+```ts [acceptance.ts]{2,4,11}
+interface AcceptanceResult {
+  passed: boolean;
+  features: string[];
+}
+
+const result: AcceptanceResult = {
+  passed: true,
+  features: ['filename', 'highlighted lines', 'horizontal scrolling'],
+};
+
+const longLine = 'This deliberately long source line verifies that horizontal scrolling stays inside the code block and never expands the article page beyond its container.';
+```
+
+这段代码同时检验文件名、语言名、指定高亮行，以及超长代码行在代码块内部滚动的表现。
+
+### 图片与灯箱
+
+![Markdown文章构建流程：从Markdown源文件经Nuxt Content生成文章页面](/images/markdown-flow.svg)
+
+图片应保留替代文本、在窄屏内缩放且不撑破正文宽度。图片灯箱接入后，点击此图应能打开预览，并可通过键盘关闭。
+
+### 脚注
+
+脚注引用应在行文中保持低干扰，并能跳转到文末说明。[^gfm-extension]
+
+同一段落也可以引用第二个脚注。[^multiline-footnote]
+
+[^gfm-extension]: 本站将 GFM 作为文章的基础语法，并在其上增加适合长文阅读的组件与交互。
+
+[^multiline-footnote]: 多行脚注用于验证较长说明的排版。
+
+    这一段是同一条脚注的续行内容，并包含 `inline code`。
+
+### 数学公式
+
+行内公式：$E = mc^2$，以及 $\int_0^1 x^2\,\mathrm{d}x = \frac{1}{3}$。
+
+块级公式：
+
+$$
+\nabla \cdot \mathbf{E} = \frac{\rho}{\varepsilon_0}
+$$
+
+公式功能接入后，应正确排版行内与块级公式，并在小屏幕上保持可读性。
+
+### Mermaid 图表
+
+```mermaid
+flowchart LR
+  markdown[Markdown source] --> parser[Nuxt Content]
+  parser --> renderer[Article renderer]
+  renderer --> reader[Reader]
+```
+
+Mermaid 功能接入后，这个代码块应渲染为流程图，并适应明暗主题和窄屏容器。
