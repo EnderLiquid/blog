@@ -34,8 +34,10 @@ export interface SiteMessages {
     name: string;
     identity: readonly string[];
     quote: readonly string[];
-    reflection: string;
-    java: string;
+    prose: {
+      light: readonly string[];
+      dark: readonly string[];
+    };
     linksLabel: string;
     github: string;
     bilibili: string;
@@ -100,10 +102,17 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       title: 'ABOUT',
       name: 'EnderLiquid',
       identity: ['软件工程本科在读，', 'Java母语者。'],
-      quote: ['“要是能把这个想法', '变成现实就好了”'],
-      reflection:
-        '我总是像这样莫名其妙地开始。果然，我常常以一个半成品收场，也带走一些或许比成品更珍贵的收获。偶尔，我也真能把一时兴起的想法变成能够运行、也能被人看见的东西。',
-      java: 'Java给了我理解系统的第一套框架。现在接触其他语言时，我也在学着少带一点Java口音。',
+      quote: ['“能不能把这个想法', '变成现实？”'],
+      prose: {
+        light: [
+          '我总是像这样莫名其妙地开始。果然，我常常以一个石沉大海的半成品收场，也时常带走一些或许比成品更宝贵的收获。不过偶尔，我也真能把一时兴起的想法变成能运行、也能被人看见的东西。',
+          'Java给了我理解系统的第一套框架。现在接触其他语言时，我也在学着少带一点Java口音。',
+        ],
+        dark: [
+          '每次，回应我的都只有自己的心声，空旷的心灵之海上像琶音一样的回声。于是我又下定决心，要带着无知者的帆船，在风暴里向不可知的彼岸寻路。直到又一次，我撞上了现实的礁石，亦或是我自己砸断了风帆。直到又一次，我无声地沉入海底，卷入轮回。',
+          '不过，那又如何呢？我分明记得在那些星光熠熠的夜晚，我和古希腊的水手共享了同一片星空；我也分明记得有几次，黄昏的光辉迎接我抵达了梦里的沙滩。',
+        ],
+      },
       linksLabel: '外部坐标',
       github: 'GitHub',
       bilibili: '哔哩哔哩',
@@ -166,9 +175,16 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       name: 'EnderLiquid',
       identity: ['Software engineering undergraduate.', 'Java is my native programming language.'],
       quote: ['“What if I could make this idea real?”'],
-      reflection:
-        'That is how I keep starting things, for no particularly good reason. Predictably, I often end up with a half-finished project and lessons that may be worth more than the finished thing. Every now and then, though, I do manage to turn a passing idea into something that runs—and that other people can see.',
-      java: 'Java gave me my first framework for understanding systems. As I work with other languages, I’m also learning to speak them with a little less of a Java accent.',
+      prose: {
+        light: [
+          'That is how I keep starting things, for no particularly good reason. Predictably, I often end up with a half-finished project and lessons that may be worth more than the finished thing. Every now and then, though, I do manage to turn a passing idea into something that runs—and that other people can see.',
+          'Java gave me my first framework for understanding systems. As I work with other languages, I’m also learning to speak them with a little less of a Java accent.',
+        ],
+        dark: [
+          'Each time, only the voice within answers me, its echoes rippling like arpeggios across the empty sea of the mind. So I resolve, once again, to set sail in the boat of the unknowing, seeking a way through the storm toward the far shore of the unknowable. Until, once again, I strike the reefs of reality—or perhaps tear my own sails apart. Until, once again, I sink soundlessly to the seabed and am drawn back into the cycle.',
+          'Yet what does that matter? I remember vividly those star-filled nights when I shared the same sky with sailors of ancient Greece; I remember, too, the few times the glow of dusk welcomed me onto beaches I had only dreamed of.',
+        ],
+      },
       linksLabel: 'Elsewhere',
       github: 'GitHub',
       bilibili: 'Bilibili',

@@ -28,8 +28,8 @@ onMounted(() => {
 onUnmounted(() => alignmentObserver?.disconnect());
 
 /**
- * 身份比引句高时，Grid第二行会被身份撑开；第三行需要抵消这段额外高度，
- * 才能让右侧引句与正文维持稳定间距，同时保留两列各自的底部对齐。
+ * 身份比引句高时，Grid第二行会被身份撑开；第三行需要以负外边距抵消这段额外高度，
+ * 才能让右侧引句与正文维持稳定间距，同时让底部边界按补偿后的实际位置收缩。
  */
 function updateContentRowOffset(): void {
   const identityHeight = identityElement.value?.getBoundingClientRect().height ?? 0;
@@ -64,8 +64,12 @@ function updateContentRowOffset(): void {
         </blockquote>
 
         <div class="about-prose">
-          <p>{{ messages.about.reflection }}</p>
-          <p>{{ messages.about.java }}</p>
+          <div class="about-prose__light">
+            <p v-for="paragraph in messages.about.prose.light" :key="paragraph">{{ paragraph }}</p>
+          </div>
+          <div class="about-prose__dark">
+            <p v-for="paragraph in messages.about.prose.dark" :key="paragraph">{{ paragraph }}</p>
+          </div>
         </div>
 
         <nav class="about-links" :aria-label="messages.about.linksLabel">
@@ -105,9 +109,9 @@ function updateContentRowOffset(): void {
 }
 
 .about-layout {
+  --about-section-gap: clamp(3.75rem, 8cqi, 5rem);
   display: grid;
-  min-height: min(42rem, calc(100svh - 9rem));
-  padding-bottom: 1.5rem;
+  padding-bottom: var(--about-section-gap);
   border-bottom: 1px solid var(--line);
   grid-template-areas:
     'heading heading'
@@ -117,7 +121,7 @@ function updateContentRowOffset(): void {
   grid-template-columns: minmax(9rem, 0.34fr) minmax(0, 1fr);
   grid-template-rows: auto auto auto;
   column-gap: clamp(2rem, 7cqi, 4.75rem);
-  row-gap: clamp(3.75rem, 8cqi, 5rem);
+  row-gap: var(--about-section-gap);
 }
 
 .about-heading {
@@ -182,12 +186,30 @@ function updateContentRowOffset(): void {
   line-height: 1.9;
 }
 
+.about-prose__dark {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .about-prose__light {
+    display: none;
+  }
+
+  .about-prose__dark {
+    display: block;
+  }
+}
+
 .about-prose p {
   margin: 0;
 }
 
 .about-prose p + p {
   margin-top: 1.5rem;
+}
+
+.about-prose__dark p + p {
+  margin-top: clamp(1.9rem, 4cqi, 2.5rem);
 }
 
 .about-links {
@@ -199,7 +221,7 @@ function updateContentRowOffset(): void {
 
 .about-prose,
 .about-links {
-  transform: translateY(calc(0px - var(--content-row-offset)));
+  margin-top: calc(0px - var(--content-row-offset));
 }
 
 .profile-link {
@@ -258,7 +280,7 @@ function updateContentRowOffset(): void {
 
 @container about-page (max-width: 45rem) {
   .about-layout {
-    min-height: 0;
+    --about-section-gap: 3rem;
     grid-template-areas:
       'heading'
       'identity'
@@ -267,7 +289,7 @@ function updateContentRowOffset(): void {
       'links';
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: repeat(5, auto);
-    row-gap: 3rem;
+    row-gap: var(--about-section-gap);
   }
 
   .about-identity,
@@ -278,7 +300,7 @@ function updateContentRowOffset(): void {
 
   .about-prose,
   .about-links {
-    transform: none;
+    margin-top: 0;
   }
 
   .about-identity {
