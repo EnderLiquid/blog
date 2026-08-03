@@ -62,6 +62,8 @@ export interface SiteMessages {
     fallbackLanguage: (languageLabel: string) => string;
     copyCode: string;
     codeCopied: string;
+    footnotes: string;
+    backToReference: (reference: string) => string;
   };
   comments: {
     title: string;
@@ -139,6 +141,8 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       fallbackLanguage: (languageLabel) => `仅提供${languageLabel}版本。`,
       copyCode: '复制代码',
       codeCopied: '已复制',
+      footnotes: '脚注',
+      backToReference: (reference) => `返回第${reference}处引用`,
     },
     comments: {
       title: '评论',
@@ -213,6 +217,8 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       fallbackLanguage: (languageLabel) => `Available in ${languageLabel} only.`,
       copyCode: 'Copy code',
       codeCopied: 'Copied',
+      footnotes: 'Footnotes',
+      backToReference: (reference) => `Back to reference ${reference}`,
     },
     comments: {
       title: 'Comments',

@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import type { MarkdownRoot } from '@nuxt/content';
+import { localizeFootnotes } from '../../shared/content/footnotes.ts';
 import { describe, test } from 'node:test';
 import {
   MARKDOWN_HEADING_ANCHOR_LINKS,
@@ -70,6 +72,9 @@ describe('文章正文组件边界', () => {
     assert.match(prosePre, /<svg/);
     assert.doesNotMatch(prosePre, /copyCodeFailed|is-error/);
     assert.match(prosePre, /article-code-block__copy/);
+    assert.match(articleBody, /localizeFootnotes/);
+    assert.match(articleBody, /article-footnotes__backref/);
+    assert.match(articleBody, /scroll-margin-top: 5rem/);
   });
   test('任务列表使用静态的方形状态标记', async () => {
     const articleBody = await readProjectFile('app/components/article/ArticleBody.vue');
@@ -80,6 +85,61 @@ describe('文章正文组件边界', () => {
     assert.match(articleBody, /border-color: var\(--signal\)/);
     assert.match(articleBody, /:checked::after/);
     assert.match(articleBody, /pointer-events: none/);
+  });
+});
+
+describe('GFM脚注投影', () => {
+  test('按页面界面语言替换标题和回链说明，同时保持原始树不变', () => {
+    const root: MarkdownRoot = {
+      type: 'minimark',
+      value: [
+        [
+          'p',
+          {},
+          '正文引用',
+          ['sup', {}, ['a', { href: '#user-content-fn-example', dataFootnoteRef: '' }, '1']],
+        ],
+        [
+          'section',
+          { className: ['footnotes'], dataFootnotes: '' },
+          ['h2', { className: ['sr-only'], id: 'footnote-label' }, 'Footnotes'],
+          [
+            'ol',
+            {},
+            [
+              'li',
+              { id: 'user-content-fn-example' },
+              '脚注正文。 ',
+              [
+                'a',
+                {
+                  href: '#user-content-fnref-example',
+                  ariaLabel: 'Back to reference 1',
+                  className: ['data-footnote-backref'],
+                  dataFootnoteBackref: '',
+                },
+                '↩',
+              ],
+            ],
+          ],
+        ],
+      ],
+    };
+
+    const localized = localizeFootnotes(root, {
+      footnotes: '脚注',
+      backToReference: (reference) => `返回第${reference}处引用`,
+    });
+    const localizedTree = JSON.stringify(localized);
+
+    assert.match(localizedTree, /article-footnotes__title/);
+    assert.match(localizedTree, /脚注/);
+    assert.match(localizedTree, /article-footnotes__reference/);
+    assert.match(localizedTree, /article-footnotes__item/);
+    assert.match(localizedTree, /article-footnotes__backref/);
+    assert.match(localizedTree, /返回第1处引用/);
+    assert.doesNotMatch(localizedTree, /sr-only|Back to reference/);
+    assert.match(JSON.stringify(root), /sr-only|Back to reference 1/);
   });
 });
 

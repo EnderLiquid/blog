@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content';
+import { localizeFootnotes } from '~~/shared/content/footnotes';
 
-// 文章正文的唯一渲染边界。路由页面只负责查询文章和组织头部、评论区。
-defineProps<{
+const props = defineProps<{
   value: Collections['posts'];
 }>();
+
+const { messages } = useSiteLocale();
+const renderedValue = computed(() => ({
+  ...props.value,
+  body: localizeFootnotes(props.value.body, messages.value.article),
+}));
 </script>
 
 <template>
-  <ContentRenderer class="article-body" :value="value" />
+  <ContentRenderer class="article-body" :value="renderedValue" />
 </template>
 
 <style scoped>
@@ -178,6 +184,75 @@ defineProps<{
 
 .article-body :deep(.task-list-item input[type='checkbox']:disabled) {
   cursor: default;
+}
+
+.article-body :deep(.article-footnotes) {
+  margin-top: 3.5rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--line);
+}
+
+.article-body :deep(.article-footnotes__title) {
+  margin: 0;
+  padding: 0;
+  color: var(--signal);
+  border: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(1.2rem, 2.75cqi, 1.45rem);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: normal;
+}
+
+.article-body :deep(.article-footnotes ol) {
+  margin: 1rem 0 0;
+  padding-left: 1.45em;
+  font-size: 0.92em;
+  line-height: 1.75;
+}
+
+.article-body :deep(.article-footnotes__item) {
+  padding-left: 0.2em;
+  scroll-margin-top: 5rem;
+}
+
+.article-body :deep(.article-footnotes__item + .article-footnotes__item) {
+  margin-top: 0.7rem;
+}
+
+.article-body :deep(.article-footnotes p) {
+  margin-bottom: 0.65rem;
+}
+
+.article-body :deep(.article-footnotes__reference) {
+  color: var(--signal);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-decoration: none;
+  scroll-margin-top: 5rem;
+}
+
+.article-body :deep(.article-footnotes__backref) {
+  display: inline-grid;
+  margin-left: 0.4em;
+  color: var(--signal);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.article-body :deep(.article-footnotes__reference:hover),
+.article-body :deep(.article-footnotes__backref:hover) {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.article-body :deep(.article-footnotes__reference:focus-visible),
+.article-body :deep(.article-footnotes__backref:focus-visible) {
+  outline: 1px solid var(--signal);
+  outline-offset: 0.15rem;
 }
 
 .article-body :deep(blockquote) {
@@ -352,6 +427,11 @@ defineProps<{
   .article-body :deep(h4),
   .article-body :deep(h5),
   .article-body :deep(h6) {
+    scroll-margin-top: 4rem;
+  }
+
+  .article-body :deep(.article-footnotes__item),
+  .article-body :deep(.article-footnotes__reference) {
     scroll-margin-top: 4rem;
   }
 
