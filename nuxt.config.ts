@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import {
   MARKDOWN_HEADING_ANCHOR_LINKS,
+  MARKDOWN_HIGHLIGHT_LANGUAGE_ALIASES,
   MARKDOWN_HIGHLIGHT_LANGUAGES,
   MARKDOWN_HIGHLIGHT_THEME,
 } from './shared/content/markdown.ts';
@@ -21,7 +22,7 @@ export default defineNuxtConfig({
         highlight: {
           // 代码面板固定为深色，因此构建期只生成与其匹配的Token颜色。
           theme: MARKDOWN_HIGHLIGHT_THEME,
-          langs: [...MARKDOWN_HIGHLIGHT_LANGUAGES],
+          langs: [...MARKDOWN_HIGHLIGHT_LANGUAGES, ...MARKDOWN_HIGHLIGHT_LANGUAGE_ALIASES],
         },
       },
     },
