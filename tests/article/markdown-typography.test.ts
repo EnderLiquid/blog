@@ -59,6 +59,30 @@ describe('文章正文组件边界', () => {
     assert.match(proseTable, /<table>/);
   });
 
+  test('图片组件保留普通链接降级并接入按需灯箱', async () => {
+    const articleBody = await readProjectFile('app/components/article/ArticleBody.vue');
+    const proseImg = await readProjectFile('app/components/content/ProseImg.vue');
+    const messages = await readProjectFile('shared/i18n/messages.ts');
+
+    assert.match(articleBody, /:components="\{ img: 'ProseImg' \}"/);
+    assert.match(proseImg, /defineOptions\(\{ inheritAttrs: false \}\)/);
+    assert.match(proseImg, /:href="refinedSrc"/);
+    assert.match(proseImg, /handlePreviewKeydown/);
+    assert.match(proseImg, /import\('v-viewer'\)/);
+    assert.match(proseImg, /import\('viewerjs\/dist\/viewer\.css'\)/);
+    assert.match(proseImg, /className: 'article-image-viewer'/);
+    assert.match(proseImg, /loop: false/);
+    assert.match(proseImg, /rotatable: false/);
+    assert.match(proseImg, /navbar: false/);
+    assert.match(proseImg, /activeViewer\?\.destroy\(\)/);
+    assert.match(proseImg, /\.viewer-button:focus\)/);
+    assert.match(proseImg, /\.viewer-toolbar > ul > li:focus\)/);
+    assert.match(proseImg, /\.viewer-footer\) \{\n  overflow: visible;/);
+    assert.match(proseImg, /box-shadow: none;\n  outline: none;/);
+    assert.match(messages, /查看图片/);
+    assert.match(messages, /View image/);
+  });
+
   test('代码块将高亮与长行保持在同一滚动宽度并提供复制入口', async () => {
     const articleBody = await readProjectFile('app/components/article/ArticleBody.vue');
     const prosePre = await readProjectFile('app/components/content/ProsePre.vue');

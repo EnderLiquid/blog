@@ -60,6 +60,14 @@ export interface SiteMessages {
     updated: string;
     tags: string;
     fallbackLanguage: (languageLabel: string) => string;
+    image: {
+      open: (alt: string) => string;
+      preview: (alt: string) => string;
+      close: string;
+      zoomIn: string;
+      zoomOut: string;
+      reset: string;
+    };
     copyCode: string;
     codeCopied: string;
     footnotes: string;
@@ -139,6 +147,14 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       updated: '更新于',
       tags: '标签',
       fallbackLanguage: (languageLabel) => `仅提供${languageLabel}版本。`,
+      image: {
+        open: (alt) => (alt ? `查看图片：${alt}` : '查看图片'),
+        preview: (alt) => (alt ? `图片预览：${alt}` : '图片预览'),
+        close: '关闭图片预览',
+        zoomIn: '放大图片',
+        zoomOut: '缩小图片',
+        reset: '恢复图片大小',
+      },
       copyCode: '复制代码',
       codeCopied: '已复制',
       footnotes: '脚注',
@@ -215,6 +231,14 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       updated: 'Updated',
       tags: 'Tags',
       fallbackLanguage: (languageLabel) => `Available in ${languageLabel} only.`,
+      image: {
+        open: (alt) => (alt ? `View image: ${alt}` : 'View image'),
+        preview: (alt) => (alt ? `Image preview: ${alt}` : 'Image preview'),
+        close: 'Close image preview',
+        zoomIn: 'Zoom in',
+        zoomOut: 'Zoom out',
+        reset: 'Reset image size',
+      },
       copyCode: 'Copy code',
       codeCopied: 'Copied',
       footnotes: 'Footnotes',

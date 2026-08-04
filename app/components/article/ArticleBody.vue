@@ -14,7 +14,7 @@ const renderedValue = computed(() => ({
 </script>
 
 <template>
-  <ContentRenderer class="article-body" :value="renderedValue" />
+  <ContentRenderer class="article-body" :value="renderedValue" :components="{ img: 'ProseImg' }" />
 </template>
 
 <style scoped>
@@ -371,19 +371,31 @@ const renderedValue = computed(() => ({
   border-bottom: 0;
 }
 
-.article-body :deep(img) {
+.article-body :deep(.article-image-preview) {
   display: block;
+  width: 100%;
   max-width: 100%;
-  height: auto;
   margin: 2rem auto;
   border: 1px solid var(--line);
+}
+
+.article-body :deep(.article-image-preview:hover),
+.article-body :deep(.article-image-preview:focus-visible) {
+  border-color: var(--signal);
+}
+
+.article-body :deep(.article-image-preview img) {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
 }
 
 .article-body :deep(figure) {
   margin: 2rem 0;
 }
 
-.article-body :deep(figure img) {
+.article-body :deep(figure .article-image-preview) {
   margin: 0 auto;
 }
 
