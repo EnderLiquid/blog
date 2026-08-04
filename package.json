@@ -18,7 +18,7 @@
     "@giscus/vue": "^3.1.1",
     "@nuxt/content": "^3.15.0",
     "better-sqlite3": "^12.11.1",
-    "katex": "0.18.1",
+    "katex": "0.16.47",
     "nuxt": "^4.4.8",
     "rehype-katex": "7.0.1",
     "remark-math": "6.0.0",

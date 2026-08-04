@@ -53,6 +53,16 @@ describe('Markdown数学公式配置', () => {
     );
   });
 
+  test('KaTeX样式与rehype-katex的渲染版本一致', async () => {
+    const packageJson = JSON.parse(await readProjectFile('package.json')) as {
+      dependencies: Record<string, string>;
+    };
+    const katexCss = await readProjectFile('node_modules/katex/dist/katex.min.css');
+
+    assert.equal(packageJson.dependencies.katex, '0.16.47');
+    assert.match(katexCss, /\.katex \.sizing\.reset-size6\.size3/);
+  });
+
   test('在清单生成前校验行内、块级和错误公式', async () => {
     await assert.doesNotReject(() =>
       validateMarkdownMath(
