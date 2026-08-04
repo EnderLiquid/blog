@@ -101,6 +101,22 @@ const renderedValue = computed(() => ({
   margin-bottom: 0;
 }
 
+.article-body :deep(.katex) {
+  color: var(--ink);
+}
+
+.article-body :deep(.katex-display) {
+  max-width: 100%;
+  margin: 2rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.2rem 0;
+}
+
+.article-body :deep(.katex-display > .katex) {
+  min-width: max-content;
+}
+
 .article-body :deep(a) {
   color: var(--signal);
   text-decoration-thickness: 0.08em;

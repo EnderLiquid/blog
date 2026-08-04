@@ -2,11 +2,14 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import type { MarkdownRoot } from '@nuxt/content';
 import { localizeFootnotes } from '../../shared/content/footnotes.ts';
+import { validateMarkdownMath } from '../../shared/content/math-validation.ts';
 import { describe, test } from 'node:test';
 import {
   MARKDOWN_HEADING_ANCHOR_LINKS,
   MARKDOWN_HIGHLIGHT_LANGUAGES,
   MARKDOWN_HIGHLIGHT_THEME,
+  MARKDOWN_MATH_REHYPE_PLUGINS,
+  MARKDOWN_MATH_REMARK_PLUGINS,
 } from '../../shared/content/markdown.ts';
 
 const readProjectFile = (relativePath: string): Promise<string> =>
@@ -37,6 +40,34 @@ describe('Markdown代码高亮配置', () => {
   });
 });
 
+describe('Markdown数学公式配置', () => {
+  test('使用构建期KaTeX管线解析美元定界公式并保留MathML', () => {
+    assert.equal(MARKDOWN_MATH_REMARK_PLUGINS['remark-math'].options.singleDollarTextMath, true);
+    assert.equal(MARKDOWN_MATH_REHYPE_PLUGINS['rehype-katex'].options.output, 'htmlAndMathml');
+    assert.equal(MARKDOWN_MATH_REHYPE_PLUGINS['rehype-katex'].options.strict, 'error');
+    assert.equal(MARKDOWN_MATH_REHYPE_PLUGINS['rehype-katex'].options.trust, false);
+    assert.equal(typeof MARKDOWN_MATH_REHYPE_PLUGINS['strict-katex-errors'].instance, 'function');
+    assert.equal(
+      MARKDOWN_MATH_REHYPE_PLUGINS['strict-katex-errors'].src,
+      '~~/shared/content/strict-katex-errors',
+    );
+  });
+
+  test('在清单生成前校验行内、块级和错误公式', async () => {
+    await assert.doesNotReject(() =>
+      validateMarkdownMath(
+        '$E = mc^2$\n\n$$\n\\nabla \\cdot \\mathbf{E} = \\frac{\\rho}{\\varepsilon_0}\n$$',
+        'valid-math.md',
+      ),
+    );
+
+    await assert.rejects(
+      () => validateMarkdownMath('$$\\definitelyNotAKaTeXCommand{x}$$', 'invalid-math.md'),
+      /Could not render math with KaTeX/,
+    );
+  });
+});
+
 describe('文章正文组件边界', () => {
   test('ArticleBody独立承担ContentRenderer和Markdown深层样式', async () => {
     const articleBody = await readProjectFile('app/components/article/ArticleBody.vue');
@@ -57,6 +88,29 @@ describe('文章正文组件边界', () => {
     assert.match(prosePre, /<pre[^>]*><slot \/><\/pre>/);
     assert.match(proseTable, /class="article-table-scroll scrollbar-themed"/);
     assert.match(proseTable, /<table>/);
+  });
+
+  test('数学公式随文章详情路由加载样式并在自身容器滚动', async () => {
+    const articleBody = await readProjectFile('app/components/article/ArticleBody.vue');
+    const articlePage = await readProjectFile('app/pages/[locale]/posts/[...articleKeyPath].vue');
+    const nuxtConfig = await readProjectFile('nuxt.config.ts');
+    const scrollbars = await readProjectFile('app/assets/css/scrollbars.css');
+
+    assert.match(articlePage, /import \{ joinURL \} from 'ufo';/);
+    assert.match(articlePage, /joinURL\(runtimeConfig\.app\.baseURL, '_katex\/katex\.min\.css'\)/);
+    assert.match(nuxtConfig, /baseURL: '\/_katex'/);
+    assert.match(nuxtConfig, /dir: resolve\('node_modules\/katex\/dist'\)/);
+    assert.match(
+      articlePage,
+      /useHead\(\{\n  link: \[\{ href: katexStylesheet, rel: 'stylesheet' \}\],\n\}\);/,
+    );
+    assert.doesNotMatch(articleBody, /katex\/dist\/katex\.min\.css/);
+    assert.match(articleBody, /\.article-body :deep\(\.katex-display\)/);
+    assert.match(articleBody, /max-width: 100%;/);
+    assert.match(articleBody, /overflow-x: auto;/);
+    assert.match(articleBody, /\.katex-display > \.katex/);
+    assert.match(scrollbars, /\.article-body \.katex-display::-webkit-scrollbar/);
+    assert.match(scrollbars, /\.article-body \.katex-display \{/);
   });
 
   test('图片组件保留普通链接降级并接入按需灯箱', async () => {

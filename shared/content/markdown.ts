@@ -1,6 +1,7 @@
 import { bundledLanguagesInfo } from 'shiki/bundle/full';
 import javascript from '@shikijs/langs/javascript';
 import type { BundledLanguage, LanguageRegistration } from 'shiki';
+import failOnKaTeXErrors from './strict-katex-errors.ts';
 
 export const MARKDOWN_HIGHLIGHT_THEME = 'github-dark';
 
@@ -35,3 +36,29 @@ export const MARKDOWN_HIGHLIGHT_LANGUAGE_ALIASES: readonly LanguageRegistration[
       aliases: [],
     })),
   );
+
+/** Markdown公式只使用明确的美元定界符，避免引入浏览器端二次排版。 */
+export const MARKDOWN_MATH_REMARK_PLUGINS = {
+  'remark-math': {
+    options: {
+      singleDollarTextMath: true,
+    },
+  },
+} as const;
+
+/** KaTeX 同时输出视觉HTML与MathML；错误必须阻止内容构建。 */
+export const MARKDOWN_MATH_KATEX_OPTIONS = {
+  output: 'htmlAndMathml',
+  strict: 'error',
+  trust: false,
+} as const;
+
+export const MARKDOWN_MATH_REHYPE_PLUGINS = {
+  'rehype-katex': {
+    options: MARKDOWN_MATH_KATEX_OPTIONS,
+  },
+  'strict-katex-errors': {
+    instance: failOnKaTeXErrors,
+    src: '~~/shared/content/strict-katex-errors',
+  },
+} as const;

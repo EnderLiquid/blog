@@ -184,6 +184,12 @@ $$
 \nabla \cdot \mathbf{E} = \frac{\rho}{\varepsilon_0}
 $$
 
+超宽块级公式应只在公式区域横向滚动：
+
+$$
+\mathbf{v} = \begin{bmatrix} v_{1,1} & v_{1,2} & v_{1,3} & v_{1,4} & v_{1,5} & v_{1,6} & v_{1,7} & v_{1,8} & v_{1,9} & v_{1,10} & v_{1,11} & v_{1,12} \end{bmatrix}^{\mathsf{T}}
+$$
+
 公式功能接入后，应正确排版行内与块级公式，并在小屏幕上保持可读性。
 
 ### Mermaid 图表

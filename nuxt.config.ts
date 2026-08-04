@@ -1,9 +1,12 @@
 import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import {
   MARKDOWN_HEADING_ANCHOR_LINKS,
   MARKDOWN_HIGHLIGHT_LANGUAGE_ALIASES,
   MARKDOWN_HIGHLIGHT_LANGUAGES,
   MARKDOWN_HIGHLIGHT_THEME,
+  MARKDOWN_MATH_REHYPE_PLUGINS,
+  MARKDOWN_MATH_REMARK_PLUGINS,
 } from './shared/content/markdown.ts';
 import { validateSiteManifest } from './shared/site-manifest/build.ts';
 import { createPrerenderRoutesView } from './shared/site-projections/prerender.ts';
@@ -19,6 +22,8 @@ export default defineNuxtConfig({
     },
     build: {
       markdown: {
+        remarkPlugins: MARKDOWN_MATH_REMARK_PLUGINS,
+        rehypePlugins: MARKDOWN_MATH_REHYPE_PLUGINS,
         highlight: {
           // 代码面板固定为深色，因此构建期只生成与其匹配的Token颜色。
           theme: MARKDOWN_HIGHLIGHT_THEME,
@@ -28,6 +33,12 @@ export default defineNuxtConfig({
     },
   },
   nitro: {
+    publicAssets: [
+      {
+        baseURL: '/_katex',
+        dir: resolve('node_modules/katex/dist'),
+      },
+    ],
     prerender: {
       crawlLinks: true,
       routes: [],

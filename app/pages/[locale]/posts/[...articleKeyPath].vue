@@ -1,8 +1,14 @@
 <script setup lang="ts">
+import { joinURL } from 'ufo';
 import ArticleBody from '~/components/article/ArticleBody.vue';
 import { formatPostDate, toDateTime } from '~/utils/date';
 
 const { localeCode, messages } = useSiteLocale();
+const runtimeConfig = useRuntimeConfig();
+const katexStylesheet = joinURL(runtimeConfig.app.baseURL, '_katex/katex.min.css');
+useHead({
+  link: [{ href: katexStylesheet, rel: 'stylesheet' }],
+});
 const { descriptor } = useArticleDeliveryDescriptor();
 const delivery = descriptor.value;
 
