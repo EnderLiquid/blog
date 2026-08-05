@@ -5,8 +5,8 @@ import {
   MARKDOWN_HIGHLIGHT_LANGUAGE_ALIASES,
   MARKDOWN_HIGHLIGHT_LANGUAGES,
   MARKDOWN_HIGHLIGHT_THEME,
-  MARKDOWN_MATH_REHYPE_PLUGINS,
   MARKDOWN_MATH_REMARK_PLUGINS,
+  MARKDOWN_REHYPE_PLUGINS,
 } from './shared/content/markdown.ts';
 import { validateSiteManifest } from './shared/site-manifest/build.ts';
 import { createPrerenderRoutesView } from './shared/site-projections/prerender.ts';
@@ -23,7 +23,7 @@ export default defineNuxtConfig({
     build: {
       markdown: {
         remarkPlugins: MARKDOWN_MATH_REMARK_PLUGINS,
-        rehypePlugins: MARKDOWN_MATH_REHYPE_PLUGINS,
+        rehypePlugins: MARKDOWN_REHYPE_PLUGINS,
         highlight: {
           // 代码面板固定为深色，因此构建期只生成与其匹配的Token颜色。
           theme: MARKDOWN_HIGHLIGHT_THEME,

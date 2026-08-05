@@ -87,6 +87,30 @@ draft: false
 
 代码块固定使用深色面板和`github-dark` Shiki主题，避免本站`prefers-color-scheme`机制与Shiki默认`html.dark`类切换产生“浅色Token + 深色背景”。主题和全量Shiki规范语言集合维护在`shared/content/markdown.ts`，语言集合从`shiki/bundle/full`自动取得，别名由Shiki注册表提供。Markdown标题锚点全部关闭，标题保持普通文本以方便拖选和复制。长代码与宽表格只在自身容器内横向滚动，不得通过隐藏页面溢出来掩盖布局问题。
 
+#### 图片
+
+文章图片统一由`ArticleImage`渲染。独占一段的Markdown图片默认为块级流体图片；写在文字中的图片默认为行内图片。Nuxt Content支持在图片后附加属性：
+
+```md
+![系统流程图](/images/flow.svg){
+width="42rem"
+align="center"
+caption="图 1：系统流程"
+}
+```
+
+`align`只用于块级图片，取`start`、`center`或`end`。行内图片使用`layout="inline"`和`vertical-align`控制文字行内的纵向位置，灯箱由`preview`独立控制：
+
+```md
+文字中的 ![状态图标](/images/status.svg){
+layout="inline"
+width="1em"
+vertical-align="middle"
+}
+```
+
+`caption`只允许块级图片；`alt=""`表示装饰图片，默认不会创建灯箱入口。宽度、图注、行内/块级冲突会在内容构建阶段报错。
+
 ## GitHub Pages
 
 `.github/workflows/deploy-pages.yml` 会在 `main` 分支更新时执行格式检查、单元测试、站点清单生成、类型检查、静态生成、Pagefind索引和部署。

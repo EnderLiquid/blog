@@ -2,12 +2,16 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import type { MarkdownRoot } from '@nuxt/content';
 import { localizeFootnotes } from '../../shared/content/footnotes.ts';
+import { validateMarkdownImages } from '../../shared/content/image-validation.ts';
 import { validateMarkdownMath } from '../../shared/content/math-validation.ts';
+import normalizeArticleImages from '../../shared/content/normalize-article-images.ts';
+import { parseMarkdown } from '@nuxtjs/mdc/runtime';
 import { describe, test } from 'node:test';
 import {
   MARKDOWN_HEADING_ANCHOR_LINKS,
   MARKDOWN_HIGHLIGHT_LANGUAGES,
   MARKDOWN_HIGHLIGHT_THEME,
+  MARKDOWN_IMAGE_REHYPE_PLUGINS,
   MARKDOWN_MATH_REHYPE_PLUGINS,
   MARKDOWN_MATH_REMARK_PLUGINS,
 } from '../../shared/content/markdown.ts';
@@ -37,6 +41,19 @@ describe('Markdown代码高亮配置', () => {
       false,
       false,
     ]);
+  });
+});
+
+describe('Markdown图片配置', () => {
+  test('注册图片结构归一化插件', () => {
+    assert.equal(
+      typeof MARKDOWN_IMAGE_REHYPE_PLUGINS['normalize-article-images'].instance,
+      'function',
+    );
+    assert.equal(
+      MARKDOWN_IMAGE_REHYPE_PLUGINS['normalize-article-images'].src,
+      '~~/shared/content/normalize-article-images',
+    );
   });
 });
 
@@ -78,12 +95,141 @@ describe('Markdown数学公式配置', () => {
   });
 });
 
+describe('统一图片Markdown构建链', () => {
+  const imageParserOptions = {
+    rehype: {
+      plugins: {
+        'normalize-article-images': {
+          instance: normalizeArticleImages,
+        },
+      },
+    },
+  } as const;
+
+  test('将独占Markdown图片提升为块级article-image节点，并保留图注和尺寸属性', async () => {
+    const parsed = await parseMarkdown(
+      '![系统流程](/images/flow.svg){width="42rem" align="center" caption="图 1：系统流程"}',
+      imageParserOptions,
+    );
+    const image = parsed.body.children[0];
+
+    assert.deepEqual(image, {
+      type: 'element',
+      tag: 'article-image',
+      props: {
+        alt: '系统流程',
+        align: 'center',
+        caption: '图 1：系统流程',
+        layout: 'block',
+        src: '/images/flow.svg',
+        width: '42rem',
+      },
+      children: [],
+    });
+  });
+
+  test('将独立原始HTML图片也归一化为块级节点', async () => {
+    const parsed = await parseMarkdown(
+      '<img src="/images/flow.svg" alt="原始HTML流程" width="320">',
+      imageParserOptions,
+    );
+    const image = parsed.body.children[0];
+
+    assert.equal(image?.tag, 'article-image');
+    assert.equal(image?.props?.layout, 'block');
+    assert.equal(image?.props?.width, 320);
+  });
+
+  test('将文字段落中的图片保持为行内节点，并保留纵向对齐属性', async () => {
+    const parsed = await parseMarkdown(
+      '文字前 ![状态图标](/images/status.svg){width="1em" vertical-align="middle"} 文字后。',
+      imageParserOptions,
+    );
+    const paragraph = parsed.body.children[0];
+
+    assert.equal(paragraph?.tag, 'p');
+    const image = paragraph?.children?.[1];
+    assert.equal(image?.tag, 'img');
+    assert.equal(image?.props?.layout, 'inline');
+    assert.equal(image?.props?.width, '1em');
+    assert.equal(image?.props?.['vertical-align'], 'middle');
+  });
+
+  test('校验图片排版冲突、替代文本和静态布尔属性', async () => {
+    await assert.doesNotReject(() =>
+      validateMarkdownImages(
+        '![深色流程图](/images/flow-light.svg){dark-src="/images/flow-dark.svg" preview="false"}',
+        'valid-image.md',
+      ),
+    );
+    await assert.doesNotReject(() =>
+      validateMarkdownImages(
+        '<img src="https://cdn.example.com/icon.svg" alt="HTTPS图片">',
+        'https.md',
+      ),
+    );
+    await assert.doesNotReject(() =>
+      validateMarkdownImages('<img src="http://localhost/icon.svg" alt="HTTP图片">', 'http.md'),
+    );
+
+    await assert.rejects(
+      () =>
+        validateMarkdownImages(
+          '![图标](/images/icon.svg){layout="inline" caption="不应出现的图注"}',
+          'inline-caption.md',
+        ),
+      /caption只能用于block图片/,
+    );
+    await assert.rejects(
+      () => validateMarkdownImages('<img src="/images/icon.svg">', 'missing-alt.md'),
+      /图片必须提供alt属性/,
+    );
+    await assert.rejects(
+      () => validateMarkdownImages('![](/images/icon.svg){preview="true"}', 'empty-alt.md'),
+      /alt为空的装饰图片不能打开灯箱预览/,
+    );
+    await assert.rejects(
+      () =>
+        validateMarkdownImages('![独立图](/images/icon.svg){layout="inline"}', 'block-inline.md'),
+      /独立段落中的图片不能使用inline布局/,
+    );
+    await assert.rejects(
+      () =>
+        validateMarkdownImages(
+          '文字 ![图标](/images/icon.svg){align="center"} 文字',
+          'inline-align.md',
+        ),
+      /align只能用于block图片/,
+    );
+    await assert.rejects(
+      () => validateMarkdownImages('<img src="javascript:alert(1)" alt="危险图">', 'unsafe-src.md'),
+      /图片地址不安全/,
+    );
+    await assert.rejects(
+      () =>
+        validateMarkdownImages(
+          '<img src="data:image/png;base64,AA==" alt="内嵌图">',
+          'data-src.md',
+        ),
+      /图片地址不安全/,
+    );
+    await assert.rejects(
+      () =>
+        validateMarkdownImages(
+          '<img src="//cdn.example.com/icon.svg" alt="协议相对图">',
+          'protocol-relative.md',
+        ),
+      /图片地址不安全/,
+    );
+  });
+});
+
 describe('文章正文组件边界', () => {
   test('ArticleBody独立承担ContentRenderer和Markdown深层样式', async () => {
     const articleBody = await readProjectFile('app/components/article/ArticleBody.vue');
     const articlePage = await readProjectFile('app/pages/[locale]/posts/[...articleKeyPath].vue');
 
-    assert.match(articleBody, /<ContentRenderer class="article-body"/);
+    assert.match(articleBody, /<ContentRenderer\s+class="article-body"/);
     assert.match(articleBody, /\.article-body :deep\(h2\)/);
     assert.match(articlePage, /<ArticleBody class="article-content" :value="post"/);
     assert.doesNotMatch(articlePage, /article-content :deep\(pre\)/);
@@ -123,26 +269,33 @@ describe('文章正文组件边界', () => {
     assert.match(scrollbars, /\.article-body \.katex-display \{/);
   });
 
-  test('图片组件保留普通链接降级并接入按需灯箱', async () => {
+  test('统一图片组件保留灯箱能力，并支持块级、行内和深色图源', async () => {
     const articleBody = await readProjectFile('app/components/article/ArticleBody.vue');
-    const proseImg = await readProjectFile('app/components/content/ProseImg.vue');
+    const articleImage = await readProjectFile('app/components/content/ArticleImage.vue');
     const messages = await readProjectFile('shared/i18n/messages.ts');
 
-    assert.match(articleBody, /:components="\{ img: 'ProseImg' \}"/);
-    assert.match(proseImg, /defineOptions\(\{ inheritAttrs: false \}\)/);
-    assert.match(proseImg, /:href="refinedSrc"/);
-    assert.match(proseImg, /handlePreviewKeydown/);
-    assert.match(proseImg, /import\('v-viewer'\)/);
-    assert.match(proseImg, /import\('viewerjs\/dist\/viewer\.css'\)/);
-    assert.match(proseImg, /className: 'article-image-viewer'/);
-    assert.match(proseImg, /loop: false/);
-    assert.match(proseImg, /rotatable: false/);
-    assert.match(proseImg, /navbar: false/);
-    assert.match(proseImg, /activeViewer\?\.destroy\(\)/);
-    assert.match(proseImg, /\.viewer-button:focus\)/);
-    assert.match(proseImg, /\.viewer-toolbar > ul > li:focus\)/);
-    assert.match(proseImg, /\.viewer-footer\) \{\n  overflow: visible;/);
-    assert.match(proseImg, /box-shadow: none;\n  outline: none;/);
+    assert.match(articleBody, /img: 'ArticleImage'/);
+    assert.match(articleBody, /'article-image': 'ArticleImage'/);
+    assert.match(articleBody, /article-image--block/);
+    assert.match(articleBody, /article-image--inline/);
+    assert.match(articleBody, /article-image-vertical-align/);
+    assert.match(articleImage, /defineOptions\(\{ inheritAttrs: false \}\)/);
+    assert.match(articleImage, /previewEnabled/);
+    assert.match(articleImage, /handlePreviewKeydown/);
+    assert.match(articleImage, /imageElement\.value\?\.currentSrc/);
+    assert.match(articleImage, /darkSrc/);
+    assert.match(articleImage, /<figcaption v-if="hasCaption">/);
+    assert.match(articleImage, /import\('v-viewer'\)/);
+    assert.match(articleImage, /import\('viewerjs\/dist\/viewer\.css'\)/);
+    assert.match(articleImage, /className: 'article-image-viewer'/);
+    assert.match(articleImage, /loop: false/);
+    assert.match(articleImage, /rotatable: false/);
+    assert.match(articleImage, /navbar: false/);
+    assert.match(articleImage, /activeViewer\?\.destroy\(\)/);
+    assert.match(articleImage, /\.viewer-button:focus\)/);
+    assert.match(articleImage, /\.viewer-toolbar > ul > li:focus\)/);
+    assert.match(articleImage, /\.viewer-footer\) \{\n  overflow: visible;/);
+    assert.match(articleImage, /box-shadow: none;\n  outline: none;/);
     assert.match(messages, /查看图片/);
     assert.match(messages, /View image/);
   });

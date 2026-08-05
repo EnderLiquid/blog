@@ -14,7 +14,11 @@ const renderedValue = computed(() => ({
 </script>
 
 <template>
-  <ContentRenderer class="article-body" :value="renderedValue" :components="{ img: 'ProseImg' }" />
+  <ContentRenderer
+    class="article-body"
+    :value="renderedValue"
+    :components="{ img: 'ArticleImage', 'article-image': 'ArticleImage' }"
+  />
 </template>
 
 <style scoped>
@@ -387,32 +391,83 @@ const renderedValue = computed(() => ({
   border-bottom: 0;
 }
 
-.article-body :deep(.article-image-preview) {
+.article-body :deep(.article-image) {
+  max-inline-size: 100%;
+}
+
+.article-body :deep(.article-image--block) {
   display: block;
-  width: 100%;
-  max-width: 100%;
-  margin: 2rem auto;
+  inline-size: var(--article-image-width, 100%);
+  max-inline-size: 100%;
+  margin-block: 2rem;
+  margin-inline: auto;
+}
+
+.article-body :deep(.article-image--block[data-align='start']) {
+  margin-inline: 0 auto;
+}
+
+.article-body :deep(.article-image--block[data-align='end']) {
+  margin-inline: auto 0;
+}
+
+.article-body :deep(.article-image--block .article-image__media) {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
   border: 1px solid var(--line);
 }
 
-.article-body :deep(.article-image-preview:hover),
-.article-body :deep(.article-image-preview:focus-visible) {
+.article-body :deep(.article-image--block .article-image__media:hover),
+.article-body :deep(.article-image--block .article-image__media:focus-visible) {
   border-color: var(--signal);
 }
 
-.article-body :deep(.article-image-preview img) {
+.article-body :deep(.article-image__picture) {
   display: block;
-  width: 100%;
-  max-width: 100%;
-  height: auto;
+}
+
+.article-body :deep(.article-image img) {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+}
+
+.article-body :deep(.article-image--block img) {
+  inline-size: 100%;
+}
+
+.article-body :deep(.article-image--inline) {
+  display: inline-block;
+  inline-size: var(--article-image-width, auto);
+  max-inline-size: 100%;
+  vertical-align: var(--article-image-vertical-align, baseline);
+}
+
+.article-body :deep(.article-image--inline .article-image__media) {
+  display: block;
+  max-inline-size: 100%;
+}
+
+.article-body :deep(.article-image--inline .article-image__media:focus-visible) {
+  outline: 1px solid var(--signal);
+  outline-offset: 0.12em;
+}
+
+.article-body :deep(.article-image--inline img) {
+  inline-size: 100%;
+}
+
+.article-body :deep(.article-image--inline:not(.article-image--has-width) img) {
+  inline-size: auto;
 }
 
 .article-body :deep(figure) {
   margin: 2rem 0;
 }
 
-.article-body :deep(figure .article-image-preview) {
-  margin: 0 auto;
+.article-body :deep(figure .article-image--block) {
+  margin: 0;
 }
 
 .article-body :deep(figcaption) {

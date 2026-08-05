@@ -1,6 +1,7 @@
 import { bundledLanguagesInfo } from 'shiki/bundle/full';
 import javascript from '@shikijs/langs/javascript';
 import type { BundledLanguage, LanguageRegistration } from 'shiki';
+import normalizeArticleImages from './normalize-article-images.ts';
 import failOnKaTeXErrors from './strict-katex-errors.ts';
 
 export const MARKDOWN_HIGHLIGHT_THEME = 'github-dark';
@@ -61,4 +62,17 @@ export const MARKDOWN_MATH_REHYPE_PLUGINS = {
     instance: failOnKaTeXErrors,
     src: '~~/shared/content/strict-katex-errors',
   },
+} as const;
+
+/** 将图片段落归一化为块级节点，并在构建期校验图片排版属性。 */
+export const MARKDOWN_IMAGE_REHYPE_PLUGINS = {
+  'normalize-article-images': {
+    instance: normalizeArticleImages,
+    src: '~~/shared/content/normalize-article-images',
+  },
+} as const;
+
+export const MARKDOWN_REHYPE_PLUGINS = {
+  ...MARKDOWN_MATH_REHYPE_PLUGINS,
+  ...MARKDOWN_IMAGE_REHYPE_PLUGINS,
 } as const;

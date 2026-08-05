@@ -2,6 +2,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'yaml';
 import { ARTICLE_SEGMENT_PATTERN, postMetadataSchema } from '../../shared/content/post-schema.ts';
+import { validateMarkdownImages } from '../../shared/content/image-validation.ts';
 import { validateMarkdownMath } from '../../shared/content/math-validation.ts';
 import { parseLocaleCode, SUPPORTED_LOCALE_CODES } from '../../shared/i18n/locales.ts';
 import type { PostSource } from '../../shared/content/post-source.ts';
@@ -57,11 +58,21 @@ export async function readPostSources(postsDirectory: string): Promise<PostSourc
       continue;
     }
 
+    const markdown = source.replace(frontmatterPattern, '');
+
     try {
-      await validateMarkdownMath(source.replace(frontmatterPattern, ''), relativePath);
+      await validateMarkdownMath(markdown, relativePath);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       errors.push(`${relativePath}: 数学公式解析失败：${message}`);
+      continue;
+    }
+
+    try {
+      await validateMarkdownImages(markdown, relativePath);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      errors.push(`${relativePath}: 图片解析失败：${message}`);
       continue;
     }
 

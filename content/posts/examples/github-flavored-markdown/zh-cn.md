@@ -162,6 +162,41 @@ const longLine = 'This deliberately long source line verifies that horizontal sc
 
 图片应保留替代文本、在窄屏内缩放且不撑破正文宽度。图片灯箱接入后，点击此图应能打开预览，并可通过键盘关闭。
 
+### 统一图片排版
+
+![定宽且靠起点对齐的文章构建流程](/images/markdown-flow.svg){
+  width="34rem"
+  align="start"
+  caption="图 1：定宽块级图片与可见图注"
+}
+
+上图验证块级图片的定宽、起点对齐和图注。图注不能写在行内图片上；关闭预览时仍应保留图注：
+
+![关闭灯箱的居中图片](/images/markdown-flow.svg){
+  width="28rem"
+  align="center"
+  caption="图 2：不创建灯箱入口的图注图片"
+  preview="false"
+}
+
+行内图片不应打断文字流：状态为 ![图片排版验收标记](/images/article-image-marker.svg){
+  width="1em"
+  vertical-align="middle"
+} 已验证。这个图标仍可通过键盘打开单图灯箱。
+
+![深色模式图片源验收](/images/markdown-flow.svg){
+  dark-src="/images/markdown-flow.svg"
+  width="30rem"
+  align="end"
+}
+
+装饰图标不应创建灯箱入口： ![](/images/article-image-marker.svg){
+  layout="inline"
+  width="1em"
+  vertical-align="middle"
+  preview="false"
+} 。
+
 ### 脚注
 
 脚注引用应在行文中保持低干扰，并能跳转到文末说明。[^gfm-extension]
