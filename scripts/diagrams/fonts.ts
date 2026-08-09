@@ -1,6 +1,5 @@
-import { access, copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { DIAGRAM_FONT_ASSET_VERSION } from '../../shared/content/diagram.ts';
 
 const nodeTikzjaxDirectory = path.join(process.cwd(), 'node_modules', 'node-tikzjax');
 const fontDirectory = path.join(nodeTikzjaxDirectory, 'css', 'bakoma', 'ttf');
@@ -31,29 +30,6 @@ export async function embedTikzFonts(svg: string): Promise<string> {
   );
 }
 
-/** 保留TikZJax与BaKoMa许可证，同时移除早期外部字体CSS迁移留下的无用字体副本。 */
-export async function ensureTikzFontLicenses(assetDirectory: string): Promise<void> {
-  const licensesDirectory = path.join(assetDirectory, 'licenses');
-  const versionPath = path.join(licensesDirectory, '.asset-version');
-
-  if (await hasExpectedLicenses(versionPath, licensesDirectory)) {
-    return;
-  }
-
-  await rm(licensesDirectory, { recursive: true, force: true });
-  await mkdir(licensesDirectory, { recursive: true });
-  await copyFile(
-    path.join(nodeTikzjaxDirectory, 'LICENSE'),
-    path.join(licensesDirectory, 'node-tikzjax-LICENSE'),
-  );
-  await copyFile(
-    path.join(nodeTikzjaxDirectory, 'css', 'bakoma', 'LICENCE'),
-    path.join(licensesDirectory, 'bakoma-LICENCE'),
-  );
-  await writeFile(versionPath, `${DIAGRAM_FONT_ASSET_VERSION}\n`, 'utf8');
-  await rm(path.join(assetDirectory, 'fonts'), { recursive: true, force: true });
-}
-
 function extractTikzFontFamilies(svg: string): string[] {
   const families = new Set<string>();
   const pattern = /font-family\s*=\s*(?:"([^"]+)"|'([^']+)')/gi;
@@ -68,23 +44,6 @@ function extractTikzFontFamilies(svg: string): string[] {
   }
 
   return [...families].sort();
-}
-
-async function hasExpectedLicenses(
-  versionPath: string,
-  licensesDirectory: string,
-): Promise<boolean> {
-  try {
-    const [version] = await Promise.all([
-      readFile(versionPath, 'utf8'),
-      access(path.join(licensesDirectory, 'node-tikzjax-LICENSE')),
-      access(path.join(licensesDirectory, 'bakoma-LICENCE')),
-    ]);
-
-    return version.trim() === DIAGRAM_FONT_ASSET_VERSION;
-  } catch {
-    return false;
-  }
 }
 
 function isBundledTikzFontFamily(value: string): boolean {

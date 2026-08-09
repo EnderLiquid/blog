@@ -18,7 +18,6 @@ import {
 } from '../../shared/content/diagram.ts';
 import { assertSafeDiagramSvg } from '../../shared/content/diagram-svg.ts';
 import { maskMarkdownFrontmatter } from '../../shared/content/frontmatter.ts';
-import { ensureTikzFontLicenses } from './fonts.ts';
 import { MermaidRenderError, renderMermaidDiagram } from './merman.ts';
 import { TikzRenderError, renderTikzDiagram } from './tikz.ts';
 import { ensureMermanCli } from './toolchain.ts';
@@ -73,12 +72,6 @@ async function prepareDiagramAssetsLocked(projectRoot: string): Promise<DiagramP
     await mkdir(assetDirectory, { recursive: true });
     const expected = await collectExpectedDiagrams(projectRoot);
     const previousManifest = await readExistingManifest(assetDirectory);
-    const hasTikz = [...expected.values()].some(({ fence }) => fence.kind === 'tikz');
-
-    if (hasTikz) {
-      await ensureTikzFontLicenses(assetDirectory);
-    }
-
     const stagingDirectory = await createStagingDirectory(dataDirectory);
 
     try {

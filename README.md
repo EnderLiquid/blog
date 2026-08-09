@@ -136,7 +136,7 @@ TikZ 使用`node-tikzjax`的完整文档输入契约，围栏中必须自行包�
 ```
 ````
 
-图表语法、元数据、SVG安全检查或本地工具校验失败都会阻止内容构建。生成资产和Merman 二进制位于Git忽略的`.data/`；CI 与本地都按图表指纹复用未变化的 SVG。TikZ SVG只嵌入实际使用的BaKoMa字体数据，避免`<img>`环境对外部SVG字体CSS的兼容性差异；相关许可证随`/_diagram-assets/licenses/`发布。
+图表语法、元数据、SVG安全检查或本地工具校验失败都会阻止内容构建。生成资产和Merman 二进制位于Git忽略的`.data/`；CI 与本地都按图表指纹复用未变化的 SVG。TikZ SVG只嵌入实际使用的BaKoMa字体数据，避免`<img>`环境对外部SVG字体CSS的兼容性差异。
 
 ## GitHub Pages
 
