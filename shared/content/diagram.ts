@@ -5,8 +5,8 @@ import {
   normalizeArticleImageLength,
 } from './article-image.ts';
 
-export const DIAGRAM_ASSET_MANIFEST_VERSION = 1;
-export const DIAGRAM_RENDER_CONFIG_VERSION = 'diagram-render-v2';
+export const DIAGRAM_ASSET_MANIFEST_VERSION = 2;
+export const DIAGRAM_RENDER_CONFIG_VERSION = 'diagram-render-v3';
 export const DIAGRAM_PUBLIC_BASE = '/_diagram-assets/';
 export const DIAGRAM_FONT_ASSET_VERSION = 'node-tikzjax@1.0.5-bakoma-embedded-v1';
 
@@ -18,6 +18,7 @@ export type DiagramVariant = (typeof DIAGRAM_VARIANTS)[number];
 
 export const DIAGRAM_COLOR_SCHEMES = ['auto', 'light', 'dark'] as const;
 export type DiagramColorScheme = (typeof DIAGRAM_COLOR_SCHEMES)[number];
+export type FixedDiagramColorScheme = Exclude<DiagramColorScheme, 'auto'>;
 
 export interface EffectiveDiagramAppearance {
   palette: DiagramVariant;
@@ -77,17 +78,28 @@ export interface DiagramFence {
   presentation: DiagramPresentation;
 }
 
-export interface DiagramVariantAsset {
+export interface DiagramAsset {
   fingerprint: string;
   file: string;
   contentDigest: string;
 }
 
-export interface DiagramAssetEntry {
+export type DiagramAssetReference = Pick<DiagramAsset, 'fingerprint' | 'file'>;
+
+export interface AutoDiagramAssetEntry {
   kind: DiagramKind;
-  light: DiagramVariantAsset;
-  dark: DiagramVariantAsset;
+  colorScheme: 'auto';
+  light: DiagramAsset;
+  dark: DiagramAsset;
 }
+
+export interface FixedDiagramAssetEntry {
+  kind: DiagramKind;
+  colorScheme: FixedDiagramColorScheme;
+  fixed: DiagramAsset;
+}
+
+export type DiagramAssetEntry = AutoDiagramAssetEntry | FixedDiagramAssetEntry;
 
 export interface DiagramAssetManifest {
   version: typeof DIAGRAM_ASSET_MANIFEST_VERSION;
@@ -97,11 +109,32 @@ export interface DiagramAssetManifest {
   assets: Record<string, DiagramAssetEntry>;
 }
 
-export interface DiagramAssetExpectation {
+export interface AutoDiagramAssetExpectation {
   identity: string;
   kind: DiagramKind;
-  variants: Readonly<Record<DiagramVariant, { fingerprint: string; file: string }>>;
+  colorScheme: 'auto';
+  variants: Readonly<Record<DiagramVariant, DiagramAssetReference>>;
 }
+
+export interface FixedDiagramAssetExpectation {
+  identity: string;
+  kind: DiagramKind;
+  colorScheme: FixedDiagramColorScheme;
+  fixed: DiagramAssetReference;
+}
+
+export type DiagramAssetExpectation = AutoDiagramAssetExpectation | FixedDiagramAssetExpectation;
+
+export type RenderedDiagramAssets =
+  | {
+      colorScheme: 'auto';
+      light: string;
+      dark: string;
+    }
+  | {
+      colorScheme: FixedDiagramColorScheme;
+      fixed: string;
+    };
 
 export class DiagramContentError extends Error {
   readonly sourcePath: string;
@@ -137,6 +170,13 @@ export function resolveDiagramAppearance(
     return { palette: pageVariant, canvas: 'transparent' };
   }
 
+  return resolveFixedDiagramAppearance(colorScheme);
+}
+
+/** 固定配色不依赖页面主题，始终输出同一套不透明图纸。 */
+export function resolveFixedDiagramAppearance(
+  colorScheme: FixedDiagramColorScheme,
+): EffectiveDiagramAppearance {
   return { palette: colorScheme, canvas: 'paper' };
 }
 
@@ -268,41 +308,63 @@ export async function scanMarkdownDiagrams(
 }
 
 export function createDiagramAssetExpectation(fence: DiagramFence): DiagramAssetExpectation {
+  const colorScheme = fence.presentation.colorScheme;
   const identity = sha256(
     stableJson({
       kind: fence.kind,
       source: fence.source,
-      colorScheme: fence.presentation.colorScheme,
+      colorScheme,
       renderer: DIAGRAM_RENDERER_IDS[fence.kind],
       renderConfigVersion: DIAGRAM_RENDER_CONFIG_VERSION,
       ...(fence.kind === 'tikz' ? { fontAssetVersion: DIAGRAM_FONT_ASSET_VERSION } : {}),
     }),
   );
-  const variants = Object.fromEntries(
-    DIAGRAM_VARIANTS.map((variant) => {
-      const appearance = resolveDiagramAppearance(fence.presentation.colorScheme, variant);
-      const fingerprint = sha256(
-        stableJson({
-          identity,
-          kind: fence.kind,
-          variant,
-          appearance,
-          rendererConfig: getDiagramRendererConfig(
-            fence.kind,
-            variant,
-            fence.presentation.colorScheme,
-          ),
-        }),
-      );
 
-      return [variant, { fingerprint, file: `${fingerprint}.${variant}.svg` }];
+  if (colorScheme === 'auto') {
+    const variants = Object.fromEntries(
+      DIAGRAM_VARIANTS.map((variant) => {
+        const appearance = resolveDiagramAppearance(colorScheme, variant);
+        const fingerprint = sha256(
+          stableJson({
+            identity,
+            kind: fence.kind,
+            variant,
+            appearance,
+            rendererConfig: getDiagramRendererConfig(fence.kind, variant, colorScheme),
+          }),
+        );
+
+        return [variant, { fingerprint, file: `${fingerprint}.${variant}.svg` }];
+      }),
+    ) as AutoDiagramAssetExpectation['variants'];
+
+    return {
+      identity,
+      kind: fence.kind,
+      colorScheme,
+      variants,
+    };
+  }
+
+  const appearance = resolveFixedDiagramAppearance(colorScheme);
+  const fingerprint = sha256(
+    stableJson({
+      identity,
+      kind: fence.kind,
+      assetKind: 'fixed',
+      appearance,
+      rendererConfig: getFixedDiagramRendererConfig(fence.kind, colorScheme),
     }),
-  ) as DiagramAssetExpectation['variants'];
+  );
 
   return {
     identity,
     kind: fence.kind,
-    variants,
+    colorScheme,
+    fixed: {
+      fingerprint,
+      file: `${fingerprint}.fixed.svg`,
+    },
   };
 }
 
@@ -311,7 +373,20 @@ export function getDiagramRendererConfig(
   pageVariant: DiagramVariant,
   colorScheme: DiagramColorScheme = 'auto',
 ): Record<string, unknown> {
-  const appearance = resolveDiagramAppearance(colorScheme, pageVariant);
+  return createDiagramRendererConfig(kind, resolveDiagramAppearance(colorScheme, pageVariant));
+}
+
+export function getFixedDiagramRendererConfig(
+  kind: DiagramKind,
+  colorScheme: FixedDiagramColorScheme,
+): Record<string, unknown> {
+  return createDiagramRendererConfig(kind, resolveFixedDiagramAppearance(colorScheme));
+}
+
+function createDiagramRendererConfig(
+  kind: DiagramKind,
+  appearance: EffectiveDiagramAppearance,
+): Record<string, unknown> {
   const theme = DIAGRAM_THEMES[appearance.palette];
 
   if (kind === 'mermaid') {
@@ -386,15 +461,11 @@ export function parseDiagramAssetManifest(value: unknown): DiagramAssetManifest 
   const assets: Record<string, DiagramAssetEntry> = {};
 
   for (const [identity, rawEntry] of Object.entries(value.assets)) {
-    if (!isSha256(identity) || !isRecord(rawEntry) || !isDiagramKind(rawEntry.kind)) {
+    if (!isSha256(identity) || !isRecord(rawEntry)) {
       throw new Error('图表资产清单包含无效条目');
     }
 
-    assets[identity] = {
-      kind: rawEntry.kind,
-      light: parseDiagramVariantAsset(rawEntry.light, 'light'),
-      dark: parseDiagramVariantAsset(rawEntry.dark, 'dark'),
-    };
+    assets[identity] = parseDiagramAssetEntry(rawEntry);
   }
 
   return {
@@ -412,18 +483,74 @@ export function findDiagramAssetEntry(
 ): DiagramAssetEntry | undefined {
   const entry = manifest.assets[expectation.identity];
 
-  if (!entry || entry.kind !== expectation.kind) {
+  if (!entry || entry.kind !== expectation.kind || entry.colorScheme !== expectation.colorScheme) {
     return undefined;
   }
 
-  return DIAGRAM_VARIANTS.every((variant) => {
-    const expected = expectation.variants[variant];
-    const actual = entry[variant];
+  if (expectation.colorScheme === 'auto') {
+    if (entry.colorScheme !== 'auto') {
+      return undefined;
+    }
 
-    return actual.fingerprint === expected.fingerprint && actual.file === expected.file;
-  })
+    return DIAGRAM_VARIANTS.every((variant) => {
+      const expected = expectation.variants[variant];
+      const actual = entry[variant];
+
+      return actual.fingerprint === expected.fingerprint && actual.file === expected.file;
+    })
+      ? entry
+      : undefined;
+  }
+
+  if (entry.colorScheme === 'auto') {
+    return undefined;
+  }
+
+  return entry.fixed.fingerprint === expectation.fixed.fingerprint &&
+    entry.fixed.file === expectation.fixed.file
     ? entry
     : undefined;
+}
+
+export function getDiagramEntryAssets(entry: DiagramAssetEntry): readonly DiagramAsset[] {
+  return entry.colorScheme === 'auto' ? [entry.light, entry.dark] : [entry.fixed];
+}
+
+function parseDiagramAssetEntry(value: Record<string, unknown>): DiagramAssetEntry {
+  const kind = value.kind;
+  const colorScheme = value.colorScheme;
+
+  if (!isDiagramKind(kind) || !isDiagramColorScheme(colorScheme)) {
+    throw new Error('图表资产清单包含无效条目');
+  }
+
+  if (colorScheme === 'auto') {
+    assertOnlyRecordKeys(value, ['kind', 'colorScheme', 'light', 'dark']);
+
+    return {
+      kind,
+      colorScheme,
+      light: parseDiagramAsset(value.light, 'light'),
+      dark: parseDiagramAsset(value.dark, 'dark'),
+    };
+  }
+
+  assertOnlyRecordKeys(value, ['kind', 'colorScheme', 'fixed']);
+
+  return {
+    kind,
+    colorScheme,
+    fixed: parseDiagramAsset(value.fixed, 'fixed'),
+  };
+}
+
+function assertOnlyRecordKeys(
+  value: Record<string, unknown>,
+  allowedKeys: readonly string[],
+): void {
+  if (Object.keys(value).some((key) => !allowedKeys.includes(key))) {
+    throw new Error('图表资产清单条目包含与配色方案不匹配的资源');
+  }
 }
 
 export function diagramPublicUrl(file: string): string {
@@ -570,9 +697,9 @@ function parseColorScheme(
   return value;
 }
 
-function parseDiagramVariantAsset(value: unknown, variant: DiagramVariant): DiagramVariantAsset {
+function parseDiagramAsset(value: unknown, suffix: DiagramVariant | 'fixed'): DiagramAsset {
   if (!isRecord(value)) {
-    throw new Error(`图表资产清单缺少${variant}变体`);
+    throw new Error(`图表资产清单缺少${suffix}资源`);
   }
 
   const fingerprint = value.fingerprint;
@@ -582,10 +709,10 @@ function parseDiagramVariantAsset(value: unknown, variant: DiagramVariant): Diag
   if (
     !isSha256(fingerprint) ||
     typeof file !== 'string' ||
-    file !== `${fingerprint}.${variant}.svg` ||
+    file !== `${fingerprint}.${suffix}.svg` ||
     !isSha256(contentDigest)
   ) {
-    throw new Error(`图表资产清单${variant}变体无效`);
+    throw new Error(`图表资产清单${suffix}资源无效`);
   }
 
   return { fingerprint, file, contentDigest };

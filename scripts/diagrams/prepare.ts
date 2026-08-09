@@ -5,16 +5,18 @@ import {
   createDiagramAssetExpectation,
   createEmptyDiagramAssetManifest,
   findDiagramAssetEntry,
+  getDiagramEntryAssets,
   parseDiagramAssetManifest,
   scanMarkdownDiagrams,
   sha256,
+  type DiagramAsset,
   type DiagramAssetEntry,
   type DiagramAssetExpectation,
   type DiagramAssetManifest,
+  type DiagramAssetReference,
   type DiagramFence,
   type DiagramKind,
-  type DiagramVariant,
-  DIAGRAM_VARIANTS,
+  type RenderedDiagramAssets,
 } from '../../shared/content/diagram.ts';
 import { assertSafeDiagramSvg } from '../../shared/content/diagram-svg.ts';
 import { maskMarkdownFrontmatter } from '../../shared/content/frontmatter.ts';
@@ -79,6 +81,7 @@ async function prepareDiagramAssetsLocked(projectRoot: string): Promise<DiagramP
       const renderedFiles = new Map<string, string>();
       const errors: string[] = [];
       let renderedDiagramCount = 0;
+      let renderedVariantCount = 0;
       let reusedDiagramCount = 0;
       let mermanBinary: string | undefined;
 
@@ -92,7 +95,7 @@ async function prepareDiagramAssetsLocked(projectRoot: string): Promise<DiagramP
         }
 
         try {
-          const svgByVariant = await renderDiagram(diagram.fence, async () => {
+          const renderedAssets = await renderDiagram(diagram.fence, async () => {
             if (diagram.fence.kind !== 'mermaid') {
               return undefined;
             }
@@ -102,13 +105,14 @@ async function prepareDiagramAssetsLocked(projectRoot: string): Promise<DiagramP
           });
           const entry = await stageDiagramAssets(
             diagram,
-            svgByVariant,
+            renderedAssets,
             stagingDirectory,
             renderedFiles,
           );
 
           nextManifest.assets[diagram.expectation.identity] = entry;
           renderedDiagramCount += 1;
+          renderedVariantCount += diagram.expectation.colorScheme === 'auto' ? 2 : 1;
         } catch (error) {
           errors.push(formatRenderError(diagram.fence, error));
         }
@@ -128,7 +132,7 @@ async function prepareDiagramAssetsLocked(projectRoot: string): Promise<DiagramP
       return {
         diagramCount: expected.size,
         renderedDiagramCount,
-        renderedVariantCount: renderedDiagramCount * DIAGRAM_VARIANTS.length,
+        renderedVariantCount,
         reusedDiagramCount,
       };
     } finally {
@@ -196,8 +200,7 @@ async function findReusableEntry(
   }
 
   try {
-    for (const variant of DIAGRAM_VARIANTS) {
-      const asset = entry[variant];
+    for (const asset of getDiagramEntryAssets(entry)) {
       const source = await readFile(path.join(assetDirectory, asset.file), 'utf8');
 
       if (sha256(source) !== asset.contentDigest) {
@@ -216,7 +219,7 @@ async function findReusableEntry(
 async function renderDiagram(
   fence: DiagramFence,
   getMermanBinary: () => Promise<string | undefined>,
-): Promise<Record<DiagramVariant, string>> {
+): Promise<RenderedDiagramAssets> {
   if (fence.kind === 'tikz') {
     return await renderTikzDiagram(fence.source, fence.presentation.colorScheme);
   }
@@ -232,30 +235,71 @@ async function renderDiagram(
 
 async function stageDiagramAssets(
   diagram: ExpectedDiagram,
-  svgByVariant: Record<DiagramVariant, string>,
+  rendered: RenderedDiagramAssets,
   stagingDirectory: string,
   renderedFiles: Map<string, string>,
 ): Promise<DiagramAssetEntry> {
-  const variants = {} as Record<DiagramVariant, DiagramAssetEntry[DiagramVariant]>;
+  const expectation = diagram.expectation;
 
-  for (const variant of DIAGRAM_VARIANTS) {
-    const expected = diagram.expectation.variants[variant];
-    const svg = svgByVariant[variant];
+  if (expectation.colorScheme === 'auto') {
+    if (rendered.colorScheme !== 'auto') {
+      throw new Error('自动配色图表收到了固定资源渲染结果');
+    }
 
-    assertSafeDiagramSvg(svg, diagram.fence.kind);
-    await writeFile(path.join(stagingDirectory, expected.file), svg, 'utf8');
-    renderedFiles.set(expected.file, path.join(stagingDirectory, expected.file));
-    variants[variant] = {
-      fingerprint: expected.fingerprint,
-      file: expected.file,
-      contentDigest: sha256(svg),
+    return {
+      kind: diagram.fence.kind,
+      colorScheme: 'auto',
+      light: await stageDiagramAsset(
+        diagram.fence.kind,
+        expectation.variants.light,
+        rendered.light,
+        stagingDirectory,
+        renderedFiles,
+      ),
+      dark: await stageDiagramAsset(
+        diagram.fence.kind,
+        expectation.variants.dark,
+        rendered.dark,
+        stagingDirectory,
+        renderedFiles,
+      ),
     };
+  }
+
+  if (rendered.colorScheme !== expectation.colorScheme) {
+    throw new Error('固定配色图表的渲染结果与围栏配置不一致');
   }
 
   return {
     kind: diagram.fence.kind,
-    light: variants.light,
-    dark: variants.dark,
+    colorScheme: expectation.colorScheme,
+    fixed: await stageDiagramAsset(
+      diagram.fence.kind,
+      expectation.fixed,
+      rendered.fixed,
+      stagingDirectory,
+      renderedFiles,
+    ),
+  };
+}
+
+async function stageDiagramAsset(
+  kind: DiagramKind,
+  expected: DiagramAssetReference,
+  svg: string,
+  stagingDirectory: string,
+  renderedFiles: Map<string, string>,
+): Promise<DiagramAsset> {
+  assertSafeDiagramSvg(svg, kind);
+  const targetPath = path.join(stagingDirectory, expected.file);
+
+  await writeFile(targetPath, svg, 'utf8');
+  renderedFiles.set(expected.file, targetPath);
+
+  return {
+    fingerprint: expected.fingerprint,
+    file: expected.file,
+    contentDigest: sha256(svg),
   };
 }
 
@@ -276,7 +320,7 @@ async function removeStaleSvgAssets(
 ): Promise<void> {
   const expectedFiles = new Set(
     Object.values(manifest.assets).flatMap((entry) =>
-      DIAGRAM_VARIANTS.map((variant) => entry[variant].file),
+      getDiagramEntryAssets(entry).map((asset) => asset.file),
     ),
   );
   const entries = await readdir(assetDirectory, { withFileTypes: true });
@@ -286,7 +330,7 @@ async function removeStaleSvgAssets(
       .filter(
         (entry) =>
           entry.isFile() &&
-          /^[a-f0-9]{64}\.(?:light|dark)\.svg$/.test(entry.name) &&
+          /^[a-f0-9]{64}\.(?:light|dark|fixed)\.svg$/.test(entry.name) &&
           !expectedFiles.has(entry.name),
       )
       .map((entry) => rm(path.join(assetDirectory, entry.name), { force: true })),

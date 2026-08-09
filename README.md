@@ -114,7 +114,7 @@ vertical-align="middle"
 
 #### 静态 Mermaid 与 TikZ 图表
 
-Mermaid 和 TikZ 围栏在构建期转为 light/dark 两份静态 SVG，随后作为`ArticleImage`进入正文，因此读者侧不加载 Mermaid、TeX、WASM 或浏览器图表运行时。图表必须在语言名后提供非空`alt`；可选`caption`、`width`、`align`和`preview`沿用块级图片的语义：
+Mermaid 和 TikZ 围栏在构建期转为静态 SVG，随后作为`ArticleImage`进入正文，因此读者侧不加载 Mermaid、TeX、WASM 或浏览器图表运行时。默认`color-scheme="auto"`会生成 light / dark 两份 SVG，并随页面主题选择对应资源；显式固定为`light`或`dark`时只生成一份固定 SVG，亮暗页面和灯箱共用该成品。图表必须在语言名后提供非空`alt`；可选`caption`、`width`、`align`和`preview`沿用块级图片的语义：
 
 ````md
 ```mermaid alt="从 Markdown 到静态页面的构建流程" caption="图 1：文章构建流程" width="42rem" align="center"
@@ -149,7 +149,7 @@ TikZ 使用`node-tikzjax`的完整文档输入契约，围栏中必须自行包�
 ```
 ````
 
-`color-scheme`只接受`auto`、`light`、`dark`。`light`和`dark`会同时固定默认墨色、Mermaid 主题变量和 SVG 内部画布；深色页面中的`light`图会保留一张不透明的浅色图纸，保证灰色填充上的文字可读。构建器不会猜测或重映射作者显式指定的 TikZ、Mermaid 颜色。
+`color-scheme`只接受`auto`、`light`、`dark`。`light`和`dark`会同时固定默认墨色、Mermaid 主题变量和 SVG 内部画布；每张固定图只产出一份`.fixed.svg`，不再通过`<picture>`生成虚构的深色图源。深色页面中的`light`图会保留一张不透明的浅色图纸，保证灰色填充上的文字可读。构建器不会猜测或重映射作者显式指定的 TikZ、Mermaid 颜色。
 
 图表语法、元数据、SVG安全检查或本地工具校验失败都会阻止内容构建。生成资产和Merman 二进制位于Git忽略的`.data/`；CI 与本地都按图表指纹复用未变化的 SVG。TikZ SVG只嵌入实际使用的BaKoMa字体数据，避免`<img>`环境对外部SVG字体CSS的兼容性差异。
 

@@ -120,13 +120,22 @@ function createDiagramImageNode(
       throw new Error('找不到匹配的预渲染图表资产，请先执行npm run site:manifest');
     }
 
+    const imageSources =
+      entry.colorScheme === 'auto'
+        ? {
+            src: diagramPublicUrl(entry.light.file),
+            'dark-src': diagramPublicUrl(entry.dark.file),
+          }
+        : {
+            src: diagramPublicUrl(entry.fixed.file),
+          };
+
     return {
       type: 'element',
       tagName: 'article-image',
       properties: {
         alt: fence.presentation.alt,
-        src: diagramPublicUrl(entry.light.file),
-        'dark-src': diagramPublicUrl(entry.dark.file),
+        ...imageSources,
         layout: 'block',
         ...(fence.presentation.caption === undefined
           ? {}

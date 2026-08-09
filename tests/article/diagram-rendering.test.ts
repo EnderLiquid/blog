@@ -7,9 +7,11 @@ import {
   createDiagramFence,
   createEmptyDiagramAssetManifest,
   findDiagramAssetEntry,
+  getDiagramEntryAssets,
   getDiagramRendererConfig,
   parseDiagramAssetManifest,
   resolveDiagramAppearance,
+  resolveFixedDiagramAppearance,
   scanMarkdownDiagrams,
   type DiagramAssetManifest,
   type DiagramFence,
@@ -29,19 +31,32 @@ function createManifest(fence: DiagramFence): DiagramAssetManifest {
   const expectation = createDiagramAssetExpectation(fence);
   const manifest = createEmptyDiagramAssetManifest();
 
-  manifest.assets[expectation.identity] = {
-    kind: fence.kind,
-    light: {
-      fingerprint: expectation.variants.light.fingerprint,
-      file: expectation.variants.light.file,
-      contentDigest: 'a'.repeat(64),
-    },
-    dark: {
-      fingerprint: expectation.variants.dark.fingerprint,
-      file: expectation.variants.dark.file,
-      contentDigest: 'b'.repeat(64),
-    },
-  };
+  if (expectation.colorScheme === 'auto') {
+    manifest.assets[expectation.identity] = {
+      kind: fence.kind,
+      colorScheme: 'auto',
+      light: {
+        fingerprint: expectation.variants.light.fingerprint,
+        file: expectation.variants.light.file,
+        contentDigest: 'a'.repeat(64),
+      },
+      dark: {
+        fingerprint: expectation.variants.dark.fingerprint,
+        file: expectation.variants.dark.file,
+        contentDigest: 'b'.repeat(64),
+      },
+    };
+  } else {
+    manifest.assets[expectation.identity] = {
+      kind: fence.kind,
+      colorScheme: expectation.colorScheme,
+      fixed: {
+        fingerprint: expectation.fixed.fingerprint,
+        file: expectation.fixed.file,
+        contentDigest: 'c'.repeat(64),
+      },
+    };
+  }
 
   return manifest;
 }
@@ -166,6 +181,18 @@ describe('静态图表围栏', () => {
     const fixedLightExpectation = createDiagramAssetExpectation(fixedLight);
     const fixedDarkExpectation = createDiagramAssetExpectation(fixedDark);
 
+    assert.equal(baseExpectation.colorScheme, 'auto');
+    assert.equal(fixedLightExpectation.colorScheme, 'light');
+    assert.equal(fixedDarkExpectation.colorScheme, 'dark');
+
+    if (
+      baseExpectation.colorScheme !== 'auto' ||
+      fixedLightExpectation.colorScheme === 'auto' ||
+      fixedDarkExpectation.colorScheme === 'auto'
+    ) {
+      throw new Error('图表资产期望的配色方案与测试输入不一致');
+    }
+
     assert.equal(baseExpectation.identity, lineEndingExpectation.identity);
     assert.notEqual(baseExpectation.identity, changedExpectation.identity);
     assert.notEqual(baseExpectation.identity, fixedLightExpectation.identity);
@@ -174,11 +201,21 @@ describe('静态图表围栏', () => {
       baseExpectation.variants.light.fingerprint,
       baseExpectation.variants.dark.fingerprint,
     );
+    assert.match(fixedLightExpectation.fixed.file, /^[a-f0-9]{64}\.fixed\.svg$/);
+    assert.match(fixedDarkExpectation.fixed.file, /^[a-f0-9]{64}\.fixed\.svg$/);
+    assert.notEqual(
+      fixedLightExpectation.fixed.fingerprint,
+      fixedDarkExpectation.fixed.fingerprint,
+    );
     assert.deepEqual(resolveDiagramAppearance('auto', 'dark'), {
       palette: 'dark',
       canvas: 'transparent',
     });
     assert.deepEqual(resolveDiagramAppearance('light', 'dark'), {
+      palette: 'light',
+      canvas: 'paper',
+    });
+    assert.deepEqual(resolveFixedDiagramAppearance('light'), {
       palette: 'light',
       canvas: 'paper',
     });
@@ -238,6 +275,10 @@ describe('静态图表资产清单与rehype转换', () => {
     const image = tree.children[0] as Element;
     const expectation = createDiagramAssetExpectation(fence);
 
+    if (expectation.colorScheme !== 'auto') {
+      throw new Error('自动配色围栏错误地产生固定资源期望');
+    }
+
     assert.equal(image.tagName, 'article-image');
     assert.deepEqual(image.properties, {
       alt: '构建流程',
@@ -253,36 +294,150 @@ describe('静态图表资产清单与rehype转换', () => {
     });
   });
 
-  test('清单拒绝伪造文件名，并按图表身份匹配两个主题变体', () => {
+  test('固定配色图表只投影一个SVG图源，不生成dark-src', () => {
     const fence = createDiagramFence({
+      kind: 'tikz',
+      source: '\\begin{document}\\end{document}',
+      meta: 'alt="固定浅色TikZ图" color-scheme="light"',
+      sourcePath: 'fixed-example.md',
+      position: { line: 2, column: 1 },
+    });
+
+    assert.ok(fence);
+    const manifest = createManifest(fence);
+    const tree: Root = {
+      type: 'root',
+      children: [
+        {
+          type: 'element',
+          tagName: 'pre',
+          properties: {
+            language: 'tikz',
+            code: `${fence.source}\n`,
+            meta: 'alt="固定浅色TikZ图" color-scheme="light"',
+          },
+          children: [],
+          position: {
+            start: { line: 2, column: 1, offset: 0 },
+            end: { line: 4, column: 4, offset: 40 },
+          },
+        },
+      ],
+    };
+    const file = new VFile({ path: 'fixed-example.md' });
+
+    renderDiagramFences({ manifest })(tree, file);
+    normalizeArticleImages()(tree, file);
+
+    const expectation = createDiagramAssetExpectation(fence);
+
+    if (expectation.colorScheme === 'auto') {
+      throw new Error('固定配色围栏错误地产生自动资源期望');
+    }
+
+    const entry = manifest.assets[expectation.identity];
+    assert.ok(entry && entry.colorScheme !== 'auto');
+    assert.deepEqual(
+      getDiagramEntryAssets(entry).map((asset) => asset.file),
+      [expectation.fixed.file],
+    );
+
+    const image = tree.children[0] as Element;
+    assert.deepEqual(image.properties, {
+      alt: '固定浅色TikZ图',
+      src: `/_diagram-assets/${expectation.fixed.file}`,
+      layout: 'block',
+      loading: 'lazy',
+      decoding: 'async',
+      'data-diagram-kind': 'tikz',
+    });
+    assert.equal('dark-src' in image.properties, false);
+  });
+
+  test('清单拒绝伪造文件名和与配色方案不匹配的资源形态', () => {
+    const automaticFence = createDiagramFence({
       kind: 'tikz',
       source: '\\begin{document}\\end{document}',
       meta: 'alt="TikZ图"',
       sourcePath: 'example.md',
       position: { line: 1, column: 1 },
     });
+    const fixedFence = createDiagramFence({
+      kind: 'tikz',
+      source: '\\begin{document}\\end{document}',
+      meta: 'alt="固定TikZ图" color-scheme="dark"',
+      sourcePath: 'fixed-example.md',
+      position: { line: 1, column: 1 },
+    });
 
-    assert.ok(fence);
-    const manifest = createManifest(fence);
-    const expectation = createDiagramAssetExpectation(fence);
+    assert.ok(automaticFence && fixedFence);
+    const automaticManifest = createManifest(automaticFence);
+    const fixedManifest = createManifest(fixedFence);
+    const automaticExpectation = createDiagramAssetExpectation(automaticFence);
+    const fixedExpectation = createDiagramAssetExpectation(fixedFence);
 
-    assert.equal(findDiagramAssetEntry(manifest, expectation)?.kind, 'tikz');
+    if (automaticExpectation.colorScheme !== 'auto' || fixedExpectation.colorScheme === 'auto') {
+      throw new Error('图表资产期望的配色方案与测试输入不一致');
+    }
+
+    const automaticEntry = automaticManifest.assets[automaticExpectation.identity];
+    const fixedEntry = fixedManifest.assets[fixedExpectation.identity];
+
+    if (
+      !automaticEntry ||
+      automaticEntry.colorScheme !== 'auto' ||
+      !fixedEntry ||
+      fixedEntry.colorScheme === 'auto'
+    ) {
+      throw new Error('图表资产清单的配色方案与测试输入不一致');
+    }
+
+    assert.equal(findDiagramAssetEntry(automaticManifest, automaticExpectation)?.kind, 'tikz');
+    assert.equal(findDiagramAssetEntry(fixedManifest, fixedExpectation)?.kind, 'tikz');
     assert.throws(
       () =>
         parseDiagramAssetManifest({
-          ...manifest,
+          ...automaticManifest,
           assets: {
-            ...manifest.assets,
-            [expectation.identity]: {
-              ...manifest.assets[expectation.identity],
+            ...automaticManifest.assets,
+            [automaticExpectation.identity]: {
+              ...automaticEntry,
               light: {
-                ...manifest.assets[expectation.identity]?.light,
+                ...automaticEntry.light,
                 file: '../unsafe.svg',
               },
             },
           },
         }),
-      /变体无效/,
+      /light资源无效/,
+    );
+    assert.throws(
+      () =>
+        parseDiagramAssetManifest({
+          ...automaticManifest,
+          assets: {
+            ...automaticManifest.assets,
+            [automaticExpectation.identity]: {
+              ...automaticEntry,
+              fixed: automaticEntry.light,
+            },
+          },
+        }),
+      /与配色方案不匹配/,
+    );
+    assert.throws(
+      () =>
+        parseDiagramAssetManifest({
+          ...fixedManifest,
+          assets: {
+            ...fixedManifest.assets,
+            [fixedExpectation.identity]: {
+              ...fixedEntry,
+              light: fixedEntry.fixed,
+            },
+          },
+        }),
+      /与配色方案不匹配/,
     );
   });
 });
@@ -384,7 +539,7 @@ describe('静态SVG安全边界', () => {
   });
 });
 
-test('图表资产清单始终包含light与dark变体', () => {
+test('自动图表资产使用light与dark页面变体', () => {
   const variants = new Set(DIAGRAM_VARIANTS);
 
   assert.deepEqual(variants, new Set(['light', 'dark']));

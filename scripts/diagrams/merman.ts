@@ -8,9 +8,13 @@ import {
   DIAGRAM_THEMES,
   DIAGRAM_VARIANTS,
   getDiagramRendererConfig,
+  getFixedDiagramRendererConfig,
   resolveDiagramAppearance,
+  resolveFixedDiagramAppearance,
   type DiagramColorScheme,
   type DiagramVariant,
+  type EffectiveDiagramAppearance,
+  type RenderedDiagramAssets,
 } from '../../shared/content/diagram.ts';
 
 const execFileAsync = promisify(execFile);
@@ -27,26 +31,45 @@ export class MermaidRenderError extends Error {
   }
 }
 
-/** 使用固定Merman CLI先lint，再为两个主题输出resvg-safe静态SVG。 */
+/** 使用固定Merman CLI先lint，再按实际资源形态输出resvg-safe静态SVG。 */
 export async function renderMermaidDiagram(
   binaryPath: string,
   source: string,
   colorScheme: DiagramColorScheme = 'auto',
-): Promise<Record<DiagramVariant, string>> {
+): Promise<RenderedDiagramAssets> {
   const temporaryDirectory = await mkdtemp(path.join(os.tmpdir(), 'blog-merman-'));
   const inputPath = path.join(temporaryDirectory, 'diagram.mmd');
 
   try {
     await writeFile(inputPath, source, 'utf8');
     await lintMermaid(binaryPath, inputPath);
-    const rendered = await Promise.all(
-      DIAGRAM_VARIANTS.map(async (variant) => [
-        variant,
-        await renderMermaidVariant(binaryPath, inputPath, temporaryDirectory, variant, colorScheme),
-      ]),
-    );
 
-    return Object.fromEntries(rendered) as Record<DiagramVariant, string>;
+    if (colorScheme === 'auto') {
+      const [light, dark] = await Promise.all(
+        DIAGRAM_VARIANTS.map((variant) =>
+          renderMermaidAsset(binaryPath, inputPath, temporaryDirectory, {
+            name: variant,
+            config: getDiagramRendererConfig('mermaid', variant),
+            appearance: resolveDiagramAppearance(colorScheme, variant),
+          }),
+        ),
+      );
+
+      if (light === undefined || dark === undefined) {
+        throw new Error('Mermaid自动配色渲染结果不完整');
+      }
+
+      return { colorScheme, light, dark };
+    }
+
+    return {
+      colorScheme,
+      fixed: await renderMermaidAsset(binaryPath, inputPath, temporaryDirectory, {
+        name: 'fixed',
+        config: getFixedDiagramRendererConfig('mermaid', colorScheme),
+        appearance: resolveFixedDiagramAppearance(colorScheme),
+      }),
+    };
   } finally {
     await rm(temporaryDirectory, { recursive: true, force: true });
   }
@@ -69,19 +92,22 @@ async function lintMermaid(binaryPath: string, inputPath: string): Promise<void>
   }
 }
 
-async function renderMermaidVariant(
+interface MermaidRenderTarget {
+  name: DiagramVariant | 'fixed';
+  config: Record<string, unknown>;
+  appearance: EffectiveDiagramAppearance;
+}
+
+async function renderMermaidAsset(
   binaryPath: string,
   inputPath: string,
   temporaryDirectory: string,
-  variant: DiagramVariant,
-  colorScheme: DiagramColorScheme,
+  target: MermaidRenderTarget,
 ): Promise<string> {
-  const configPath = path.join(temporaryDirectory, `${variant}.json`);
-  const outputPath = path.join(temporaryDirectory, `${variant}.svg`);
-  const config = getDiagramRendererConfig('mermaid', variant, colorScheme);
-  const appearance = resolveDiagramAppearance(colorScheme, variant);
+  const configPath = path.join(temporaryDirectory, `${target.name}.json`);
+  const outputPath = path.join(temporaryDirectory, `${target.name}.svg`);
 
-  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`, 'utf8');
+  await writeFile(configPath, `${JSON.stringify(target.config, null, 2)}\n`, 'utf8');
 
   try {
     await execFileAsync(
@@ -110,8 +136,8 @@ async function renderMermaidVariant(
 
   const svg = await readFile(outputPath, 'utf8');
 
-  return appearance.canvas === 'paper'
-    ? addSvgCanvasBackground(svg, DIAGRAM_THEMES[appearance.palette].paper)
+  return target.appearance.canvas === 'paper'
+    ? addSvgCanvasBackground(svg, DIAGRAM_THEMES[target.appearance.palette].paper)
     : svg;
 }
 

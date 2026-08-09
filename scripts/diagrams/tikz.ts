@@ -4,10 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { themeTikzSvg } from '../../shared/content/diagram-svg.ts';
 import { embedTikzFonts } from './fonts.ts';
 import {
-  DIAGRAM_VARIANTS,
   resolveDiagramAppearance,
+  resolveFixedDiagramAppearance,
   type DiagramColorScheme,
-  type DiagramVariant,
+  type RenderedDiagramAssets,
 } from '../../shared/content/diagram.ts';
 
 type Tex2Svg = (
@@ -25,11 +25,11 @@ const TIKZ_PREAMBLE_LINE_OFFSET = 1;
 let tex2svgPromise: Promise<Tex2Svg> | undefined;
 let tikzRenderQueue: Promise<void> = Promise.resolve();
 
-/** node-tikzjax共享WASM状态，不允许并发实例；整个双主题任务进入同一队列。 */
+/** node-tikzjax共享WASM状态，不允许并发实例；整个图表任务进入同一队列。 */
 export function renderTikzDiagram(
   source: string,
   colorScheme: DiagramColorScheme = 'auto',
-): Promise<Record<DiagramVariant, string>> {
+): Promise<RenderedDiagramAssets> {
   return enqueueTikzRender(async () => {
     const tex2svg = await loadTex2Svg();
 
@@ -40,12 +40,18 @@ export function renderTikzDiagram(
       });
       const embeddedFonts = await embedTikzFonts(svg);
 
-      return Object.fromEntries(
-        DIAGRAM_VARIANTS.map((variant) => [
-          variant,
-          themeTikzSvg(embeddedFonts, resolveDiagramAppearance(colorScheme, variant)),
-        ]),
-      ) as Record<DiagramVariant, string>;
+      if (colorScheme === 'auto') {
+        return {
+          colorScheme,
+          light: themeTikzSvg(embeddedFonts, resolveDiagramAppearance(colorScheme, 'light')),
+          dark: themeTikzSvg(embeddedFonts, resolveDiagramAppearance(colorScheme, 'dark')),
+        };
+      }
+
+      return {
+        colorScheme,
+        fixed: themeTikzSvg(embeddedFonts, resolveFixedDiagramAppearance(colorScheme)),
+      };
     } catch (error) {
       const diagnostic = await captureTikzDiagnostic(source);
       throw new TikzRenderError(diagnostic || formatTikzDiagnostic(error));
