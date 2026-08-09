@@ -6,7 +6,7 @@ import {
 } from './article-image.ts';
 
 export const DIAGRAM_ASSET_MANIFEST_VERSION = 1;
-export const DIAGRAM_RENDER_CONFIG_VERSION = 'diagram-render-v1';
+export const DIAGRAM_RENDER_CONFIG_VERSION = 'diagram-render-v2';
 export const DIAGRAM_PUBLIC_BASE = '/_diagram-assets/';
 export const DIAGRAM_FONT_ASSET_VERSION = 'node-tikzjax@1.0.5-bakoma-embedded-v1';
 
@@ -15,6 +15,14 @@ export type DiagramKind = (typeof DIAGRAM_KINDS)[number];
 
 export const DIAGRAM_VARIANTS = ['light', 'dark'] as const;
 export type DiagramVariant = (typeof DIAGRAM_VARIANTS)[number];
+
+export const DIAGRAM_COLOR_SCHEMES = ['auto', 'light', 'dark'] as const;
+export type DiagramColorScheme = (typeof DIAGRAM_COLOR_SCHEMES)[number];
+
+export interface EffectiveDiagramAppearance {
+  palette: DiagramVariant;
+  canvas: 'transparent' | 'paper';
+}
 
 export interface DiagramTheme {
   paper: string;
@@ -54,6 +62,7 @@ export interface DiagramPosition {
 
 export interface DiagramPresentation {
   alt: string;
+  colorScheme: DiagramColorScheme;
   caption?: string;
   width?: string;
   align?: 'start' | 'center' | 'end';
@@ -115,6 +124,22 @@ export function isDiagramKind(value: unknown): value is DiagramKind {
   return typeof value === 'string' && (DIAGRAM_KINDS as readonly string[]).includes(value);
 }
 
+export function isDiagramColorScheme(value: unknown): value is DiagramColorScheme {
+  return typeof value === 'string' && (DIAGRAM_COLOR_SCHEMES as readonly string[]).includes(value);
+}
+
+/** 将作者选择与页面变体解析为实际使用的调色板和画布。 */
+export function resolveDiagramAppearance(
+  colorScheme: DiagramColorScheme,
+  pageVariant: DiagramVariant,
+): EffectiveDiagramAppearance {
+  if (colorScheme === 'auto') {
+    return { palette: pageVariant, canvas: 'transparent' };
+  }
+
+  return { palette: colorScheme, canvas: 'paper' };
+}
+
 export function createDiagramFence(input: {
   kind: unknown;
   source: unknown;
@@ -156,7 +181,7 @@ export function parseDiagramPresentation(
 ): DiagramPresentation {
   const source = meta === undefined || meta === null ? '' : String(meta);
   const attributes = parseQuotedAttributes(source, sourcePath, position);
-  const allowedNames = new Set(['alt', 'caption', 'width', 'align', 'preview']);
+  const allowedNames = new Set(['alt', 'caption', 'width', 'align', 'preview', 'color-scheme']);
 
   for (const name of attributes.keys()) {
     if (!allowedNames.has(name)) {
@@ -194,9 +219,11 @@ export function parseDiagramPresentation(
 
   const rawPreview = attributes.get('preview');
   const preview = parsePreview(rawPreview, sourcePath, position);
+  const colorScheme = parseColorScheme(attributes.get('color-scheme'), sourcePath, position);
 
   return {
     alt,
+    colorScheme,
     ...(caption === undefined || caption.trim() === '' ? {} : { caption }),
     ...(width === undefined ? {} : { width }),
     ...(rawAlign === undefined ? {} : { align: rawAlign }),
@@ -245,6 +272,7 @@ export function createDiagramAssetExpectation(fence: DiagramFence): DiagramAsset
     stableJson({
       kind: fence.kind,
       source: fence.source,
+      colorScheme: fence.presentation.colorScheme,
       renderer: DIAGRAM_RENDERER_IDS[fence.kind],
       renderConfigVersion: DIAGRAM_RENDER_CONFIG_VERSION,
       ...(fence.kind === 'tikz' ? { fontAssetVersion: DIAGRAM_FONT_ASSET_VERSION } : {}),
@@ -252,12 +280,18 @@ export function createDiagramAssetExpectation(fence: DiagramFence): DiagramAsset
   );
   const variants = Object.fromEntries(
     DIAGRAM_VARIANTS.map((variant) => {
+      const appearance = resolveDiagramAppearance(fence.presentation.colorScheme, variant);
       const fingerprint = sha256(
         stableJson({
           identity,
           kind: fence.kind,
           variant,
-          rendererConfig: getDiagramRendererConfig(fence.kind, variant),
+          appearance,
+          rendererConfig: getDiagramRendererConfig(
+            fence.kind,
+            variant,
+            fence.presentation.colorScheme,
+          ),
         }),
       );
 
@@ -274,9 +308,11 @@ export function createDiagramAssetExpectation(fence: DiagramFence): DiagramAsset
 
 export function getDiagramRendererConfig(
   kind: DiagramKind,
-  variant: DiagramVariant,
+  pageVariant: DiagramVariant,
+  colorScheme: DiagramColorScheme = 'auto',
 ): Record<string, unknown> {
-  const theme = DIAGRAM_THEMES[variant];
+  const appearance = resolveDiagramAppearance(colorScheme, pageVariant);
+  const theme = DIAGRAM_THEMES[appearance.palette];
 
   if (kind === 'mermaid') {
     return {
@@ -307,6 +343,7 @@ export function getDiagramRendererConfig(
     embedFontCss: false,
     embedFontData: true,
     defaultInk: theme.ink,
+    canvas: appearance.canvas,
     fontAssetVersion: DIAGRAM_FONT_ASSET_VERSION,
   };
 }
@@ -511,6 +548,26 @@ function parsePreview(
   }
 
   return normalizeArticleImageBoolean(normalized, true);
+}
+
+function parseColorScheme(
+  value: string | undefined,
+  sourcePath: string,
+  position: DiagramPosition,
+): DiagramColorScheme {
+  if (value === undefined) {
+    return 'auto';
+  }
+
+  if (!isDiagramColorScheme(value)) {
+    throw new DiagramContentError(
+      sourcePath,
+      position,
+      `图表color-scheme必须是auto、light或dark，当前值为“${value}”`,
+    );
+  }
+
+  return value;
 }
 
 function parseDiagramVariantAsset(value: unknown, variant: DiagramVariant): DiagramVariantAsset {

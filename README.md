@@ -136,6 +136,21 @@ TikZ 使用`node-tikzjax`的完整文档输入契约，围栏中必须自行包�
 ```
 ````
 
+默认`color-scheme="auto"`会生成透明的 light / dark SVG，并随页面主题选择对应资源。对于含`gray!…`、浅色填充或为浅色纸张设计的数学图，可显式固定为浅色图纸：
+
+````md
+```tikz alt="带灰色填充的单位圆" color-scheme="light"
+\begin{document}
+\begin{tikzpicture}
+  \fill[gray!30] (0,0) circle (1);
+  \node at (0.5,0.5) {$D$};
+\end{tikzpicture}
+\end{document}
+```
+````
+
+`color-scheme`只接受`auto`、`light`、`dark`。`light`和`dark`会同时固定默认墨色、Mermaid 主题变量和 SVG 内部画布；深色页面中的`light`图会保留一张不透明的浅色图纸，保证灰色填充上的文字可读。构建器不会猜测或重映射作者显式指定的 TikZ、Mermaid 颜色。
+
 图表语法、元数据、SVG安全检查或本地工具校验失败都会阻止内容构建。生成资产和Merman 二进制位于Git忽略的`.data/`；CI 与本地都按图表指纹复用未变化的 SVG。TikZ SVG只嵌入实际使用的BaKoMa字体数据，避免`<img>`环境对外部SVG字体CSS的兼容性差异。
 
 ## GitHub Pages

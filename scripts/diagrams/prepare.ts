@@ -218,7 +218,7 @@ async function renderDiagram(
   getMermanBinary: () => Promise<string | undefined>,
 ): Promise<Record<DiagramVariant, string>> {
   if (fence.kind === 'tikz') {
-    return await renderTikzDiagram(fence.source);
+    return await renderTikzDiagram(fence.source, fence.presentation.colorScheme);
   }
 
   const binary = await getMermanBinary();
@@ -227,7 +227,7 @@ async function renderDiagram(
     throw new Error('无法准备Merman CLI');
   }
 
-  return await renderMermaidDiagram(binary, fence.source);
+  return await renderMermaidDiagram(binary, fence.source, fence.presentation.colorScheme);
 }
 
 async function stageDiagramAssets(

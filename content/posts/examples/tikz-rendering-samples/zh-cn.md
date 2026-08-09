@@ -25,7 +25,7 @@ draft: false
 
 ## 极坐标网格与扇形微元
 
-```tikz alt="极坐标网格中的阴影圆形区域和微元" caption="图 2：极坐标网格、圆形区域 D 与微元" width="44rem" align="center"
+```tikz alt="极坐标网格中的阴影圆形区域和微元" caption="图 2：极坐标网格、圆形区域 D 与微元" width="44rem" align="center" color-scheme="light"
 \begin{document}
 \begin{tikzpicture}
 
@@ -80,7 +80,7 @@ draft: false
 
 ## 单位圆与极角
 
-```tikz alt="带极角标记的单位圆" caption="图 3：单位圆、极角与半径标注" width="26rem" align="center"
+```tikz alt="带极角标记的单位圆" caption="图 3：单位圆、极角与半径标注" width="26rem" align="center" color-scheme="light"
 \begin{document}
 \begin{tikzpicture}[scale=2]
         % 单位圆
@@ -104,7 +104,7 @@ draft: false
 
 ## 心脏线极坐标区域
 
-```tikz alt="心脏线围成的极坐标区域" caption="图 4：极坐标心脏线与角度标注" width="30rem" align="center"
+```tikz alt="心脏线围成的极坐标区域" caption="图 4：极坐标心脏线与角度标注" width="30rem" align="center" color-scheme="light"
 \begin{document}
 \begin{tikzpicture}
 
@@ -128,7 +128,7 @@ draft: false
 
 ## 四分之一单位圆区域
 
-```tikz alt="第一象限的四分之一单位圆区域" caption="图 5：由坐标轴与四分之一圆弧围成的区域 D" width="22rem" align="center"
+```tikz alt="第一象限的四分之一单位圆区域" caption="图 5：由坐标轴与四分之一圆弧围成的区域 D" width="22rem" align="center" color-scheme="light"
 \begin{document}
 \begin{tikzpicture}[scale=2.5]
         \draw[->] (-0.2,0) -- (1.3,0) node[right] {$x$};

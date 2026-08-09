@@ -7,14 +7,20 @@ import {
   createDiagramFence,
   createEmptyDiagramAssetManifest,
   findDiagramAssetEntry,
+  getDiagramRendererConfig,
   parseDiagramAssetManifest,
+  resolveDiagramAppearance,
   scanMarkdownDiagrams,
   type DiagramAssetManifest,
   type DiagramFence,
   DIAGRAM_VARIANTS,
 } from '../../shared/content/diagram.ts';
 import renderDiagramFences from '../../shared/content/diagram-rehype.ts';
-import { assertSafeDiagramSvg, themeTikzSvg } from '../../shared/content/diagram-svg.ts';
+import {
+  addSvgCanvasBackground,
+  assertSafeDiagramSvg,
+  themeTikzSvg,
+} from '../../shared/content/diagram-svg.ts';
 import { maskMarkdownFrontmatter } from '../../shared/content/frontmatter.ts';
 import normalizeArticleImages from '../../shared/content/normalize-article-images.ts';
 import { embedTikzFonts } from '../../scripts/diagrams/fonts.ts';
@@ -47,7 +53,7 @@ describe('静态图表围栏', () => {
       'title: 图表样本',
       '---',
       '',
-      '```mermaid alt="构建流程" width="42rem" align="center"',
+      '```mermaid alt="构建流程" width="42rem" align="center" color-scheme="light"',
       'flowchart LR',
       '  A --> B',
       '```',
@@ -74,12 +80,12 @@ describe('静态图表围栏', () => {
         {
           kind: 'mermaid',
           position: { line: 5, column: 1 },
-          presentation: { alt: '构建流程', width: '42rem', align: 'center' },
+          presentation: { alt: '构建流程', colorScheme: 'light', width: '42rem', align: 'center' },
         },
         {
           kind: 'tikz',
           position: { line: 10, column: 3 },
-          presentation: { alt: '坐标图', preview: false },
+          presentation: { alt: '坐标图', colorScheme: 'auto', preview: false },
         },
       ],
     );
@@ -106,9 +112,17 @@ describe('静态图表围栏', () => {
         ),
       /preview必须是true或false/,
     );
+    await assert.rejects(
+      () =>
+        scanMarkdownDiagrams(
+          '```tikz alt="图" color-scheme="paper"\n\\begin{document}\\end{document}\n```',
+          'invalid-color-scheme.md',
+        ),
+      /color-scheme必须是auto、light或dark/,
+    );
   });
 
-  test('指纹忽略围栏末尾换行，但会区分源码和主题变体', () => {
+  test('指纹忽略围栏末尾换行，并区分源码、页面变体和固定配色', () => {
     const base = createDiagramFence({
       kind: 'mermaid',
       source: 'flowchart LR\n  A --> B',
@@ -119,7 +133,7 @@ describe('静态图表围栏', () => {
     const lineEndingVariant = createDiagramFence({
       kind: 'mermaid',
       source: 'flowchart LR\r\n  A --> B\r\n',
-      meta: 'alt="另一个说明"',
+      meta: 'alt="另一个说明" color-scheme="auto"',
       sourcePath: 'other.md',
       position: { line: 1, column: 1 },
     });
@@ -130,18 +144,58 @@ describe('静态图表围栏', () => {
       sourcePath: 'diagram.md',
       position: { line: 1, column: 1 },
     });
+    const fixedLight = createDiagramFence({
+      kind: 'mermaid',
+      source: 'flowchart LR\n  A --> B',
+      meta: 'alt="流程" color-scheme="light"',
+      sourcePath: 'diagram.md',
+      position: { line: 1, column: 1 },
+    });
+    const fixedDark = createDiagramFence({
+      kind: 'mermaid',
+      source: 'flowchart LR\n  A --> B',
+      meta: 'alt="流程" color-scheme="dark"',
+      sourcePath: 'diagram.md',
+      position: { line: 1, column: 1 },
+    });
 
-    assert.ok(base && lineEndingVariant && changedSource);
+    assert.ok(base && lineEndingVariant && changedSource && fixedLight && fixedDark);
     const baseExpectation = createDiagramAssetExpectation(base);
     const lineEndingExpectation = createDiagramAssetExpectation(lineEndingVariant);
     const changedExpectation = createDiagramAssetExpectation(changedSource);
+    const fixedLightExpectation = createDiagramAssetExpectation(fixedLight);
+    const fixedDarkExpectation = createDiagramAssetExpectation(fixedDark);
 
     assert.equal(baseExpectation.identity, lineEndingExpectation.identity);
     assert.notEqual(baseExpectation.identity, changedExpectation.identity);
+    assert.notEqual(baseExpectation.identity, fixedLightExpectation.identity);
+    assert.notEqual(fixedLightExpectation.identity, fixedDarkExpectation.identity);
     assert.notEqual(
       baseExpectation.variants.light.fingerprint,
       baseExpectation.variants.dark.fingerprint,
     );
+    assert.deepEqual(resolveDiagramAppearance('auto', 'dark'), {
+      palette: 'dark',
+      canvas: 'transparent',
+    });
+    assert.deepEqual(resolveDiagramAppearance('light', 'dark'), {
+      palette: 'light',
+      canvas: 'paper',
+    });
+  });
+
+  test('Merman主题变量使用有效调色板，而画布由静态SVG处理器统一注入', () => {
+    const automaticDark = getDiagramRendererConfig('mermaid', 'dark', 'auto');
+    const fixedLightInDarkPage = getDiagramRendererConfig('mermaid', 'dark', 'light');
+    const automaticTheme = automaticDark.themeVariables as Record<string, unknown>;
+    const fixedLightTheme = fixedLightInDarkPage.themeVariables as Record<string, unknown>;
+
+    assert.equal(automaticDark.backgroundColor, 'transparent');
+    assert.equal(fixedLightInDarkPage.backgroundColor, 'transparent');
+    assert.equal(automaticTheme.primaryColor, '#22231f');
+    assert.equal(automaticTheme.primaryTextColor, '#e2dfd2');
+    assert.equal(fixedLightTheme.primaryColor, '#e9e5d8');
+    assert.equal(fixedLightTheme.primaryTextColor, '#252720');
   });
 });
 
@@ -234,14 +288,54 @@ describe('静态图表资产清单与rehype转换', () => {
 });
 
 describe('静态SVG安全边界', () => {
-  test('TikZ默认墨色随主题映射，显式蓝色保留', () => {
+  test('TikZ默认墨色随有效调色板映射，显式蓝色保留', () => {
     const source =
       '<svg viewBox="0 0 10 10"><path stroke="#000"/><path stroke="#00f"/><text>x</text></svg>';
-    const dark = themeTikzSvg(source, 'dark');
+    const dark = themeTikzSvg(source, resolveDiagramAppearance('auto', 'dark'));
 
     assert.match(dark, /fill="#e2dfd2"/);
     assert.match(dark, /stroke="#e2dfd2"/);
     assert.match(dark, /stroke="#00f"/);
+  });
+
+  test('固定图表使用完整viewBox的内部画布，并锁定默认墨色', () => {
+    const source =
+      '<svg viewBox="-2 -3 10 12"><defs><style>.shape{stroke:#000}</style></defs><path class="shape" fill="#d9d9d9"/></svg>';
+    const fixedLightInLightPage = themeTikzSvg(source, resolveDiagramAppearance('light', 'light'));
+    const fixedLightInDarkPage = themeTikzSvg(source, resolveDiagramAppearance('light', 'dark'));
+    const fixedDarkInLightPage = themeTikzSvg(source, resolveDiagramAppearance('dark', 'light'));
+    const automaticDark = themeTikzSvg(source, resolveDiagramAppearance('auto', 'dark'));
+
+    assert.equal(fixedLightInLightPage, fixedLightInDarkPage);
+    assert.match(fixedLightInDarkPage, /fill="#252720"/);
+    assert.match(
+      fixedLightInDarkPage,
+      /<rect x="-2" y="-3" width="10" height="12" fill="#e9e5d8"\/>/,
+    );
+    assert.match(fixedDarkInLightPage, /fill="#e2dfd2"/);
+    assert.match(
+      fixedDarkInLightPage,
+      /<rect x="-2" y="-3" width="10" height="12" fill="#22231f"\/>/,
+    );
+    assert.ok(fixedLightInDarkPage.indexOf('</defs><rect') < fixedLightInDarkPage.indexOf('<path'));
+    assert.doesNotMatch(automaticDark, /<rect\b/);
+    assert.doesNotThrow(() => assertSafeDiagramSvg(fixedLightInDarkPage, 'tikz'));
+  });
+
+  test('画布注入支持没有defs的SVG，并拒绝无效viewBox', () => {
+    const withoutDefinitions = addSvgCanvasBackground(
+      '<svg viewBox="0 0 4 5"><path/></svg>',
+      '#22231f',
+    );
+
+    assert.match(
+      withoutDefinitions,
+      /<svg viewBox="0 0 4 5"><rect x="0" y="0" width="4" height="5" fill="#22231f"\/>/,
+    );
+    assert.throws(
+      () => addSvgCanvasBackground('<svg viewBox="0 0 0 5"><path/></svg>', '#22231f'),
+      /有效viewBox/,
+    );
   });
 
   test('仅嵌入当前TikZ SVG实际使用的BaKoMa字体，避免图片文档请求外部CSS', async () => {

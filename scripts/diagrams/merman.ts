@@ -3,9 +3,13 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import { addSvgCanvasBackground } from '../../shared/content/diagram-svg.ts';
 import {
+  DIAGRAM_THEMES,
   DIAGRAM_VARIANTS,
   getDiagramRendererConfig,
+  resolveDiagramAppearance,
+  type DiagramColorScheme,
   type DiagramVariant,
 } from '../../shared/content/diagram.ts';
 
@@ -27,6 +31,7 @@ export class MermaidRenderError extends Error {
 export async function renderMermaidDiagram(
   binaryPath: string,
   source: string,
+  colorScheme: DiagramColorScheme = 'auto',
 ): Promise<Record<DiagramVariant, string>> {
   const temporaryDirectory = await mkdtemp(path.join(os.tmpdir(), 'blog-merman-'));
   const inputPath = path.join(temporaryDirectory, 'diagram.mmd');
@@ -37,7 +42,7 @@ export async function renderMermaidDiagram(
     const rendered = await Promise.all(
       DIAGRAM_VARIANTS.map(async (variant) => [
         variant,
-        await renderMermaidVariant(binaryPath, inputPath, temporaryDirectory, variant),
+        await renderMermaidVariant(binaryPath, inputPath, temporaryDirectory, variant, colorScheme),
       ]),
     );
 
@@ -69,10 +74,12 @@ async function renderMermaidVariant(
   inputPath: string,
   temporaryDirectory: string,
   variant: DiagramVariant,
+  colorScheme: DiagramColorScheme,
 ): Promise<string> {
   const configPath = path.join(temporaryDirectory, `${variant}.json`);
   const outputPath = path.join(temporaryDirectory, `${variant}.svg`);
-  const config = getDiagramRendererConfig('mermaid', variant);
+  const config = getDiagramRendererConfig('mermaid', variant, colorScheme);
+  const appearance = resolveDiagramAppearance(colorScheme, variant);
 
   await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`, 'utf8');
 
@@ -101,7 +108,11 @@ async function renderMermaidVariant(
     throw new MermaidRenderError(`Mermaid SVG渲染失败：${formatCommandDiagnostic(error)}`);
   }
 
-  return await readFile(outputPath, 'utf8');
+  const svg = await readFile(outputPath, 'utf8');
+
+  return appearance.canvas === 'paper'
+    ? addSvgCanvasBackground(svg, DIAGRAM_THEMES[appearance.palette].paper)
+    : svg;
 }
 
 function parseMermanDiagnostic(value: string): {

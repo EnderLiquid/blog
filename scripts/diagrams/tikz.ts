@@ -3,7 +3,12 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { themeTikzSvg } from '../../shared/content/diagram-svg.ts';
 import { embedTikzFonts } from './fonts.ts';
-import { DIAGRAM_VARIANTS, type DiagramVariant } from '../../shared/content/diagram.ts';
+import {
+  DIAGRAM_VARIANTS,
+  resolveDiagramAppearance,
+  type DiagramColorScheme,
+  type DiagramVariant,
+} from '../../shared/content/diagram.ts';
 
 type Tex2Svg = (
   source: string,
@@ -21,25 +26,30 @@ let tex2svgPromise: Promise<Tex2Svg> | undefined;
 let tikzRenderQueue: Promise<void> = Promise.resolve();
 
 /** node-tikzjax共享WASM状态，不允许并发实例；整个双主题任务进入同一队列。 */
-export function renderTikzDiagram(source: string): Promise<Record<DiagramVariant, string>> {
+export function renderTikzDiagram(
+  source: string,
+  colorScheme: DiagramColorScheme = 'auto',
+): Promise<Record<DiagramVariant, string>> {
   return enqueueTikzRender(async () => {
     const tex2svg = await loadTex2Svg();
-    const rendered = {} as Record<DiagramVariant, string>;
 
-    for (const variant of DIAGRAM_VARIANTS) {
-      try {
-        const svg = await tex2svg(source, {
-          embedFontCss: false,
-          disableOptimize: false,
-        });
-        rendered[variant] = themeTikzSvg(await embedTikzFonts(svg), variant);
-      } catch (error) {
-        const diagnostic = await captureTikzDiagnostic(source);
-        throw new TikzRenderError(diagnostic || formatTikzDiagnostic(error));
-      }
+    try {
+      const svg = await tex2svg(source, {
+        embedFontCss: false,
+        disableOptimize: false,
+      });
+      const embeddedFonts = await embedTikzFonts(svg);
+
+      return Object.fromEntries(
+        DIAGRAM_VARIANTS.map((variant) => [
+          variant,
+          themeTikzSvg(embeddedFonts, resolveDiagramAppearance(colorScheme, variant)),
+        ]),
+      ) as Record<DiagramVariant, string>;
+    } catch (error) {
+      const diagnostic = await captureTikzDiagnostic(source);
+      throw new TikzRenderError(diagnostic || formatTikzDiagnostic(error));
     }
-
-    return rendered;
   });
 }
 
