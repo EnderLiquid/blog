@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import type { MarkdownRoot } from '@nuxt/content';
+import { DIAGRAM_RENDER_CONFIG_VERSION } from '../../shared/content/diagram.ts';
 import { localizeFootnotes } from '../../shared/content/footnotes.ts';
 import { validateMarkdownImages } from '../../shared/content/image-validation.ts';
 import { validateMarkdownMath } from '../../shared/content/math-validation.ts';
@@ -46,15 +47,12 @@ describe('Markdown代码高亮配置', () => {
 });
 
 describe('Markdown图表配置', () => {
-  test('在图片归一化和代码高亮前注册静态图表转换器', () => {
-    assert.equal(
-      typeof MARKDOWN_DIAGRAM_REHYPE_PLUGINS['render-diagram-fences'].instance,
-      'function',
-    );
-    assert.equal(
-      MARKDOWN_DIAGRAM_REHYPE_PLUGINS['render-diagram-fences'].src,
-      '~~/shared/content/diagram-rehype',
-    );
+  test('在图片归一化和代码高亮前注册静态图表转换器，并以渲染契约版本失效内容缓存', () => {
+    const diagramPlugin = MARKDOWN_DIAGRAM_REHYPE_PLUGINS['render-diagram-fences'];
+
+    assert.equal(typeof diagramPlugin.instance, 'function');
+    assert.equal(diagramPlugin.src, '~~/shared/content/diagram-rehype');
+    assert.equal(diagramPlugin.options.cacheVersion, DIAGRAM_RENDER_CONFIG_VERSION);
   });
 });
 

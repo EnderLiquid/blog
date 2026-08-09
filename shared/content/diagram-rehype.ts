@@ -16,6 +16,11 @@ import {
 type Properties = Record<string, unknown>;
 
 export interface RenderDiagramFencesOptions {
+  /**
+   * 仅用于 Nuxt Content 的可序列化解析缓存键；具体版本由 markdown.ts 注入。
+   * 渲染器不在运行时分支依赖它，资产清单仍由自身的 renderConfigVersion 校验。
+   */
+  cacheVersion?: string;
   manifest?: DiagramAssetManifest;
   manifestPath?: string;
 }
