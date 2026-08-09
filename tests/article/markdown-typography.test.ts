@@ -8,6 +8,7 @@ import normalizeArticleImages from '../../shared/content/normalize-article-image
 import { parseMarkdown } from '@nuxtjs/mdc/runtime';
 import { describe, test } from 'node:test';
 import {
+  MARKDOWN_DIAGRAM_REHYPE_PLUGINS,
   MARKDOWN_HEADING_ANCHOR_LINKS,
   MARKDOWN_HIGHLIGHT_LANGUAGES,
   MARKDOWN_HIGHLIGHT_THEME,
@@ -41,6 +42,19 @@ describe('Markdown代码高亮配置', () => {
       false,
       false,
     ]);
+  });
+});
+
+describe('Markdown图表配置', () => {
+  test('在图片归一化和代码高亮前注册静态图表转换器', () => {
+    assert.equal(
+      typeof MARKDOWN_DIAGRAM_REHYPE_PLUGINS['render-diagram-fences'].instance,
+      'function',
+    );
+    assert.equal(
+      MARKDOWN_DIAGRAM_REHYPE_PLUGINS['render-diagram-fences'].src,
+      '~~/shared/content/diagram-rehype',
+    );
   });
 });
 

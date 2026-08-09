@@ -229,11 +229,27 @@ $$
 
 ### Mermaid 图表
 
-```mermaid
+```mermaid alt="从 Markdown 源码到读者页面的文章构建流程" caption="图 3：静态 Mermaid 图表进入文章图片组件" width="42rem" align="center"
 flowchart LR
   markdown[Markdown source] --> parser[Nuxt Content]
   parser --> renderer[Article renderer]
   renderer --> reader[Reader]
 ```
 
-Mermaid 功能接入后，这个代码块应渲染为流程图，并适应明暗主题和窄屏容器。
+Mermaid 图表应在构建期转换为静态 SVG，并适应明暗主题和窄屏容器。
+
+### TikZ 图表
+
+```tikz alt="带坐标轴的蓝色线段示意图" caption="图 4：构建期生成并嵌入字体的 TikZ 图表" width="28rem" align="center"
+\begin{document}
+\begin{tikzpicture}
+  \draw[->] (0,0) -- (3,0);
+  \draw[->] (0,0) -- (0,2);
+  \draw[blue, thick] (0,0) -- (2.4,1.3);
+  \node[below] at (2.4,0) {$x$};
+  \node[left] at (0,1.3) {$y$};
+\end{tikzpicture}
+\end{document}
+```
+
+TikZ 图表同样由构建期生成静态 SVG；默认墨色随主题切换，作者显式指定的蓝色线段应保持颜色。

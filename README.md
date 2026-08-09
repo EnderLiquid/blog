@@ -14,7 +14,8 @@ npm run dev
 常用命令：
 
 ```bash
-npm run format          # 使用 Prettier 格式化代码
+npm run diagrams:prepare # 单独准备并校验静态 Mermaid/TikZ 图表资产
+npm run format           # 使用 Prettier 格式化代码
 npm run format:check    # 检查代码格式
 npm run site:manifest   # 生成并校验统一站点资源清单
 npm run content:check   # 兼容命令，同样生成并校验站点清单
@@ -110,6 +111,32 @@ vertical-align="middle"
 ```
 
 `caption`只允许块级图片；`alt=""`表示装饰图片，默认不会创建灯箱入口。宽度、图注、行内/块级冲突会在内容构建阶段报错。
+
+#### 静态 Mermaid 与 TikZ 图表
+
+Mermaid 和 TikZ 围栏在构建期转为 light/dark 两份静态 SVG，随后作为`ArticleImage`进入正文，因此读者侧不加载 Mermaid、TeX、WASM 或浏览器图表运行时。图表必须在语言名后提供非空`alt`；可选`caption`、`width`、`align`和`preview`沿用块级图片的语义：
+
+````md
+```mermaid alt="从 Markdown 到静态页面的构建流程" caption="图 1：文章构建流程" width="42rem" align="center"
+flowchart LR
+  source[Markdown] --> page[Static page]
+```
+````
+
+TikZ 使用`node-tikzjax`的完整文档输入契约，围栏中必须自行包含`\begin{document}`与`\end{document}`；构建器不会自动包裹或改写源码：
+
+````md
+```tikz alt="一个带坐标轴的函数图"
+\begin{document}
+\begin{tikzpicture}
+  \draw[->] (0,0) -- (3,0);
+  \draw[->] (0,0) -- (0,2);
+\end{tikzpicture}
+\end{document}
+```
+````
+
+图表语法、元数据、SVG安全检查或本地工具校验失败都会阻止内容构建。生成资产和Merman 二进制位于Git忽略的`.data/`；CI 与本地都按图表指纹复用未变化的 SVG。TikZ SVG只嵌入实际使用的BaKoMa字体数据，避免`<img>`环境对外部SVG字体CSS的兼容性差异；相关许可证随`/_diagram-assets/licenses/`发布。
 
 ## GitHub Pages
 

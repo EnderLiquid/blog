@@ -1,9 +1,13 @@
+import { prepareDiagramAssets } from './diagrams/prepare.ts';
 import { generateSiteManifest } from './site-manifest/generate.ts';
 
 try {
+  const diagrams = await prepareDiagramAssets();
   const result = await generateSiteManifest();
   console.log(
-    `文章与站点资源校验通过：${result.resourceCount}个资源，` +
+    `图表资产准备完成：${diagrams.diagramCount}张图表，` +
+      `渲染${diagrams.renderedDiagramCount}张、复用${diagrams.reusedDiagramCount}张。\n` +
+      `文章与站点资源校验通过：${result.resourceCount}个资源，` +
       `其中${result.articleCount}个真实文章页面、${result.fallbackArticleCount}个回退投递页面。`,
   );
 } catch (error) {

@@ -65,6 +65,15 @@ function normalizeChildren(parent: Parent, ancestors: Element[], file: VFile): v
       continue;
     }
 
+    if (isElement(child) && child.tagName === 'article-image') {
+      validateImage(child, 'block', ancestors, file);
+      child.properties = {
+        ...child.properties,
+        layout: 'block',
+      };
+      continue;
+    }
+
     if (isElement(child) && child.tagName === 'p') {
       const image = getOnlyImageChild(child);
 

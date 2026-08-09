@@ -1,6 +1,7 @@
 import { bundledLanguagesInfo } from 'shiki/bundle/full';
 import javascript from '@shikijs/langs/javascript';
 import type { BundledLanguage, LanguageRegistration } from 'shiki';
+import renderDiagramFences from './diagram-rehype.ts';
 import normalizeArticleImages from './normalize-article-images.ts';
 import failOnKaTeXErrors from './strict-katex-errors.ts';
 
@@ -64,6 +65,14 @@ export const MARKDOWN_MATH_REHYPE_PLUGINS = {
   },
 } as const;
 
+/** 将预渲染图表围栏替换为统一图片节点，必须先于图片结构归一化和代码高亮。 */
+export const MARKDOWN_DIAGRAM_REHYPE_PLUGINS = {
+  'render-diagram-fences': {
+    instance: renderDiagramFences,
+    src: '~~/shared/content/diagram-rehype',
+  },
+} as const;
+
 /** 将图片段落归一化为块级节点，并在构建期校验图片排版属性。 */
 export const MARKDOWN_IMAGE_REHYPE_PLUGINS = {
   'normalize-article-images': {
@@ -74,5 +83,6 @@ export const MARKDOWN_IMAGE_REHYPE_PLUGINS = {
 
 export const MARKDOWN_REHYPE_PLUGINS = {
   ...MARKDOWN_MATH_REHYPE_PLUGINS,
+  ...MARKDOWN_DIAGRAM_REHYPE_PLUGINS,
   ...MARKDOWN_IMAGE_REHYPE_PLUGINS,
 } as const;

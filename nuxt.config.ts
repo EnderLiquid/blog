@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 import {
   MARKDOWN_HEADING_ANCHOR_LINKS,
   MARKDOWN_HIGHLIGHT_LANGUAGE_ALIASES,
@@ -8,6 +8,7 @@ import {
   MARKDOWN_MATH_REMARK_PLUGINS,
   MARKDOWN_REHYPE_PLUGINS,
 } from './shared/content/markdown.ts';
+import { prepareDiagramAssets } from './scripts/diagrams/prepare.ts';
 import { validateSiteManifest } from './shared/site-manifest/build.ts';
 import { createPrerenderRoutesView } from './shared/site-projections/prerender.ts';
 
@@ -38,6 +39,10 @@ export default defineNuxtConfig({
         baseURL: '/_katex',
         dir: resolve('node_modules/katex/dist'),
       },
+      {
+        baseURL: '/_diagram-assets',
+        dir: resolve('.data/diagram-assets'),
+      },
     ],
     prerender: {
       crawlLinks: true,
@@ -45,6 +50,11 @@ export default defineNuxtConfig({
     },
   },
   hooks: {
+    async 'content:file:beforeParse'({ file }) {
+      if (isPostMarkdownFile(file.path)) {
+        await prepareDiagramAssets();
+      }
+    },
     async 'prerender:routes'({ routes }) {
       // 清单是具体公开资源的唯一构建期来源，Nuxt不再自行拼接页面或文章路由。
       const manifestUrl = new URL('./.data/site-manifest.json', import.meta.url);
@@ -60,3 +70,13 @@ export default defineNuxtConfig({
     strict: true,
   },
 });
+
+function isPostMarkdownFile(filePath: string | undefined): boolean {
+  if (!filePath?.endsWith('.md')) {
+    return false;
+  }
+
+  const relativePath = relative(resolve('content', 'posts'), resolve(filePath));
+
+  return relativePath !== '' && !relativePath.startsWith('..');
+}

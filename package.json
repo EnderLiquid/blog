@@ -6,6 +6,7 @@
     "build": "npm run site:manifest && nuxt build",
     "content:check": "node scripts/validate-content.mjs",
     "dev": "node scripts/dev.mjs",
+    "diagrams:prepare": "node scripts/prepare-diagram-assets.mjs",
     "format": "prettier --write \"app/**/*.{ts,vue,css}\" \"public/**/*.css\" \"server/**/*.ts\" \"shared/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.{ts,mjs}\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
     "format:check": "prettier --check \"app/**/*.{ts,vue,css}\" \"public/**/*.css\" \"server/**/*.ts\" \"shared/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.{ts,mjs}\" \"*.{ts,json,md}\" \".github/**/*.yml\"",
     "generate": "npm run site:manifest && nuxt generate && pagefind --site .output/public",
@@ -37,6 +38,7 @@
   "devDependencies": {
     "@types/hast": "^3.0.5",
     "@types/node": "^26.1.1",
+    "node-tikzjax": "1.0.5",
     "pagefind": "^1.5.2",
     "prettier": "^3.9.5",
     "shiki": "^4.3.1",

@@ -1,13 +1,15 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'yaml';
+import {
+  extractMarkdownFrontmatter,
+  stripMarkdownFrontmatter,
+} from '../../shared/content/frontmatter.ts';
 import { ARTICLE_SEGMENT_PATTERN, postMetadataSchema } from '../../shared/content/post-schema.ts';
 import { validateMarkdownImages } from '../../shared/content/image-validation.ts';
 import { validateMarkdownMath } from '../../shared/content/math-validation.ts';
 import { parseLocaleCode, SUPPORTED_LOCALE_CODES } from '../../shared/i18n/locales.ts';
 import type { PostSource } from '../../shared/content/post-source.ts';
-
-const frontmatterPattern = /^\uFEFF?---\s*\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
 
 /** 从Markdown目录读取并校验所有文章来源，包括不会进入公开清单的草稿。 */
 export async function readPostSources(postsDirectory: string): Promise<PostSource[]> {
@@ -58,7 +60,7 @@ export async function readPostSources(postsDirectory: string): Promise<PostSourc
       continue;
     }
 
-    const markdown = source.replace(frontmatterPattern, '');
+    const markdown = stripMarkdownFrontmatter(source);
 
     try {
       await validateMarkdownMath(markdown, relativePath);
@@ -113,22 +115,26 @@ function readFrontmatter(
   relativePath: string,
   errors: string[],
 ): Record<string, unknown> | undefined {
-  const match = source.match(frontmatterPattern);
+  const frontmatter = extractMarkdownFrontmatter(source);
 
-  if (!match?.[1]) {
+  if (!frontmatter) {
     errors.push(`${relativePath}: 缺少有效的YAML Frontmatter`);
     return undefined;
   }
 
   try {
-    const frontmatter: unknown = parse(match[1]);
+    const parsedFrontmatter: unknown = parse(frontmatter);
 
-    if (!frontmatter || typeof frontmatter !== 'object' || Array.isArray(frontmatter)) {
+    if (
+      !parsedFrontmatter ||
+      typeof parsedFrontmatter !== 'object' ||
+      Array.isArray(parsedFrontmatter)
+    ) {
       errors.push(`${relativePath}: Frontmatter必须是YAML对象`);
       return undefined;
     }
 
-    return frontmatter as Record<string, unknown>;
+    return parsedFrontmatter as Record<string, unknown>;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     errors.push(`${relativePath}: Frontmatter解析失败：${message}`);
