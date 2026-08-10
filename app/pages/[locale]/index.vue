@@ -332,7 +332,11 @@ const featuredPosts = computed(() => {
   }
 }
 
-@container home (max-width: 38rem) {
+/*
+ * page-shell 比导航内容区窄 3rem；39rem 对应 site-navigation 的 42rem，
+ * 让首页紧凑布局与汉堡菜单在同一可用宽度切换。
+ */
+@container home (max-width: 39rem) {
   .home-cover {
     min-height: 0;
     padding-bottom: 4rem;
