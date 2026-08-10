@@ -30,12 +30,6 @@ export const postMetadataSchema = z
         }
       }),
     draft: z.boolean().default(false),
-    image: z
-      .object({
-        src: z.string().min(1, 'image.src不能为空'),
-        alt: z.string().min(1, 'image.alt不能为空'),
-      })
-      .optional(),
   })
   .strict();
 

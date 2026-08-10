@@ -73,14 +73,11 @@ publishedAt: 2026-07-12
 updatedAt: 2026-07-20
 tags:
   - nuxt
-image:
-  src: /images/posts/example/cover.webp
-  alt: 文章封面说明
 draft: false
 ---
 ```
 
-`updatedAt` 和 `image` 是可选字段，其他字段必须填写。文章正文语言由文件名唯一决定，Frontmatter不再重复保存 locale；`zh-cn` 和 `en` 是站点统一使用的小写 BCP 47语言代码。`shared/i18n/locales.ts`中的语言注册顺序是唯一网站优先级：用户偏好先进行全部精确匹配，再进行全部模糊匹配，最后按网站优先级fallback。文章路径段和标签统一使用小写 ASCII kebab-case，同一文章的所有语言版本必须使用相同标签集合。`title` 与 `description` 是文章当前唯一编辑来源，页面、SEO和RSS投影有意复用它们，但不会将其复制到站点资源清单中。
+`updatedAt` 是可选字段，其他字段必须填写。文章正文语言由文件名唯一决定，Frontmatter不再重复保存 locale；`zh-cn` 和 `en` 是站点统一使用的小写 BCP 47语言代码。`shared/i18n/locales.ts`中的语言注册顺序是唯一网站优先级：用户偏好先进行全部精确匹配，再进行全部模糊匹配，最后按网站优先级fallback。文章路径段和标签统一使用小写 ASCII kebab-case，同一文章的所有语言版本必须使用相同标签集合。`title` 与 `description` 是文章当前唯一编辑来源，页面、SEO和RSS投影有意复用它们，但不会将其复制到站点资源清单中。
 
 ### Markdown排版
 
