@@ -1,69 +1,58 @@
 # Blog
 
-基于 Nuxt 4、Nuxt Content、Pagefind 和 GitHub Pages 的个人博客。
+基于 Nuxt 4、Nuxt Content 和 GitHub Pages 的个人博客。
 
-## 开发
+线上地址：<https://blog.enderliquid.top>
 
-当前项目要求 Node.js 24.11 或更高版本。
+站点提供中英文界面、Pagefind 搜索、RSS、Sitemap、Giscus 评论，以及构建期渲染的数学公式和 Mermaid/TikZ 图表。
+
+## 快速开始
+
+要求 Node.js 24.11 或更高版本。
 
 ```bash
 npm install
 npm run dev
 ```
 
-常用命令：
+`npm run dev` 会启动开发服务器，并在文章、语言配置和站点构建来源变化时刷新资源清单。
 
-```bash
-npm run diagrams:prepare # 单独准备并校验静态 Mermaid/TikZ 图表资产
-npm run format           # 使用 Prettier 格式化代码
-npm run format:check    # 检查代码格式
-npm run site:manifest   # 生成并校验统一站点资源清单
-npm run content:check   # 兼容命令，同样生成并校验站点清单
-npm run test:unit       # 运行清单、语言和机器文件纯函数测试
-npm run typecheck       # 生成清单后执行类型检查
-npm run generate        # 生成清单、静态站点及 Pagefind 索引
-npm run preview         # 预览 Nuxt 构建结果
-```
+### 常用命令
 
-静态产物位于 `.output/public/`。构建同时生成中英文摘要 RSS、Sitemap、robots.txt和Pagefind索引。构建期公开资源拓扑记录在 `.data/site-manifest.json`；文章投递、SEO、RSS、Sitemap、robots和Shell导航分别生成职责独立的消费者投影，浏览器打包 `app/generated/site-article-delivery-index.ts`、`app/generated/site-seo-index.ts` 与 `app/generated/site-shell-index.ts`。开发服务器启动及构建来源变化时会自动刷新这些生成产物。
+| 命令                                      | 用途                                         |
+| ----------------------------------------- | -------------------------------------------- |
+| `npm run dev`                             | 启动本地开发服务器。                         |
+| `npm run diagrams:prepare`                | 单独准备并校验 Mermaid/TikZ 静态图表资产。   |
+| `npm run site:manifest`                   | 准备图表资产，生成并校验站点资源清单。       |
+| `npm run content:check`                   | 兼容的内容校验入口，作用与资源清单生成相同。 |
+| `npm run test:unit`                       | 运行单元测试。                               |
+| `npm run typecheck`                       | 生成资源清单后执行类型检查。                 |
+| `npm run format` / `npm run format:check` | 格式化代码 / 检查格式。                      |
+| `npm run generate`                        | 生成静态站点和 Pagefind 索引。               |
+| `npm run preview`                         | 预览已构建的 Nuxt 站点。                     |
 
-### Shell终端MVP
+静态站点产物位于 `.output/public/`。
 
-有效的本地化页面提供跨SPA导航保持挂载的Shell工作区和粘性顶部导航。桌面端终端可展开并拖动宽度，页面面板被压窄后主导航自动收进汉堡菜单；移动端顶部导航始终可见，通过同一个`>_`按钮在Shell和普通页面之间切换。会话只保留到浏览器刷新前，不写入本地存储。
+## 内容编写
 
-MVP命令：
+文章路径采用以下结构：
 
 ```text
-help
-pwd
-url
-ls [path]
-cd <path>
-search [query]
-lang <zh-cn|en>
-clear
+content/posts/<articleKeyPath>/<localeCode>.md
 ```
 
-Shell将当前语言目录投影为虚拟根，例如公开地址`/zh-cn/posts/`在Shell中显示为`/posts/`。`ls`和`cd`只消费构建期导航投影；普通页面仍然独立工作。Shell导航通过待处理意图与最终Route对账，不依赖Vue Router内部History状态。MVP不提供Shell内的`back`和`forward`，浏览器工具栏的前进和后退仍会反映到Shell历史。
-
-### About个人页
-
-`/zh-cn/about/`和`/en/about/`提供双语个人介绍，并接入顶部导航、Manifest、SEO、Sitemap和Shell虚拟路径`/about/`。页面采用作者扉页式不对称布局，Shell压窄页面或进入移动端时通过容器查询切换为单栏。GitHub与哔哩哔哩公开主页集中定义在`shared/site-definitions/profile.ts`，Logo使用本地内联SVG和`currentColor`适配明暗模式。
-
-### Giscus主题调试
-
-开发和生产环境均使用 `shared/comments/giscus.ts` 中基于 `SITE_ORIGIN` 的已部署主题地址。现代浏览器会阻止 `giscus.app` 跨域iframe读取本机loopback资源，因此 `npm run dev` 不会直接加载本地 `/giscus-theme.css`；修改 `public/giscus-theme.css` 后需要部署，或通过独立的公网HTTPS预览流程验证。
-
-## 内容
-
-文章使用 `content/posts/<articleKeyPath>/<contentLocaleCode>.md` 结构：
+例如：
 
 ```text
 content/posts/projects/pi/pi-context/zh-cn.md
 content/posts/projects/pi/pi-context/en.md
 ```
 
-对应 `/zh-cn/posts/projects/pi/pi-context/` 和 `/en/posts/projects/pi/pi-context/`。URL前缀表示界面语言；文章缺少该语言版本时，构建会生成回退投递页面并加载优先级解析器选择的真实正文。正文容器会通过`lang`声明实际内容语言，回退页面不会进入Sitemap、RSS或Pagefind正文索引。`/`仅用于选择语言。Frontmatter格式：
+对应公开地址 `/zh-cn/posts/projects/pi/pi-context/` 和 `/en/posts/projects/pi/pi-context/`。
+
+`articleKeyPath` 是跨语言共享的文章身份；文件名决定正文语言，URL 前缀决定页面界面语言。某种界面语言缺少译文时，构建会生成回退投递页并显示可用正文；这类页面不会进入该语言的 RSS、Sitemap 或 Pagefind 正文索引。
+
+### Frontmatter
 
 ```yaml
 ---
@@ -77,112 +66,87 @@ draft: false
 ---
 ```
 
-`updatedAt` 是可选字段，其他字段必须填写。文章正文语言由文件名唯一决定，Frontmatter不再重复保存 locale；`zh-cn` 和 `en` 是站点统一使用的小写 BCP 47语言代码。`shared/i18n/locales.ts`中的语言注册顺序是唯一网站优先级：用户偏好先进行全部精确匹配，再进行全部模糊匹配，最后按网站优先级fallback。文章路径段和标签统一使用小写 ASCII kebab-case，同一文章的所有语言版本必须使用相同标签集合。`title` 与 `description` 是文章当前唯一编辑来源，页面、SEO和RSS投影有意复用它们，但不会将其复制到站点资源清单中。
+`title`、`description` 和 `publishedAt` 必填；`updatedAt`、`tags` 与 `draft` 可省略。语言由文件名确定，无需在 Frontmatter 中重复填写。路径段和标签使用小写 ASCII kebab-case；同一篇文章的所有语言版本必须使用相同的标签集合。
 
-### Markdown排版
+## Markdown
 
-`app/components/article/ArticleBody.vue`是文章正文的唯一渲染与样式边界；文章路由只负责查询、头部、Pagefind边界和评论挂载。纯样式需求通过该组件内有边界的`:deep()`处理；只有代码块和表格需要额外结构，因此分别覆写`app/components/content/ProsePre.vue`与`ProseTable.vue`。
+Markdown 语法在构建期处理，公式和图表不在浏览器端二次渲染。
 
-代码块固定使用深色面板和`github-dark` Shiki主题，避免本站`prefers-color-scheme`机制与Shiki默认`html.dark`类切换产生“浅色Token + 深色背景”。主题和全量Shiki规范语言集合维护在`shared/content/markdown.ts`，语言集合从`shiki/bundle/full`自动取得，别名由Shiki注册表提供。Markdown标题锚点全部关闭，标题保持普通文本以方便拖选和复制。长代码与宽表格只在自身容器内横向滚动，不得通过隐藏页面溢出来掩盖布局问题。
+### 图片
 
-#### 图片
-
-文章图片统一由`ArticleImage`渲染。独占一段的Markdown图片默认为块级流体图片；写在文字中的图片默认为行内图片。Nuxt Content支持在图片后附加属性：
+独占段落的图片默认按块级排版，可通过属性控制尺寸、对齐和图注：
 
 ```md
-![系统流程图](/images/flow.svg){
-width="42rem"
-align="center"
-caption="图 1：系统流程"
-}
+![系统流程图](/images/flow.svg){width="42rem" align="center" caption="图 1：系统流程"}
 ```
 
-`align`只用于块级图片，取`start`、`center`或`end`。行内图片使用`layout="inline"`和`vertical-align`控制文字行内的纵向位置，灯箱由`preview`独立控制：
+文字中的图片默认保持行内排版：
 
 ```md
-文字中的 ![状态图标](/images/status.svg){
-layout="inline"
-width="1em"
-vertical-align="middle"
-}
+文字中的 ![状态图标](/images/status.svg){layout="inline" width="1em" vertical-align="middle"}
 ```
 
-`caption`只允许块级图片；`alt=""`表示装饰图片，默认不会创建灯箱入口。宽度、图注、行内/块级冲突会在内容构建阶段报错。
+`align` 和 `caption` 只适用于块级图片；`preview="false"` 可关闭灯箱。Markdown 图片和原始 HTML `<img>` 都会进入同一套排版、预览和无障碍处理，属性冲突会在内容构建阶段报错。
 
-#### 静态 Mermaid 与 TikZ 图表
+### Mermaid 与 TikZ 图表
 
-Mermaid 和 TikZ 围栏在构建期转为静态 SVG，随后作为`ArticleImage`进入正文，因此读者侧不加载 Mermaid、TeX、WASM 或浏览器图表运行时。默认`color-scheme="auto"`会生成 light / dark 两份 SVG，并随页面主题选择对应资源；显式固定为`light`或`dark`时只生成一份固定 SVG，亮暗页面和灯箱共用该成品。图表必须在语言名后提供非空`alt`；可选`caption`、`width`、`align`和`preview`沿用块级图片的语义：
+`mermaid` 和 `tikz` 围栏会在构建期转换为静态 SVG，读者侧不加载图表运行时。围栏必须提供非空 `alt`，并可使用 `caption`、`width`、`align`、`preview` 等与块级图片相同的展示属性：
 
 ````md
-```mermaid alt="从 Markdown 到静态页面的构建流程" caption="图 1：文章构建流程" width="42rem" align="center"
+```mermaid alt="从 Markdown 到静态页面的构建流程" width="42rem" align="center"
 flowchart LR
   source[Markdown] --> page[Static page]
 ```
 ````
 
-TikZ 使用`node-tikzjax`的完整文档输入契约，围栏中必须自行包含`\begin{document}`与`\end{document}`；构建器不会自动包裹或改写源码：
+TikZ 围栏必须自行包含完整的 `\begin{document}` 与 `\end{document}`：
 
 ````md
 ```tikz alt="一个带坐标轴的函数图"
 \begin{document}
 \begin{tikzpicture}
   \draw[->] (0,0) -- (3,0);
-  \draw[->] (0,0) -- (0,2);
 \end{tikzpicture}
 \end{document}
 ```
 ````
 
-默认`color-scheme="auto"`会生成透明的 light / dark SVG，并随页面主题选择对应资源。对于含`gray!…`、浅色填充或为浅色纸张设计的数学图，可显式固定为浅色图纸：
+`color-scheme` 可取 `auto`、`light` 或 `dark`。默认 `auto` 生成随页面主题切换的浅色和深色 SVG；固定为 `light` 或 `dark` 时只生成一份带画布的静态 SVG，适合含灰色填充或为特定纸张颜色设计的图。作者显式指定的图表颜色会被保留。图表语法、属性、SVG 安全检查或本地工具校验失败都会阻止构建。
 
-````md
-```tikz alt="带灰色填充的单位圆" color-scheme="light"
-\begin{document}
-\begin{tikzpicture}
-  \fill[gray!30] (0,0) circle (1);
-  \node at (0.5,0.5) {$D$};
-\end{tikzpicture}
-\end{document}
-```
-````
+### 公式与代码
 
-`color-scheme`只接受`auto`、`light`、`dark`。`light`和`dark`会同时固定默认墨色、Mermaid 主题变量和 SVG 内部画布；每张固定图只产出一份`.fixed.svg`，不再通过`<picture>`生成虚构的深色图源。深色页面中的`light`图会保留一张不透明的浅色图纸，保证灰色填充上的文字可读。构建器不会猜测或重映射作者显式指定的 TikZ、Mermaid 颜色。
+`$...$` 和 `$$...$$` 在构建期由 KaTeX 排版。普通代码围栏由 Shiki 高亮；长代码和宽表格只在各自容器内横向滚动。
 
-图表语法、元数据、SVG安全检查或本地工具校验失败都会阻止内容构建。生成资产和Merman 二进制位于Git忽略的`.data/`；CI 与本地都按图表指纹复用未变化的 SVG。TikZ SVG只嵌入实际使用的BaKoMa字体数据，避免`<img>`环境对外部SVG字体CSS的兼容性差异。
+## 项目结构
 
-## GitHub Pages
+| 路径                 | 职责                                             |
+| -------------------- | ------------------------------------------------ |
+| `app/`               | 页面、布局和 Vue 组件。                          |
+| `content/posts/`     | Markdown 文章源文件。                            |
+| `shared/`            | 内容契约、语言、路由、站点资源清单与消费者投影。 |
+| `scripts/`           | 内容校验、资源清单和图表预渲染脚本。             |
+| `public/`            | 原样发布的静态资源。                             |
+| `.github/workflows/` | GitHub Pages 持续集成与部署。                    |
 
-`.github/workflows/deploy-pages.yml` 会在 `main` 分支更新时执行格式检查、单元测试、站点清单生成、类型检查、静态生成、Pagefind索引和部署。
+`.data/`、`.nuxt/`、`.output/` 和 `app/generated/` 均为本地生成目录，不应手动编辑或提交。
 
-公开仓库使用 `EnderLiquid/blog`，生产地址固定为 `https://blog.enderliquid.top`。创建并推送仓库后：
+## 部署
 
-1. 在仓库设置中将 Pages 的 Source 设为 **GitHub Actions**；
-2. 将 Custom domain 设置为 `blog.enderliquid.top`；
-3. 在域名服务商添加 `blog CNAME enderliquid.github.io`；
-4. 证书签发后启用 **Enforce HTTPS**。
+推送到 `main` 会触发 `.github/workflows/deploy-pages.yml`：工作流依次执行格式检查、单元测试、资源清单校验、类型检查、静态生成和 Pagefind 索引，然后部署 `.output/public/` 到 GitHub Pages。
 
-项目使用自定义 GitHub Actions工作流，不需要提交 `CNAME` 文件。
-
-机器入口：
+使用自定义域名时，在仓库设置中将 Pages Source 设为 **GitHub Actions**，将域名配置为 `blog.enderliquid.top`，并在域名服务商添加：
 
 ```text
-https://blog.enderliquid.top/zh-cn/rss.xml
-https://blog.enderliquid.top/en/rss.xml
-https://blog.enderliquid.top/sitemap.xml
-https://blog.enderliquid.top/robots.txt
+blog CNAME enderliquid.github.io
 ```
 
-## 当前边界
+证书签发后启用 **Enforce HTTPS**。项目使用 GitHub Actions 部署，不需要提交 `CNAME` 文件。
 
-- 已接通文章内容、全站语言前缀、静态生成、摘要 RSS、Sitemap、robots.txt、Giscus评论，以及 `/<locale>/posts/` 中的跨语言 Pagefind 搜索。
-- `shared/i18n/locales.ts`统一定义`LocaleCode`、网站语言优先级和两轮偏好解析；不再维护独立默认语言。
-- URL前缀是界面语言，文章正文语言由构建期Article Delivery投影确定；单语言文章会为其他界面语言生成noindex回退投递页面。
-- `shared/site/config.ts` 只定义唯一生产源地址；静态页面SEO和RSS协议配置分别位于 `shared/site-definitions/page-seo.ts` 与 `shared/site-definitions/rss.ts`。
-- `shared/site-manifest/` 只负责资源拓扑、关系和构建校验；不保存标题、描述、日期、标签或索引策略。
-- `shared/site-projections/` 分别生成预渲染、页面SEO、RSS、Sitemap、robots和Shell导航视图；各消费者不再自行发现站点结构。
-- Pagefind 索引在静态生成后产生，完整搜索需使用 `npm run generate` 后的静态预览验证。
-- Giscus公开仓库配置和稳定Discussion映射集中在 `shared/comments/giscus.ts`；评论界面跟随界面语言，所有正文投递页面按 `articleKeyPath` 共享评论。
-- Shell终端MVP已经接通路径浏览、页面导航、文章搜索、语言切换和Route反映；顶部导航统一提供主页面、语言菜单与终端开关，并根据页面容器宽度切换为汉堡菜单。
-- About个人页与主页已经建立正式静态页面视觉样板；Markdown正文已建立第一版正式排版，文章列表与其他页面仍需继续统一。
-- `public/giscus-theme.css` 暂时验证了Giscus的字体与明暗配色定制能力，后续会随全站视觉系统继续调整。
-- `.npmrc` 使用 npmmirror，以规避当前环境访问 npm 官方源过慢的问题。
+### 机器入口
+
+| 地址             | 用途           |
+| ---------------- | -------------- |
+| `/zh-cn/rss.xml` | 中文文章 RSS。 |
+| `/en/rss.xml`    | 英文文章 RSS。 |
+| `/sitemap.xml`   | Sitemap。      |
+| `/robots.txt`    | robots 规则。  |
