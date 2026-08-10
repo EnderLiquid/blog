@@ -119,9 +119,14 @@ const featuredPosts = computed(() => {
 }
 
 .home-cover {
+  --home-cover-bottom-inset: clamp(2.25rem, 4.5cqi, 3.25rem);
+  --home-title-welcome-gap: 4rem;
   display: flex;
-  min-height: clamp(30rem, 56cqi, 38rem);
   flex-direction: column;
+  row-gap: var(--home-title-welcome-gap);
+  /* auto外边距分配剩余空间，row-gap在高度不足时保留最低间隔。 */
+  /* 导航高度为 3.25rem，另有 1px 底边；页面壳层顶部还保留 12vh 内边距。 */
+  min-height: calc(100dvh - 3.25rem - 1px - 12vh - var(--home-cover-bottom-inset));
   border-bottom: 1px solid var(--line);
 }
 
@@ -299,10 +304,6 @@ const featuredPosts = computed(() => {
 }
 
 @container home (max-width: 52rem) {
-  .home-cover {
-    min-height: 34rem;
-  }
-
   .home-wordmark-lockup {
     grid-template-columns: 1fr;
     gap: 2.5rem;
@@ -323,10 +324,6 @@ const featuredPosts = computed(() => {
     margin-left: 0;
   }
 
-  .home-welcome {
-    align-self: flex-start;
-  }
-
   .featured-post--lead .featured-post__title {
     max-width: 18ch;
   }
@@ -340,6 +337,7 @@ const featuredPosts = computed(() => {
   .home-cover {
     min-height: 0;
     padding-bottom: 4rem;
+    row-gap: 0;
   }
 
   .home-wordmark-lockup {
@@ -356,7 +354,8 @@ const featuredPosts = computed(() => {
   }
 
   .home-welcome {
-    margin: 4rem 0 0;
+    align-self: flex-start;
+    margin: var(--home-title-welcome-gap) 0 0;
     font-size: 1rem;
   }
 
