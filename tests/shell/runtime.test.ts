@@ -14,6 +14,7 @@ import { parseShellCommand } from '../../app/shell/parser.ts';
 import { translateRouteToShellCommand } from '../../app/shell/route-translator.ts';
 import type { PendingNavigationIntent } from '../../app/shell/types.ts';
 
+/** 纯内存导航投影样本，不读取或依赖content/posts中的真实文章。 */
 const projection: ShellNavigationProjection = {
   version: 1,
   resources: [
@@ -33,13 +34,13 @@ const projection: ShellNavigationProjection = {
       navigableParentPath: '/',
     },
     {
-      resourceId: 'article:examples/hello-world:en',
-      publicPath: '/en/posts/examples/hello-world/',
-      virtualPath: '/posts/examples/hello-world/',
+      resourceId: 'article:fixtures/sample-article:en',
+      publicPath: '/en/posts/fixtures/sample-article/',
+      virtualPath: '/posts/fixtures/sample-article/',
       localeCode: 'en',
       kind: 'article',
-      articleKeyPath: 'examples/hello-world',
-      title: 'The environment is ready',
+      articleKeyPath: 'fixtures/sample-article',
+      title: 'English fixture post',
       navigableParentPath: '/posts/',
     },
     {
@@ -58,13 +59,13 @@ const projection: ShellNavigationProjection = {
       navigableParentPath: '/',
     },
     {
-      resourceId: 'article:examples/hello-world:zh-cn',
-      publicPath: '/zh-cn/posts/examples/hello-world/',
-      virtualPath: '/posts/examples/hello-world/',
+      resourceId: 'article:fixtures/sample-article:zh-cn',
+      publicPath: '/zh-cn/posts/fixtures/sample-article/',
+      virtualPath: '/posts/fixtures/sample-article/',
       localeCode: 'zh-cn',
       kind: 'article',
-      articleKeyPath: 'examples/hello-world',
-      title: '环境已经就绪',
+      articleKeyPath: 'fixtures/sample-article',
+      title: '中文测试文章',
       navigableParentPath: '/posts/',
     },
   ],
@@ -124,7 +125,7 @@ describe('Shell虚拟路径', () => {
 
   it('根据语言查找资源并为不可导航前缀回退最近祖先', () => {
     const posts = findShellResourceByVirtualPath(projection, 'zh-cn', '/posts/');
-    const ancestor = findClosestNavigableAncestor(projection, 'zh-cn', '/posts/examples/');
+    const ancestor = findClosestNavigableAncestor(projection, 'zh-cn', '/posts/fixtures/');
 
     assert.equal(posts?.kind, 'posts');
     assert.equal(findShellResourceByPublicPath(projection, '/zh-cn/posts?q=nuxt')?.kind, 'posts');
@@ -175,9 +176,9 @@ describe('普通Route转译', () => {
     assert.equal(
       translateRouteToShellCommand(
         projection,
-        '/zh-cn/posts/examples/hello-world/?a=%E5%A4%9A%E8%AF%AD%E8%A8%80',
+        '/zh-cn/posts/fixtures/sample-article/?a=%E5%A4%9A%E8%AF%AD%E8%A8%80',
       ),
-      'cd /posts/examples/hello-world/?a=多语言',
+      'cd /posts/fixtures/sample-article/?a=多语言',
     );
     assert.equal(
       translateRouteToShellCommand(projection, '/en/posts/?q=nuxt', '/zh-cn/posts/?q=nuxt'),

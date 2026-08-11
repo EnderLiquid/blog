@@ -3,38 +3,36 @@ import { findArticleDelivery } from '~/utils/article-delivery';
 import { formatPostDate, toDateTime } from '~/utils/date';
 import { groupPostVariants, requirePostVariant } from '~/utils/posts';
 import { aboutPath, postsPath } from '~~/shared/routing/localized-routes';
-import { FEATURED_ARTICLE_KEYS } from '~~/shared/site-definitions/home';
+
+const HOME_FEATURED_POST_LIMIT = 3;
 
 const { localeCode, messages } = useSiteLocale();
 const { data: posts } = await useAsyncData('home-posts', () =>
   queryCollection('posts').where('draft', '=', false).all(),
 );
 
+/** 首页按读者实际收到的正文版本展示最新文章，不依赖某篇固定内容。 */
 const featuredPosts = computed(() => {
-  const logicalPostsByKey = new Map(
-    groupPostVariants(posts.value ?? []).map((logicalPost) => [
-      logicalPost.articleKeyPath,
-      logicalPost,
-    ]),
-  );
+  return groupPostVariants(posts.value ?? [])
+    .flatMap((logicalPost) => {
+      const delivery = findArticleDelivery(logicalPost.articleKeyPath, localeCode.value);
 
-  return FEATURED_ARTICLE_KEYS.map((articleKeyPath) => {
-    const logicalPost = logicalPostsByKey.get(articleKeyPath);
-    if (!logicalPost) {
-      throw new Error(`首页精选文章不存在：${articleKeyPath}`);
-    }
+      if (!delivery) {
+        return [];
+      }
 
-    const delivery = findArticleDelivery(articleKeyPath, localeCode.value);
-    if (!delivery) {
-      throw new Error(`文章 ${articleKeyPath} 缺少${localeCode.value}投递页面`);
-    }
-
-    return {
-      articleKeyPath,
-      displayPath: delivery.path,
-      post: requirePostVariant(logicalPost, delivery.contentLocaleCode),
-    };
-  });
+      return [
+        {
+          articleKeyPath: logicalPost.articleKeyPath,
+          displayPath: delivery.path,
+          post: requirePostVariant(logicalPost, delivery.contentLocaleCode),
+        },
+      ];
+    })
+    .sort((left, right) => {
+      return new Date(right.post.publishedAt).getTime() - new Date(left.post.publishedAt).getTime();
+    })
+    .slice(0, HOME_FEATURED_POST_LIMIT);
 });
 </script>
 

@@ -100,7 +100,7 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     },
     home: {
       welcome: ['这里是 EnderLiquid 的博客。', '欢迎到访。'],
-      featuredPosts: '精选文章',
+      featuredPosts: '近期文章',
       postsEntryTitle: '文章',
       postsEntryDescription: '搜索和浏览所有文章',
       aboutEntryTitle: '关于',
@@ -184,7 +184,7 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     },
     home: {
       welcome: [`This is EnderLiquid's Blog.`, 'Welcome.'],
-      featuredPosts: 'Featured posts',
+      featuredPosts: 'Recent posts',
       postsEntryTitle: 'Posts',
       postsEntryDescription: 'Search and browse all posts',
       aboutEntryTitle: 'About',

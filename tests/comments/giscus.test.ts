@@ -10,12 +10,12 @@ import { SITE_ORIGIN } from '../../shared/site/config.ts';
 describe('Giscus文章映射', () => {
   it('使用与语言和域名无关的文章身份', () => {
     assert.equal(
-      createArticleDiscussionTerm('examples/hello-world'),
-      'article:examples/hello-world',
+      createArticleDiscussionTerm('fixtures/sample-article'),
+      'article:fixtures/sample-article',
     );
     assert.equal(
-      createArticleDiscussionTerm('/examples/hello-world/'),
-      'article:examples/hello-world',
+      createArticleDiscussionTerm('/fixtures/sample-article/'),
+      'article:fixtures/sample-article',
     );
   });
 

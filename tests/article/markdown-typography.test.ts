@@ -395,17 +395,3 @@ describe('GFM脚注投影', () => {
     assert.match(JSON.stringify(root), /sr-only|Back to reference 1/);
   });
 });
-
-describe('Markdown排版验收文章', () => {
-  test('双语hello-world覆盖代码、表格、引用和图片', async () => {
-    for (const localeCode of ['zh-cn', 'en']) {
-      const markdown = await readProjectFile(`content/posts/examples/hello-world/${localeCode}.md`);
-
-      assert.match(markdown, /> .+/);
-      assert.match(markdown, /```ts \[content\.config\.ts\]\{2\}/);
-      assert.match(markdown, /```java \[Main\.java\]/);
-      assert.match(markdown, /\| [-]+ \| [-]+ \| [-]+ \|/);
-      assert.match(markdown, /!\[[^\]]+\]\(\/images\/markdown-flow\.svg\)/);
-    }
-  });
-});

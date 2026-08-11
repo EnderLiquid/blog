@@ -5,50 +5,51 @@ import { buildSiteManifest } from '../../shared/site-manifest/build.ts';
 import { createSiteBuildContext } from '../../shared/site-manifest/context.ts';
 import { createShellNavigationProjection } from '../../shared/site-projections/shell.ts';
 
+/** 纯内存文章来源样本，不读取或依赖content/posts中的真实文章。 */
 const posts: PostSource[] = [
   {
-    sourcePath: 'examples/hello-world/zh-cn.md',
-    articleKeyPath: 'examples/hello-world',
+    sourcePath: 'fixtures/sample-article/zh-cn.md',
+    articleKeyPath: 'fixtures/sample-article',
     localeCode: 'zh-cn',
     metadata: {
-      title: '环境已经就绪',
-      description: '中文文章',
+      title: '中文测试文章',
+      description: '中文样本',
       publishedAt: new Date('2026-07-01T00:00:00.000Z'),
       tags: [],
       draft: false,
     },
   },
   {
-    sourcePath: 'examples/hello-world/en.md',
-    articleKeyPath: 'examples/hello-world',
+    sourcePath: 'fixtures/sample-article/en.md',
+    articleKeyPath: 'fixtures/sample-article',
     localeCode: 'en',
     metadata: {
-      title: 'The environment is ready',
-      description: 'English post',
+      title: 'English fixture post',
+      description: 'English sample',
       publishedAt: new Date('2026-07-01T00:00:00.000Z'),
       tags: [],
       draft: false,
     },
   },
   {
-    sourcePath: 'notes/zh-cn.md',
-    articleKeyPath: 'notes',
+    sourcePath: 'fixtures/fallback-article/zh-cn.md',
+    articleKeyPath: 'fixtures/fallback-article',
     localeCode: 'zh-cn',
     metadata: {
-      title: '仅中文随笔',
-      description: '单语言文章',
+      title: '仅中文测试文章',
+      description: '单语言样本',
       publishedAt: new Date('2026-07-02T00:00:00.000Z'),
       tags: [],
       draft: false,
     },
   },
   {
-    sourcePath: 'draft/zh-cn.md',
-    articleKeyPath: 'draft',
+    sourcePath: 'fixtures/draft-article/zh-cn.md',
+    articleKeyPath: 'fixtures/draft-article',
     localeCode: 'zh-cn',
     metadata: {
-      title: '草稿',
-      description: '草稿文章',
+      title: '草稿测试文章',
+      description: '草稿样本',
       publishedAt: new Date('2026-07-02T00:00:00.000Z'),
       tags: [],
       draft: true,
@@ -72,26 +73,28 @@ describe('Shell导航投影', () => {
         ['zh-cn', '/', 'home'],
         ['zh-cn', '/about/', 'about'],
         ['zh-cn', '/posts/', 'posts'],
-        ['zh-cn', '/posts/examples/hello-world/', 'article'],
-        ['zh-cn', '/posts/notes/', 'article'],
+        ['zh-cn', '/posts/fixtures/fallback-article/', 'article'],
+        ['zh-cn', '/posts/fixtures/sample-article/', 'article'],
         ['en', '/', 'home'],
         ['en', '/about/', 'about'],
         ['en', '/posts/', 'posts'],
-        ['en', '/posts/examples/hello-world/', 'article'],
-        ['en', '/posts/notes/', 'article'],
+        ['en', '/posts/fixtures/fallback-article/', 'article'],
+        ['en', '/posts/fixtures/sample-article/', 'article'],
       ],
     );
     assert.equal(
       projection.resources.find(
         (resource) => resource.localeCode === 'zh-cn' && resource.kind === 'article',
       )?.title,
-      '环境已经就绪',
+      '仅中文测试文章',
     );
     assert.equal(
       projection.resources.find(
-        (resource) => resource.localeCode === 'en' && resource.virtualPath === '/posts/notes/',
+        (resource) =>
+          resource.localeCode === 'en' &&
+          resource.virtualPath === '/posts/fixtures/fallback-article/',
       )?.title,
-      '仅中文随笔',
+      '仅中文测试文章',
     );
     assert.equal(
       projection.resources.find(

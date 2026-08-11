@@ -7,37 +7,38 @@ import {
   resolvePrimaryNavigationSection,
 } from '../../app/utils/site-navigation.ts';
 
+/** 纯内存投影样本，不读取或依赖content/posts中的真实文章。 */
 const articleDeliveryIndex: ArticleDeliveryIndexView = {
-  '/zh-cn/posts/examples/hello-world/': {
-    path: '/zh-cn/posts/examples/hello-world/',
-    articleKeyPath: 'examples/hello-world',
+  '/zh-cn/posts/fixtures/sample-article/': {
+    path: '/zh-cn/posts/fixtures/sample-article/',
+    articleKeyPath: 'fixtures/sample-article',
     interfaceLocaleCode: 'zh-cn',
     contentLocaleCode: 'zh-cn',
-    contentPath: '/posts/examples/hello-world/zh-cn',
+    contentPath: '/posts/fixtures/sample-article/zh-cn',
     fallback: false,
   },
-  '/en/posts/examples/hello-world/': {
-    path: '/en/posts/examples/hello-world/',
-    articleKeyPath: 'examples/hello-world',
+  '/en/posts/fixtures/sample-article/': {
+    path: '/en/posts/fixtures/sample-article/',
+    articleKeyPath: 'fixtures/sample-article',
     interfaceLocaleCode: 'en',
     contentLocaleCode: 'en',
-    contentPath: '/posts/examples/hello-world/en',
+    contentPath: '/posts/fixtures/sample-article/en',
     fallback: false,
   },
-  '/zh-cn/posts/examples/zh-only/': {
-    path: '/zh-cn/posts/examples/zh-only/',
-    articleKeyPath: 'examples/zh-only',
+  '/zh-cn/posts/fixtures/fallback-article/': {
+    path: '/zh-cn/posts/fixtures/fallback-article/',
+    articleKeyPath: 'fixtures/fallback-article',
     interfaceLocaleCode: 'zh-cn',
     contentLocaleCode: 'zh-cn',
-    contentPath: '/posts/examples/zh-only/zh-cn',
+    contentPath: '/posts/fixtures/fallback-article/zh-cn',
     fallback: false,
   },
-  '/en/posts/examples/zh-only/': {
-    path: '/en/posts/examples/zh-only/',
-    articleKeyPath: 'examples/zh-only',
+  '/en/posts/fixtures/fallback-article/': {
+    path: '/en/posts/fixtures/fallback-article/',
+    articleKeyPath: 'fixtures/fallback-article',
     interfaceLocaleCode: 'en',
     contentLocaleCode: 'zh-cn',
-    contentPath: '/posts/examples/zh-only/zh-cn',
+    contentPath: '/posts/fixtures/fallback-article/zh-cn',
     fallback: true,
   },
 };
@@ -46,7 +47,7 @@ describe('顶部主导航', () => {
   it('将首页、文章和About页面映射到对应主导航分区', () => {
     assert.equal(resolvePrimaryNavigationSection('/zh-cn/'), 'home');
     assert.equal(resolvePrimaryNavigationSection('/en/posts/'), 'posts');
-    assert.equal(resolvePrimaryNavigationSection('/zh-cn/posts/examples/hello-world/'), 'posts');
+    assert.equal(resolvePrimaryNavigationSection('/zh-cn/posts/fixtures/sample-article/'), 'posts');
     assert.equal(resolvePrimaryNavigationSection('/en/about/'), 'about');
     assert.equal(aboutPath('zh-cn'), '/zh-cn/about/');
     assert.equal(aboutPath('en'), '/en/about/');
@@ -73,17 +74,17 @@ describe('顶部语言菜单', () => {
 
   it('真实文章详情切换界面语言时保留query与Hash', () => {
     const targets = createLocaleNavigationTargets(
-      '/zh-cn/posts/examples/hello-world/?from=feed#comments',
+      '/zh-cn/posts/fixtures/sample-article/?from=feed#comments',
       articleDeliveryIndex,
     );
     const english = targets.find((target) => target.localeCode === 'en');
 
-    assert.equal(english?.path, '/en/posts/examples/hello-world/?from=feed#comments');
+    assert.equal(english?.path, '/en/posts/fixtures/sample-article/?from=feed#comments');
   });
 
   it('缺少译文时仍生成按网站优先级排列的回退投递目标', () => {
     const targets = createLocaleNavigationTargets(
-      '/zh-cn/posts/examples/zh-only/',
+      '/zh-cn/posts/fixtures/fallback-article/',
       articleDeliveryIndex,
     );
     const english = targets.find((target) => target.localeCode === 'en');
@@ -93,6 +94,6 @@ describe('顶部语言菜单', () => {
       ['zh-cn', 'en'],
     );
     assert.equal(english?.available, true);
-    assert.equal(english?.path, '/en/posts/examples/zh-only/');
+    assert.equal(english?.path, '/en/posts/fixtures/fallback-article/');
   });
 });
