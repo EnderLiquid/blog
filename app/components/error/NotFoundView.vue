@@ -13,9 +13,9 @@ const { messages } = useSiteLocale();
 
 <template>
   <LayoutPageShell>
-    <section class="error-page">
+    <section class="error-page" aria-labelledby="error-page-title">
       <p class="status-code">{{ statusCode }}</p>
-      <h1>{{ messages.notFound.title }}</h1>
+      <h1 id="error-page-title">{{ messages.notFound.title }}</h1>
       <p>{{ messages.notFound.description }}</p>
       <div class="actions">
         <button type="button" @click="$emit('home')">
@@ -39,10 +39,11 @@ const { messages } = useSiteLocale();
 }
 
 h1 {
-  margin: 0.5rem 0 1rem;
+  margin: 0.5rem 0 clamp(1.5rem, 2.5vw, 2rem);
   font-family: var(--font-serif);
   font-size: clamp(2.8rem, 8vw, 5.5rem);
   font-weight: 400;
+  line-height: 0.95;
 }
 
 .actions {
@@ -58,6 +59,7 @@ button {
   color: var(--signal);
   background: transparent;
   text-decoration: underline;
+  text-decoration-thickness: 0.08em;
   text-underline-offset: 0.2em;
   cursor: pointer;
 }

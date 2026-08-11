@@ -43,7 +43,7 @@ onMounted(() => {
 
 <style scoped>
 .language-entry {
-  max-width: 34rem;
+  max-width: 36rem;
 }
 
 .prompt {
@@ -51,7 +51,7 @@ onMounted(() => {
 }
 
 h1 {
-  margin: 0.5rem 0 1rem;
+  margin: 0.5rem 0 clamp(1.5rem, 2.5vw, 2rem);
   font-family: var(--font-serif);
   font-size: clamp(3.5rem, 14vw, 8rem);
   font-weight: 400;
@@ -62,7 +62,7 @@ h1 {
 ul {
   display: flex;
   gap: 1.5rem;
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   padding: 0;
   list-style: none;
 }
