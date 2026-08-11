@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue';
-import type Viewer from 'viewerjs';
+import { computed, ref, shallowRef } from 'vue';
+import type { Component } from 'vue';
+import { useSiteLocale } from '~/composables/useSiteLocale';
 import {
   isArticleImageBlockAlign,
   isArticleImageInlineVerticalAlign,
@@ -10,8 +11,6 @@ import {
   normalizeArticleImageLength,
 } from '~~/shared/content/article-image.ts';
 import { joinURL, withLeadingSlash, withTrailingSlash } from 'ufo';
-import { useSiteLocale } from '~/composables/useSiteLocale';
-import { calculateReadingZoomRatio } from '~/utils/image-preview';
 
 defineOptions({ inheritAttrs: false });
 
@@ -52,6 +51,10 @@ const { messages } = useSiteLocale();
 const previewTrigger = ref<HTMLElement>();
 const imageElement = ref<HTMLImageElement>();
 const imageLoadFailed = ref(false);
+const previewOpen = ref(false);
+const previewSource = ref('');
+const lightboxComponent = shallowRef<Component>();
+const isPreviewOpening = ref(false);
 const runtimeConfig = useRuntimeConfig();
 const layout = computed(() => (isArticleImageLayout(props.layout) ? props.layout : 'block'));
 const hasCaption = computed(() => layout.value === 'block' && Boolean(props.caption?.trim()));
@@ -129,149 +132,45 @@ function handleImageError(): void {
   imageLoadFailed.value = true;
 }
 
-let activeViewer: Viewer | undefined;
-let isDisposed = false;
-let isPreviewOpening = false;
-let viewerDependencies:
-  Promise<[typeof import('v-viewer'), typeof import('viewerjs/dist/viewer.css')]> | undefined;
-
-function loadViewer() {
-  viewerDependencies ??= Promise.all([import('v-viewer'), import('viewerjs/dist/viewer.css')]);
-
-  return viewerDependencies;
+function getPreviewSource(): string {
+  return imageElement.value?.currentSrc || refinedSrc.value;
 }
 
-function restorePreviewTriggerFocus(): void {
-  requestAnimationFrame(() => {
-    if (!isDisposed) {
-      previewTrigger.value?.focus();
-    }
-  });
-}
-
-function activateViewerControlWithSpace(event: KeyboardEvent): void {
-  if (event.key === ' ' || event.code === 'Space') {
-    event.preventDefault();
-    (event.currentTarget as HTMLElement).click();
-  }
-}
-
-function trapViewerFocus(event: KeyboardEvent): void {
-  if (event.key !== 'Tab') {
+async function openPreview(event: MouseEvent): Promise<void> {
+  if (
+    !previewEnabled.value ||
+    imageLoadFailed.value ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey ||
+    previewOpen.value ||
+    isPreviewOpening.value
+  ) {
     return;
   }
-
-  const viewer = event.currentTarget as HTMLElement;
-  const focusableControls = [
-    viewer.querySelector<HTMLElement>('.viewer-button'),
-    ...viewer.querySelectorAll<HTMLElement>('.viewer-toolbar [tabindex]'),
-  ].filter((control): control is HTMLElement => Boolean(control));
-
-  if (focusableControls.length === 0) {
-    return;
-  }
-
-  const currentIndex = focusableControls.indexOf(document.activeElement as HTMLElement);
-  const direction = event.shiftKey ? -1 : 1;
-  const nextIndex =
-    currentIndex === -1
-      ? event.shiftKey
-        ? focusableControls.length - 1
-        : 0
-      : (currentIndex + direction + focusableControls.length) % focusableControls.length;
 
   event.preventDefault();
-  focusableControls[nextIndex]?.focus();
-}
+  const source = getPreviewSource();
+  isPreviewOpening.value = true;
 
-function getViewerReadingZoomRatio(): number | undefined {
-  const articleImage = imageElement.value;
-  const viewer = document.querySelector<HTMLElement>('.article-image-viewer');
-  const canvas = viewer?.querySelector<HTMLElement>('.viewer-canvas');
-  const viewerImage = canvas?.querySelector<HTMLImageElement>('img');
-  const footer = viewer?.querySelector<HTMLElement>('.viewer-footer');
+  try {
+    const { default: lightbox } = await import('./ArticleImageLightbox.vue');
 
-  if (!articleImage || !canvas || !viewerImage) {
-    return undefined;
+    previewSource.value = source;
+    lightboxComponent.value = lightbox;
+    previewOpen.value = true;
+  } catch {
+    // 按需加载失败时保留普通链接的降级能力，直接打开当前实际图片源。
+    globalThis.location.assign(source);
+  } finally {
+    isPreviewOpening.value = false;
   }
-
-  const articleRect = articleImage.getBoundingClientRect();
-  const canvasRect = canvas.getBoundingClientRect();
-  const footerHeight = footer?.getBoundingClientRect().height ?? 0;
-
-  return calculateReadingZoomRatio({
-    articleHeight: articleRect.height,
-    articleWidth: articleRect.width,
-    availableHeight: canvasRect.height - footerHeight,
-    availableWidth: canvasRect.width,
-    naturalHeight: viewerImage.naturalHeight,
-    naturalWidth: viewerImage.naturalWidth,
-  });
-}
-
-function restoreViewerReadingSize(): void {
-  const ratio = getViewerReadingZoomRatio();
-
-  if (ratio !== undefined) {
-    activeViewer?.zoomTo(ratio);
-  }
-}
-
-function showViewerOriginalSize(): void {
-  activeViewer?.zoomTo(1);
-}
-
-function configureViewerAccessibility(): void {
-  const viewer = document.querySelector<HTMLElement>('.article-image-viewer');
-
-  if (!viewer) {
-    return;
-  }
-
-  const imageMessages = messages.value.article.image;
-  viewer.setAttribute('aria-label', imageMessages.preview(props.alt));
-  viewer.removeAttribute('aria-labelledby');
-  viewer.addEventListener('keydown', trapViewerFocus);
-
-  for (const navigationItem of viewer.querySelectorAll<HTMLElement>('.viewer-list [tabindex]')) {
-    navigationItem.removeAttribute('tabindex');
-  }
-
-  const controls = [
-    ['.viewer-button', imageMessages.close],
-    ['.viewer-restore-reading-size', imageMessages.restoreReadingSize],
-    ['.viewer-original-size', imageMessages.originalSize],
-    ['.viewer-zoom-in', imageMessages.zoomIn],
-    ['.viewer-zoom-out', imageMessages.zoomOut],
-  ] as const;
-
-  for (const [selector, label] of controls) {
-    const control = viewer.querySelector<HTMLElement>(selector);
-
-    if (!control) {
-      continue;
-    }
-
-    control.setAttribute('aria-label', label);
-    control.addEventListener('keydown', activateViewerControlWithSpace);
-  }
-
-  requestAnimationFrame(() => {
-    if (!isDisposed) {
-      viewer.querySelector<HTMLElement>('.viewer-button')?.focus();
-    }
-  });
-}
-
-function handleViewerViewed(): void {
-  restoreViewerReadingSize();
-  configureViewerAccessibility();
 }
 
 function handlePreviewClick(event: MouseEvent): void {
-  if (previewEnabled.value && !imageLoadFailed.value) {
-    void openPreview(event);
-  }
+  void openPreview(event);
 }
 
 function handlePreviewKeydown(event: KeyboardEvent): void {
@@ -287,91 +186,14 @@ function handlePreviewKeydown(event: KeyboardEvent): void {
   void openPreview(new MouseEvent('click', { button: 0 }));
 }
 
-function getPreviewSource(): string {
-  return imageElement.value?.currentSrc || refinedSrc.value;
+function handleLightboxClose(): void {
+  previewOpen.value = false;
+  lightboxComponent.value = undefined;
+
+  requestAnimationFrame(() => {
+    previewTrigger.value?.focus();
+  });
 }
-
-async function openPreview(event: MouseEvent): Promise<void> {
-  if (
-    event.button !== 0 ||
-    event.metaKey ||
-    event.ctrlKey ||
-    event.shiftKey ||
-    event.altKey ||
-    isPreviewOpening ||
-    activeViewer
-  ) {
-    return;
-  }
-
-  event.preventDefault();
-  isPreviewOpening = true;
-
-  try {
-    const [{ api }] = await loadViewer();
-
-    if (isDisposed) {
-      return;
-    }
-
-    activeViewer = api({
-      images: [
-        {
-          alt: props.alt,
-          src: getPreviewSource(),
-          title: props.title,
-        },
-      ],
-      options: {
-        backdrop: true,
-        button: true,
-        className: 'article-image-viewer',
-        focus: true,
-        keyboard: true,
-        loading: true,
-        loop: false,
-        movable: true,
-        navbar: false,
-        rotatable: false,
-        scalable: false,
-        title: false,
-        toggleOnDblclick: true,
-        toolbar: {
-          restoreReadingSize: {
-            show: true,
-            click: restoreViewerReadingSize,
-          },
-          originalSize: {
-            show: true,
-            click: showViewerOriginalSize,
-          },
-          zoomIn: true,
-          zoomOut: true,
-        },
-        tooltip: false,
-        transition: true,
-        viewed: handleViewerViewed,
-        zoomRatio: 0.2,
-        hidden: () => {
-          activeViewer = undefined;
-          restorePreviewTriggerFocus();
-        },
-        zoomable: true,
-      },
-    });
-  } catch {
-    // 按需加载失败时保留普通链接的降级能力，直接打开当前实际图片源。
-    globalThis.location.assign(getPreviewSource());
-  } finally {
-    isPreviewOpening = false;
-  }
-}
-
-onBeforeUnmount(() => {
-  isDisposed = true;
-  activeViewer?.destroy();
-  activeViewer = undefined;
-});
 </script>
 
 <template>
@@ -414,143 +236,14 @@ onBeforeUnmount(() => {
     </component>
     <figcaption v-if="hasCaption">{{ props.caption }}</figcaption>
   </component>
+
+  <component
+    :is="lightboxComponent"
+    v-if="previewOpen && imageElement && lightboxComponent"
+    :alt="props.alt"
+    :article-image="imageElement"
+    :src="previewSource"
+    :title="props.title"
+    @close="handleLightboxClose"
+  />
 </template>
-
-<style scoped>
-:global(.viewer-container.article-image-viewer) {
-  color: var(--ink);
-  font-family: var(--font-mono);
-}
-
-:global(.viewer-container.article-image-viewer.viewer-backdrop) {
-  background: color-mix(in srgb, var(--paper) 92%, transparent);
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(.viewer-container.article-image-viewer.viewer-backdrop) {
-    background: rgb(0 0 0 / 0.78);
-  }
-}
-
-:global(.viewer-container.article-image-viewer .viewer-button) {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  display: grid;
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 1px solid var(--line);
-  border-radius: 0;
-  place-items: center;
-  background: var(--paper);
-}
-
-:global(.viewer-container.article-image-viewer .viewer-button::before) {
-  position: static;
-  width: auto;
-  height: auto;
-  margin: 0;
-  color: currentColor;
-  background: none;
-  content: '×';
-  font-family: var(--font-mono);
-  font-size: 1.5rem;
-  line-height: 1;
-}
-
-:global(.viewer-container.article-image-viewer .viewer-button:focus),
-:global(.viewer-container.article-image-viewer .viewer-toolbar > ul > li:focus) {
-  box-shadow: none;
-  outline: none;
-}
-
-:global(.viewer-container.article-image-viewer .viewer-button:hover),
-:global(.viewer-container.article-image-viewer .viewer-button:focus-visible) {
-  color: var(--signal);
-  background: color-mix(in srgb, var(--signal) 8%, var(--paper));
-  box-shadow: none;
-  outline: 2px solid var(--signal);
-  outline-offset: 2px;
-}
-
-:global(.viewer-container.article-image-viewer .viewer-footer) {
-  overflow: visible;
-}
-
-:global(.viewer-container.article-image-viewer .viewer-toolbar > ul) {
-  display: inline-flex;
-  gap: 0.35rem;
-  margin: 0 auto 1.25rem;
-  overflow: visible;
-  padding: 0;
-}
-
-:global(.viewer-container.article-image-viewer .viewer-toolbar > ul > li) {
-  display: grid;
-  float: none;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--line);
-  border-radius: 0;
-  place-items: center;
-  color: var(--ink);
-  background: var(--paper);
-}
-
-:global(.viewer-container.article-image-viewer .viewer-toolbar > ul > li + li) {
-  margin-left: 0;
-}
-
-:global(.viewer-container.article-image-viewer .viewer-toolbar > ul > li::before) {
-  width: auto;
-  height: auto;
-  margin: 0;
-  color: currentColor;
-  background: none;
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  line-height: 1;
-}
-
-:global(.viewer-container.article-image-viewer .viewer-zoom-in::before) {
-  content: '+';
-  font-size: 1.1rem;
-}
-
-:global(.viewer-container.article-image-viewer .viewer-zoom-out::before) {
-  content: '−';
-  font-size: 1.1rem;
-}
-
-:global(.viewer-container.article-image-viewer .viewer-restore-reading-size::before) {
-  content: '⟳';
-  font-family: var(--font-mono), system-ui, sans-serif;
-  font-size: 1.15rem;
-}
-
-:global(.viewer-container.article-image-viewer .viewer-original-size::before) {
-  content: '1:1';
-}
-
-:global(.viewer-container.article-image-viewer .viewer-toolbar > ul > li:hover),
-:global(.viewer-container.article-image-viewer .viewer-toolbar > ul > li:focus-visible) {
-  color: var(--signal);
-  background: color-mix(in srgb, var(--signal) 8%, var(--paper));
-  box-shadow: none;
-  outline: 2px solid var(--signal);
-  outline-offset: 0;
-}
-
-:global(.viewer-container.article-image-viewer .viewer-loading::after) {
-  border-radius: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :global(.viewer-container.article-image-viewer.viewer-transition),
-  :global(.viewer-container.article-image-viewer .viewer-transition),
-  :global(.viewer-container.article-image-viewer .viewer-loading::after) {
-    transition: none !important;
-    animation: none !important;
-  }
-}
-</style>

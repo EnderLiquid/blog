@@ -64,6 +64,8 @@ export interface SiteMessages {
       open: (alt: string) => string;
       preview: (alt: string) => string;
       close: string;
+      loading: string;
+      loadFailed: string;
       zoomIn: string;
       zoomOut: string;
       restoreReadingSize: string;
@@ -152,6 +154,8 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
         open: (alt) => (alt ? `查看图片：${alt}` : '查看图片'),
         preview: (alt) => (alt ? `图片预览：${alt}` : '图片预览'),
         close: '关闭图片预览',
+        loading: '正在加载图片…',
+        loadFailed: '图片加载失败。',
         zoomIn: '放大图片',
         zoomOut: '缩小图片',
         restoreReadingSize: '恢复适合阅读的图片大小',
@@ -237,6 +241,8 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
         open: (alt) => (alt ? `View image: ${alt}` : 'View image'),
         preview: (alt) => (alt ? `Image preview: ${alt}` : 'Image preview'),
         close: 'Close image preview',
+        loading: 'Loading image…',
+        loadFailed: 'Image failed to load.',
         zoomIn: 'Zoom in',
         zoomOut: 'Zoom out',
         restoreReadingSize: 'Restore reading size',

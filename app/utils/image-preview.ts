@@ -11,7 +11,7 @@ export interface ReadingZoomGeometry {
 
 /**
  * 根据图片固有长边、正文实际长边和灯箱可用长边计算适合阅读的绝对缩放比例。
- * 无法取得完整有效几何信息时返回 undefined，让 ViewerJS 保持自身的安全默认布局。
+ * 无法取得完整有效几何信息时返回 undefined，让灯箱保留无额外缩放的安全初始布局。
  */
 export function calculateReadingZoomRatio(geometry: ReadingZoomGeometry): number | undefined {
   const values = Object.values(geometry);

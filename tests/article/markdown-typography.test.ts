@@ -284,7 +284,10 @@ describe('文章正文组件边界', () => {
   test('统一图片组件保留灯箱能力，并支持块级、行内和深色图源', async () => {
     const articleBody = await readProjectFile('app/components/article/ArticleBody.vue');
     const articleImage = await readProjectFile('app/components/content/ArticleImage.vue');
+    const lightbox = await readProjectFile('app/components/content/ArticleImageLightbox.vue');
+    const lightboxUtils = await readProjectFile('app/utils/image-lightbox.ts');
     const messages = await readProjectFile('shared/i18n/messages.ts');
+    const packageJson = await readProjectFile('package.json');
 
     assert.match(articleBody, /img: 'ArticleImage'/);
     assert.match(articleBody, /'article-image': 'ArticleImage'/);
@@ -297,27 +300,50 @@ describe('文章正文组件边界', () => {
     assert.match(articleImage, /imageElement\.value\?\.currentSrc/);
     assert.match(articleImage, /darkSrc/);
     assert.match(articleImage, /<figcaption v-if="hasCaption">/);
-    assert.match(articleImage, /import\('v-viewer'\)/);
-    assert.match(articleImage, /import\('viewerjs\/dist\/viewer\.css'\)/);
-    assert.match(articleImage, /className: 'article-image-viewer'/);
-    assert.match(articleImage, /loop: false/);
-    assert.match(articleImage, /rotatable: false/);
-    assert.match(articleImage, /navbar: false/);
-    assert.match(articleImage, /calculateReadingZoomRatio/);
-    assert.match(articleImage, /zoomRatio: 0\.2/);
-    assert.match(articleImage, /restoreReadingSize/);
-    assert.match(articleImage, /originalSize/);
-    assert.match(articleImage, /viewer-restore-reading-size/);
-    assert.doesNotMatch(articleImage, /var\(--code-paper\) 88%/);
-    assert.match(articleImage, /color-mix\(in srgb, var\(--paper\) 92%, transparent\)/);
-    assert.match(articleImage, /rgb\(0 0 0 \/ 0\.78\)/);
-    assert.match(articleImage, /activeViewer\?\.destroy\(\)/);
-    assert.match(articleImage, /\.viewer-button:focus\)/);
-    assert.match(articleImage, /\.viewer-toolbar > ul > li:focus\)/);
-    assert.match(articleImage, /\.viewer-footer\) \{\n  overflow: visible;/);
-    assert.match(articleImage, /box-shadow: none;\n  outline: none;/);
+    assert.match(articleImage, /import\('\.\/ArticleImageLightbox\.vue'\)/);
+    assert.match(articleImage, /imageElement\.value\?\.currentSrc/);
+    assert.match(articleImage, /previewOpen\.value = true/);
+    assert.match(articleImage, /:is="lightboxComponent"/);
+    assert.doesNotMatch(articleImage, /v-viewer|viewerjs|activeViewer/);
+    assert.match(lightbox, /<Teleport to="body">/);
+    assert.match(lightbox, /<dialog/);
+    assert.match(lightbox, /dialog\.showModal\(\)/);
+    assert.match(lightbox, /lockDocumentScroll/);
+    assert.match(lightbox, /Panzoom\(image/);
+    assert.match(lightbox, /import\('@panzoom\/panzoom'\)/);
+    assert.match(lightbox, /startScale: initialScale/);
+    assert.match(lightbox, /panzoom\.reset\(\{ animate: !prefersReducedMotion\(\) \}\)/);
+    assert.match(lightbox, /panOnlyWhenZoomed: false/);
+    assert.doesNotMatch(lightbox, /contain: 'inside'/);
+    assert.match(lightbox, /touchAction: 'none'/);
+    assert.match(lightbox, /@wheel="handleCanvasWheel"/);
+    assert.match(lightbox, /requestAnimationFrame\(applyWheelTarget\)/);
+    assert.match(lightbox, /:class="\{ 'is-ready': isReady \}"/);
+    assert.match(lightbox, /role="toolbar"/);
+    assert.match(lightbox, /type="button"/);
+    assert.match(lightbox, /trapDialogFocus/);
+    assert.match(lightbox, /@keydown="trapDialogFocus"/);
+    assert.match(lightbox, /beganBackdropPointerGesture/);
+    assert.match(lightbox, /@pointerdown\.capture="beganBackdropPointerGesture"/);
+    assert.match(lightbox, /finishBackdropPointerGesture/);
+    assert.match(
+      lightbox,
+      /\.article-image-lightbox__toolbar button:hover \{\n  border-color: var\(--signal\);\n  background: color-mix\(in srgb, var\(--signal\) 8%, var\(--paper\)\);\n\}/,
+    );
+    assert.doesNotMatch(
+      lightbox,
+      /\.article-image-lightbox__toolbar button:hover\s*\{[^}]*outline:/,
+    );
+    assert.match(lightbox, /color-mix\(in srgb, var\(--paper\) 92%, transparent\)/);
+    assert.match(lightbox, /rgb\(0 0 0 \/ 0\.78\)/);
+    assert.match(lightbox, /prefers-reduced-motion/);
+    assert.match(lightboxUtils, /calculateLightboxWheelScale/);
+    assert.match(packageJson, /"@panzoom\/panzoom": "4\.6\.2"/);
+    assert.doesNotMatch(packageJson, /"v-viewer"|"viewerjs"/);
     assert.match(messages, /查看图片/);
     assert.match(messages, /View image/);
+    assert.match(messages, /正在加载图片…/);
+    assert.match(messages, /Loading image…/);
     assert.match(messages, /恢复适合阅读的图片大小/);
     assert.match(messages, /Restore reading size/);
     assert.match(messages, /按原始大小查看/);
