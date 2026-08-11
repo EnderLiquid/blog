@@ -86,7 +86,7 @@ Markdown 语法在构建期处理，公式和图表不在浏览器端二次渲�
 文字中的 ![状态图标](/images/status.svg){layout="inline" width="1em" vertical-align="middle"}
 ```
 
-`align` 和 `caption` 只适用于块级图片；`preview="false"` 可关闭灯箱。Markdown 图片和原始 HTML `<img>` 都会进入同一套排版、预览和无障碍处理，属性冲突会在内容构建阶段报错。
+`align` 和 `caption` 只适用于块级图片；`preview="false"` 可关闭灯箱。Markdown 图片和原始 HTML `<img>` 都会进入同一套排版、预览和无障碍处理，属性冲突会在内容构建阶段报错。灯箱会按图片固有尺寸、正文实际尺寸与可用视口计算阅读尺度；`⟳` 恢复该尺度，`1:1` 按原始大小查看。
 
 ### Mermaid 与 TikZ 图表
 

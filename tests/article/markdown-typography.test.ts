@@ -303,6 +303,14 @@ describe('文章正文组件边界', () => {
     assert.match(articleImage, /loop: false/);
     assert.match(articleImage, /rotatable: false/);
     assert.match(articleImage, /navbar: false/);
+    assert.match(articleImage, /calculateReadingZoomRatio/);
+    assert.match(articleImage, /zoomRatio: 0\.2/);
+    assert.match(articleImage, /restoreReadingSize/);
+    assert.match(articleImage, /originalSize/);
+    assert.match(articleImage, /viewer-restore-reading-size/);
+    assert.doesNotMatch(articleImage, /var\(--code-paper\) 88%/);
+    assert.match(articleImage, /color-mix\(in srgb, var\(--paper\) 92%, transparent\)/);
+    assert.match(articleImage, /rgb\(0 0 0 \/ 0\.78\)/);
     assert.match(articleImage, /activeViewer\?\.destroy\(\)/);
     assert.match(articleImage, /\.viewer-button:focus\)/);
     assert.match(articleImage, /\.viewer-toolbar > ul > li:focus\)/);
@@ -310,6 +318,10 @@ describe('文章正文组件边界', () => {
     assert.match(articleImage, /box-shadow: none;\n  outline: none;/);
     assert.match(messages, /查看图片/);
     assert.match(messages, /View image/);
+    assert.match(messages, /恢复适合阅读的图片大小/);
+    assert.match(messages, /Restore reading size/);
+    assert.match(messages, /按原始大小查看/);
+    assert.match(messages, /View at original size/);
   });
 
   test('代码块将高亮与长行保持在同一滚动宽度并提供复制入口', async () => {

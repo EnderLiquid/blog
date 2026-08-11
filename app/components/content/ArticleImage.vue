@@ -11,6 +11,7 @@ import {
 } from '~~/shared/content/article-image.ts';
 import { joinURL, withLeadingSlash, withTrailingSlash } from 'ufo';
 import { useSiteLocale } from '~/composables/useSiteLocale';
+import { calculateReadingZoomRatio } from '~/utils/image-preview';
 
 defineOptions({ inheritAttrs: false });
 
@@ -183,6 +184,43 @@ function trapViewerFocus(event: KeyboardEvent): void {
   focusableControls[nextIndex]?.focus();
 }
 
+function getViewerReadingZoomRatio(): number | undefined {
+  const articleImage = imageElement.value;
+  const viewer = document.querySelector<HTMLElement>('.article-image-viewer');
+  const canvas = viewer?.querySelector<HTMLElement>('.viewer-canvas');
+  const viewerImage = canvas?.querySelector<HTMLImageElement>('img');
+  const footer = viewer?.querySelector<HTMLElement>('.viewer-footer');
+
+  if (!articleImage || !canvas || !viewerImage) {
+    return undefined;
+  }
+
+  const articleRect = articleImage.getBoundingClientRect();
+  const canvasRect = canvas.getBoundingClientRect();
+  const footerHeight = footer?.getBoundingClientRect().height ?? 0;
+
+  return calculateReadingZoomRatio({
+    articleHeight: articleRect.height,
+    articleWidth: articleRect.width,
+    availableHeight: canvasRect.height - footerHeight,
+    availableWidth: canvasRect.width,
+    naturalHeight: viewerImage.naturalHeight,
+    naturalWidth: viewerImage.naturalWidth,
+  });
+}
+
+function restoreViewerReadingSize(): void {
+  const ratio = getViewerReadingZoomRatio();
+
+  if (ratio !== undefined) {
+    activeViewer?.zoomTo(ratio);
+  }
+}
+
+function showViewerOriginalSize(): void {
+  activeViewer?.zoomTo(1);
+}
+
 function configureViewerAccessibility(): void {
   const viewer = document.querySelector<HTMLElement>('.article-image-viewer');
 
@@ -201,9 +239,10 @@ function configureViewerAccessibility(): void {
 
   const controls = [
     ['.viewer-button', imageMessages.close],
+    ['.viewer-restore-reading-size', imageMessages.restoreReadingSize],
+    ['.viewer-original-size', imageMessages.originalSize],
     ['.viewer-zoom-in', imageMessages.zoomIn],
     ['.viewer-zoom-out', imageMessages.zoomOut],
-    ['.viewer-reset', imageMessages.reset],
   ] as const;
 
   for (const [selector, label] of controls) {
@@ -222,6 +261,11 @@ function configureViewerAccessibility(): void {
       viewer.querySelector<HTMLElement>('.viewer-button')?.focus();
     }
   });
+}
+
+function handleViewerViewed(): void {
+  restoreViewerReadingSize();
+  configureViewerAccessibility();
 }
 
 function handlePreviewClick(event: MouseEvent): void {
@@ -293,13 +337,21 @@ async function openPreview(event: MouseEvent): Promise<void> {
         title: false,
         toggleOnDblclick: true,
         toolbar: {
-          reset: true,
+          restoreReadingSize: {
+            show: true,
+            click: restoreViewerReadingSize,
+          },
+          originalSize: {
+            show: true,
+            click: showViewerOriginalSize,
+          },
           zoomIn: true,
           zoomOut: true,
         },
         tooltip: false,
         transition: true,
-        viewed: configureViewerAccessibility,
+        viewed: handleViewerViewed,
+        zoomRatio: 0.2,
         hidden: () => {
           activeViewer = undefined;
           restorePreviewTriggerFocus();
@@ -371,7 +423,13 @@ onBeforeUnmount(() => {
 }
 
 :global(.viewer-container.article-image-viewer.viewer-backdrop) {
-  background: color-mix(in srgb, var(--code-paper) 88%, transparent);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(.viewer-container.article-image-viewer.viewer-backdrop) {
+    background: rgb(0 0 0 / 0.78);
+  }
 }
 
 :global(.viewer-container.article-image-viewer .viewer-button) {
@@ -464,7 +522,13 @@ onBeforeUnmount(() => {
   font-size: 1.1rem;
 }
 
-:global(.viewer-container.article-image-viewer .viewer-reset::before) {
+:global(.viewer-container.article-image-viewer .viewer-restore-reading-size::before) {
+  content: '⟳';
+  font-family: var(--font-mono), system-ui, sans-serif;
+  font-size: 1.15rem;
+}
+
+:global(.viewer-container.article-image-viewer .viewer-original-size::before) {
   content: '1:1';
 }
 

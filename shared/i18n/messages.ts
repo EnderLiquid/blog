@@ -66,7 +66,8 @@ export interface SiteMessages {
       close: string;
       zoomIn: string;
       zoomOut: string;
-      reset: string;
+      restoreReadingSize: string;
+      originalSize: string;
     };
     copyCode: string;
     codeCopied: string;
@@ -153,7 +154,8 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
         close: '关闭图片预览',
         zoomIn: '放大图片',
         zoomOut: '缩小图片',
-        reset: '恢复图片大小',
+        restoreReadingSize: '恢复适合阅读的图片大小',
+        originalSize: '按原始大小查看',
       },
       copyCode: '复制代码',
       codeCopied: '已复制',
@@ -237,7 +239,8 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
         close: 'Close image preview',
         zoomIn: 'Zoom in',
         zoomOut: 'Zoom out',
-        reset: 'Reset image size',
+        restoreReadingSize: 'Restore reading size',
+        originalSize: 'View at original size',
       },
       copyCode: 'Copy code',
       codeCopied: 'Copied',
