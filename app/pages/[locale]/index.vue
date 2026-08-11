@@ -171,6 +171,8 @@ const featuredPosts = computed(() => {
 }
 
 .featured-posts {
+  --featured-post-description-max-width: 44rem;
+  --featured-post-title-width-gap: 5rem;
   padding: clamp(4.5rem, 8cqi, 7rem) 0 0;
 }
 
@@ -218,14 +220,18 @@ const featuredPosts = computed(() => {
 }
 
 .featured-post--lead .featured-post__title {
-  max-width: 15ch;
-  font-size: clamp(2.75rem, 6.5cqi, 5rem);
+  width: calc(
+    min(100%, var(--featured-post-description-max-width)) - var(--featured-post-title-width-gap)
+  );
+  justify-self: start;
+  font-size: 2.75rem;
   line-height: 0.98;
   letter-spacing: -0.045em;
 }
 
 .featured-post__description {
-  max-width: 44rem;
+  width: min(100%, var(--featured-post-description-max-width));
+  justify-self: start;
   color: var(--muted);
   font-family: var(--font-serif);
   font-size: 1rem;
@@ -321,10 +327,6 @@ const featuredPosts = computed(() => {
   .home-wordmark__liquid-line {
     margin-left: 0;
   }
-
-  .featured-post--lead .featured-post__title {
-    max-width: 18ch;
-  }
 }
 
 /*
@@ -369,7 +371,7 @@ const featuredPosts = computed(() => {
   }
 
   .featured-post--lead .featured-post__title {
-    font-size: clamp(2.35rem, 12cqi, 3.25rem);
+    font-size: clamp(2.25rem, 10cqi, 2.75rem);
   }
 
   .featured-post__meta {
