@@ -14,22 +14,6 @@ export interface LightboxWheelGeometry {
   viewportHeight: number;
 }
 
-export interface LightboxFocalGeometry {
-  clientX: number;
-  clientY: number;
-  imageHeight: number;
-  imageLeft: number;
-  imageTop: number;
-  imageWidth: number;
-  renderedHeight: number;
-  renderedWidth: number;
-}
-
-export interface LightboxFocalPoint {
-  x: number;
-  y: number;
-}
-
 function isPositiveFinite(value: number): boolean {
   return Number.isFinite(value) && value > 0;
 }
@@ -89,31 +73,4 @@ export function calculateLightboxWheelScale(geometry: LightboxWheelGeometry): nu
     geometry.minScale,
     geometry.maxScale,
   );
-}
-
-/** 将视口中的鼠标位置换算为未变换图片坐标，供 Panzoom 的 focal 参数使用。 */
-export function calculateLightboxFocalPoint(
-  geometry: LightboxFocalGeometry,
-): LightboxFocalPoint | undefined {
-  const values = Object.values(geometry);
-
-  if (
-    !values.every(Number.isFinite) ||
-    !isPositiveFinite(geometry.renderedWidth) ||
-    !isPositiveFinite(geometry.renderedHeight) ||
-    !isPositiveFinite(geometry.imageWidth) ||
-    !isPositiveFinite(geometry.imageHeight)
-  ) {
-    return undefined;
-  }
-
-  const x =
-    ((geometry.clientX - geometry.imageLeft) / geometry.renderedWidth) * geometry.imageWidth;
-  const y =
-    ((geometry.clientY - geometry.imageTop) / geometry.renderedHeight) * geometry.imageHeight;
-
-  return {
-    x: Math.min(Math.max(x, 0), geometry.imageWidth),
-    y: Math.min(Math.max(y, 0), geometry.imageHeight),
-  };
 }

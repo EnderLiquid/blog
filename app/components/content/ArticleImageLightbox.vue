@@ -3,12 +3,10 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import type { PanzoomObject } from '@panzoom/panzoom';
 import { useSiteLocale } from '~/composables/useSiteLocale';
 import {
-  calculateLightboxFocalPoint,
   calculateLightboxWheelScale,
   clampLightboxScale,
   LIGHTBOX_MAX_SCALE,
   LIGHTBOX_MIN_SCALE,
-  type LightboxFocalPoint,
 } from '~/utils/image-lightbox';
 import { calculateReadingZoomRatio } from '~/utils/image-preview';
 
@@ -26,6 +24,7 @@ const emit = defineEmits<{
 const { messages } = useSiteLocale();
 const dialogElement = ref<HTMLDialogElement>();
 const canvasElement = ref<HTMLElement>();
+const imageTransformElement = ref<HTMLElement>();
 const imageFrameElement = ref<HTMLElement>();
 const imageElement = ref<HTMLImageElement>();
 const closeButton = ref<HTMLButtonElement>();
@@ -41,6 +40,11 @@ const LIGHTBOX_TRANSITION_EASING = 'cubic-bezier(0.2, 0, 0, 1)';
 const WHEEL_EASING_FACTOR = 0.28;
 const WHEEL_SETTLE_THRESHOLD = 0.001;
 
+interface LightboxZoomPoint {
+  clientX: number;
+  clientY: number;
+}
+
 interface BackdropPointerGesture {
   pointerId: number;
   startedOnBackdrop: boolean;
@@ -54,7 +58,7 @@ let resizeObserver: ResizeObserver | undefined;
 let releaseDocumentScroll: (() => void) | undefined;
 let wheelAnimationFrame: number | undefined;
 let wheelTargetScale: number | undefined;
-let wheelFocalPoint: LightboxFocalPoint | undefined;
+let wheelZoomPoint: LightboxZoomPoint | undefined;
 let isDisposed = false;
 let isCleanedUp = false;
 let preparationVersion = 0;
@@ -114,7 +118,7 @@ function cancelWheelAnimation(): void {
 
   wheelAnimationFrame = undefined;
   wheelTargetScale = undefined;
-  wheelFocalPoint = undefined;
+  wheelZoomPoint = undefined;
 }
 
 function getReadingScale(): number | undefined {
@@ -141,15 +145,17 @@ function getReadingScale(): number | undefined {
     : clampLightboxScale(scale, LIGHTBOX_MIN_SCALE, LIGHTBOX_MAX_SCALE);
 }
 
-function zoomTo(scale: number | undefined, animate: boolean, focal?: LightboxFocalPoint): void {
+function zoomTo(scale: number | undefined, animate: boolean, point?: LightboxZoomPoint): void {
   if (scale === undefined || !panzoom) {
     return;
   }
 
-  panzoom.zoom(scale, {
-    animate,
-    focal,
-  });
+  if (point) {
+    panzoom.zoomToPoint(scale, point, { animate });
+    return;
+  }
+
+  panzoom.zoom(scale, { animate });
 }
 
 function restoreReadingSize(): void {
@@ -203,27 +209,6 @@ function toggleDoubleClickZoom(): void {
   zoomTo(targetScale, !prefersReducedMotion());
 }
 
-function getWheelFocalPoint(event: WheelEvent): LightboxFocalPoint | undefined {
-  const image = imageElement.value;
-
-  if (!image) {
-    return undefined;
-  }
-
-  const rect = image.getBoundingClientRect();
-
-  return calculateLightboxFocalPoint({
-    clientX: event.clientX,
-    clientY: event.clientY,
-    imageHeight: image.offsetHeight,
-    imageLeft: rect.left,
-    imageTop: rect.top,
-    imageWidth: image.offsetWidth,
-    renderedHeight: rect.height,
-    renderedWidth: rect.width,
-  });
-}
-
 function applyWheelTarget(): void {
   const targetScale = wheelTargetScale;
 
@@ -238,7 +223,7 @@ function applyWheelTarget(): void {
       ? targetScale
       : currentScale + (targetScale - currentScale) * WHEEL_EASING_FACTOR;
 
-  zoomTo(nextScale, false, wheelFocalPoint);
+  zoomTo(nextScale, false, wheelZoomPoint);
 
   if (nextScale === targetScale) {
     cancelWheelAnimation();
@@ -268,10 +253,13 @@ function handleCanvasWheel(event: WheelEvent): void {
   }
 
   wheelTargetScale = targetScale;
-  wheelFocalPoint = getWheelFocalPoint(event);
+  wheelZoomPoint = {
+    clientX: event.clientX,
+    clientY: event.clientY,
+  };
 
   if (prefersReducedMotion()) {
-    zoomTo(targetScale, false, wheelFocalPoint);
+    zoomTo(targetScale, false, wheelZoomPoint);
     cancelWheelAnimation();
     return;
   }
@@ -292,10 +280,19 @@ function refreshPanzoomLayout(): void {
 
 async function prepareImage(): Promise<void> {
   const image = imageElement.value;
+  const imageTransform = imageTransformElement.value;
+  const imageFrame = imageFrameElement.value;
   const canvas = canvasElement.value;
   const currentPreparation = ++preparationVersion;
 
-  if (!image || !canvas || image.naturalWidth <= 0 || image.naturalHeight <= 0) {
+  if (
+    !image ||
+    !imageTransform ||
+    !imageFrame ||
+    !canvas ||
+    image.naturalWidth <= 0 ||
+    image.naturalHeight <= 0
+  ) {
     imageStatus.value = 'error';
     return;
   }
@@ -309,15 +306,20 @@ async function prepareImage(): Promise<void> {
   try {
     const { default: Panzoom } = await import('@panzoom/panzoom');
 
-    if (isDisposed || currentPreparation !== preparationVersion || !image.isConnected) {
+    if (
+      isDisposed ||
+      currentPreparation !== preparationVersion ||
+      !imageTransform.isConnected ||
+      !imageFrame.isConnected
+    ) {
       return;
     }
 
     panzoom?.destroy();
     const initialScale = getReadingScale() ?? 1;
-    // 零位移由画布的 Grid 居中；inside containment 会在阅读尺度下推导出单侧边界，
-    // 因而把图像锁向左上方。保留自由平移，⟳ 始终可恢复居中的阅读尺度。
-    panzoom = Panzoom(image, {
+    // 变换层必须与画布同尺寸、同原点。若直接变换由 Grid 居中的图片，
+    // Panzoom 的双指焦点计算不会纳入静态居中偏移，手指中点会与缩放中心错位。
+    panzoom = Panzoom(imageTransform, {
       animate: true,
       canvas: true,
       duration: LIGHTBOX_TRANSITION_DURATION,
@@ -407,7 +409,10 @@ function beganBackdropPointerGesture(event: PointerEvent): void {
   const target = event.target;
   backdropPointerGesture = {
     pointerId: event.pointerId,
-    startedOnBackdrop: target === canvasElement.value || target === imageFrameElement.value,
+    startedOnBackdrop:
+      target === canvasElement.value ||
+      target === imageTransformElement.value ||
+      target === imageFrameElement.value,
     startX: event.clientX,
     startY: event.clientY,
     hasMoved: false,
@@ -549,23 +554,25 @@ onBeforeUnmount(() => {
         @dblclick="toggleDoubleClickZoom"
         @wheel="handleCanvasWheel"
       >
-        <div
-          ref="imageFrameElement"
-          class="article-image-lightbox__image-frame"
-          :class="{ 'is-ready': isReady }"
-        >
-          <img
-            ref="imageElement"
-            class="article-image-lightbox__image"
-            :src="src"
-            :alt="alt"
-            :title="title"
-            :style="imageDimensions"
-            draggable="false"
-            :aria-busy="imageStatus === 'loading'"
-            @error="handleImageError"
-            @load="handleImageLoad"
-          />
+        <div ref="imageTransformElement" class="article-image-lightbox__image-transform">
+          <div
+            ref="imageFrameElement"
+            class="article-image-lightbox__image-frame"
+            :class="{ 'is-ready': isReady }"
+          >
+            <img
+              ref="imageElement"
+              class="article-image-lightbox__image"
+              :src="src"
+              :alt="alt"
+              :title="title"
+              :style="imageDimensions"
+              draggable="false"
+              :aria-busy="imageStatus === 'loading'"
+              @error="handleImageError"
+              @load="handleImageLoad"
+            />
+          </div>
         </div>
         <p v-if="imageStatus === 'loading'" class="article-image-lightbox__status" role="status">
           {{ imageMessages.loading }}
@@ -631,9 +638,13 @@ onBeforeUnmount(() => {
   touch-action: none;
 }
 
+.article-image-lightbox__image-transform,
 .article-image-lightbox__image-frame {
   position: absolute;
   inset: 0;
+}
+
+.article-image-lightbox__image-frame {
   display: grid;
   overflow: hidden;
   opacity: 0;
