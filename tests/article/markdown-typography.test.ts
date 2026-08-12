@@ -325,6 +325,8 @@ describe('文章正文组件边界', () => {
     assert.match(lightbox, /@wheel="handleCanvasWheel"/);
     assert.match(lightbox, /requestAnimationFrame\(applyWheelTarget\)/);
     assert.match(lightbox, /article-image-lightbox__image-transform/);
+    assert.match(lightbox, /user-select: none;/);
+    assert.match(lightbox, /-webkit-user-select: none;/);
     assert.match(lightbox, /role="toolbar"/);
     assert.match(lightbox, /type="button"/);
     assert.match(lightbox, /trapDialogFocus/);

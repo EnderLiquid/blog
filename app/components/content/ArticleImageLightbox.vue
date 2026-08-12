@@ -680,6 +680,8 @@ onBeforeUnmount(() => {
   color: var(--ink);
   background: var(--paper);
   font: inherit;
+  user-select: none;
+  -webkit-user-select: none;
   place-items: center;
 }
 
