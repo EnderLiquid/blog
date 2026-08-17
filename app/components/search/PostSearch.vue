@@ -186,7 +186,8 @@ onBeforeUnmount(() => {
               :aria-checked="option.mode === sortMode"
               @click="selectSortMode(option.mode)"
             >
-              {{ option.label }}
+              <span class="sort-control__check" aria-hidden="true">✓</span>
+              <span>{{ option.label }}</span>
             </button>
           </div>
         </div>
@@ -387,40 +388,47 @@ onBeforeUnmount(() => {
 .sort-control__options {
   position: absolute;
   z-index: 1;
-  top: calc(100% + 0.35rem);
+  top: calc(100% + 0.25rem);
   right: 0;
   display: grid;
-  min-width: max(100%, 6.5rem);
+  width: max-content;
+  min-width: 10rem;
+  margin: 0;
+  padding: 0.35rem 0;
   border: 1px solid var(--line);
   background: var(--paper);
 }
 
 .sort-control__option {
+  display: grid;
   width: 100%;
-  padding: 0.45rem 0.65rem;
+  grid-template-columns: 1rem 1fr;
+  gap: 0.5rem;
+  padding: 0.55rem 0.8rem;
   border: 0;
   color: var(--ink);
   font: inherit;
-  font-size: 0.9rem;
-  line-height: 1.35;
-  text-align: center;
+  text-align: left;
   background: transparent;
   cursor: pointer;
 }
 
-.sort-control__option + .sort-control__option {
-  border-top: 1px solid var(--line);
+.sort-control__option:hover,
+.sort-control__option:focus-visible {
+  color: var(--signal);
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
 }
 
-.sort-control__option:hover,
-.sort-control__option:focus-visible,
 .sort-control__option--selected {
   color: var(--signal);
-  background: color-mix(in srgb, var(--signal) 7%, transparent);
 }
 
-.sort-control__option:focus-visible {
-  outline: 0;
+.sort-control__check {
+  visibility: hidden;
+}
+
+.sort-control__option--selected .sort-control__check {
+  visibility: visible;
 }
 
 .post-search__toolbar-meta {
@@ -593,7 +601,6 @@ onBeforeUnmount(() => {
 @media (prefers-reduced-motion: no-preference) {
   .sort-control__trigger,
   .sort-control__arrow,
-  .sort-control__option,
   .query-control,
   .controls input,
   .query-control__icon,
