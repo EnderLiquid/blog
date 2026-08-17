@@ -38,7 +38,7 @@ const contentLanguageLabel = computed(() => {
 </script>
 
 <template>
-  <LayoutPageShell v-if="post" narrow>
+  <LayoutPageShell v-if="post">
     <article
       :lang="delivery.contentLocaleCode"
       :data-pagefind-body="delivery.fallback ? undefined : ''"
