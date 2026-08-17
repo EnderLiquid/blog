@@ -1,5 +1,5 @@
 export const LIGHTBOX_MIN_SCALE = 0.1;
-export const LIGHTBOX_MAX_SCALE = 8;
+export const LIGHTBOX_MAX_SCALE = 16;
 export const LIGHTBOX_WHEEL_SENSITIVITY = 0.0015;
 const WHEEL_LINE_HEIGHT = 16;
 const WHEEL_DELTA_LINE = 1;

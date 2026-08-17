@@ -11,7 +11,8 @@ import {
 describe('文章图片自研灯箱变换', () => {
   test('缩放比例在明确的安全范围内钳制', () => {
     assert.equal(clampLightboxScale(0.01, LIGHTBOX_MIN_SCALE, LIGHTBOX_MAX_SCALE), 0.1);
-    assert.equal(clampLightboxScale(12, LIGHTBOX_MIN_SCALE, LIGHTBOX_MAX_SCALE), 8);
+    assert.equal(clampLightboxScale(12, LIGHTBOX_MIN_SCALE, LIGHTBOX_MAX_SCALE), 12);
+    assert.equal(clampLightboxScale(20, LIGHTBOX_MIN_SCALE, LIGHTBOX_MAX_SCALE), 16);
     assert.equal(clampLightboxScale(2.5, LIGHTBOX_MIN_SCALE, LIGHTBOX_MAX_SCALE), 2.5);
     assert.equal(clampLightboxScale(Number.NaN, LIGHTBOX_MIN_SCALE, LIGHTBOX_MAX_SCALE), undefined);
     assert.equal(clampLightboxScale(1, 2, 1), undefined);
