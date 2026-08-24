@@ -33,6 +33,10 @@ npm run dev
 
 静态站点产物位于 `.output/public/`。
 
+### 站点图标
+
+`public/favicon.svg` 是 EnderLiquid `E.` 标记的矢量源文件；`favicon.ico`、`apple-touch-icon.png` 和 `public/icons/` 中的 PNG 是面向旧浏览器、iOS 主屏幕及 Web App Manifest 的发布资产。`site.webmanifest` 仅提供安装图标与显示元数据，不包含离线缓存或 Service Worker 策略。
+
 ## 内容编写
 
 文章路径采用以下结构：

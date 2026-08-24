@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  EnderLiquid 的站点图标源文件。
+  E 对应 Ender；圆点延续首页 EnderLiquid. 字标中的信号色。
+  PNG 与 ICO 版本以此几何结构导出，供不支持 SVG favicon 的环境使用。
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <style>
+    .paper { fill: #e9e5d8; }
+    .ink { fill: #252720; }
+    .signal { fill: #9d2348; }
+
+    @media (prefers-color-scheme: dark) {
+      .paper { fill: #22231f; }
+      .ink { fill: #e2dfd2; }
+      .signal { fill: #f07194; }
+    }
+  </style>
+  <rect class="paper" width="128" height="128" rx="23" />
+  <path class="ink" d="M31 25H84V42H49V55H78V72H49V86H84V103H31V25Z" />
+  <circle class="signal" cx="96" cy="94.5" r="9.5" />
+</svg>
