@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import type { MarkdownRoot } from '@nuxt/content';
-import { DIAGRAM_RENDER_CONFIG_VERSION } from '../../shared/content/diagram.ts';
+import {
+  DIAGRAM_CONTENT_PROJECTION_VERSION,
+  DIAGRAM_RENDER_CONFIG_VERSION,
+} from '../../shared/content/diagram.ts';
 import { localizeFootnotes } from '../../shared/content/footnotes.ts';
 import { validateMarkdownImages } from '../../shared/content/image-validation.ts';
 import { validateMarkdownMath } from '../../shared/content/math-validation.ts';
@@ -47,12 +50,15 @@ describe('Markdown代码高亮配置', () => {
 });
 
 describe('Markdown图表配置', () => {
-  test('在图片归一化和代码高亮前注册静态图表转换器，并以渲染契约版本失效内容缓存', () => {
+  test('在图片归一化和代码高亮前注册静态图表转换器，并以渲染和内容投影契约版本失效内容缓存', () => {
     const diagramPlugin = MARKDOWN_DIAGRAM_REHYPE_PLUGINS['render-diagram-fences'];
 
     assert.equal(typeof diagramPlugin.instance, 'function');
     assert.equal(diagramPlugin.src, '~~/shared/content/diagram-rehype');
-    assert.equal(diagramPlugin.options.cacheVersion, DIAGRAM_RENDER_CONFIG_VERSION);
+    assert.equal(
+      diagramPlugin.options.cacheVersion,
+      `${DIAGRAM_RENDER_CONFIG_VERSION}:${DIAGRAM_CONTENT_PROJECTION_VERSION}`,
+    );
   });
 });
 
@@ -357,6 +363,27 @@ describe('文章正文组件边界', () => {
     assert.match(messages, /Restore reading size/);
     assert.match(messages, /按原始大小查看/);
     assert.match(messages, /View at original size/);
+  });
+
+  test('图表灯箱仅接收图表源码并提供复制入口', async () => {
+    const articleImage = await readProjectFile('app/components/content/ArticleImage.vue');
+    const lightbox = await readProjectFile('app/components/content/ArticleImageLightbox.vue');
+    const messages = await readProjectFile('shared/i18n/messages.ts');
+
+    assert.match(articleImage, /diagramSource\?: string/);
+    assert.match(articleImage, /:diagram-source="props\.diagramSource"/);
+    assert.doesNotMatch(articleImage, /data-diagram-source/);
+    assert.match(lightbox, /diagramSource\?: string/);
+    assert.match(lightbox, /hasDiagramSource/);
+    assert.match(lightbox, /navigator\.clipboard\.writeText\(source\)/);
+    assert.match(lightbox, /@click="zoomOut">−<\/button>\s*<button\s+v-if="hasDiagramSource"/);
+    assert.match(lightbox, /@click="copyDiagramSource"/);
+    assert.match(lightbox, /aria-live="polite"/);
+    assert.match(lightbox, /clearCopyResetTimer/);
+    assert.match(messages, /copyDiagramSource/);
+    assert.match(messages, /diagramSourceCopied/);
+    assert.match(messages, /复制图表源码/);
+    assert.match(messages, /Copy diagram source/);
   });
 
   test('代码块将高亮与长行保持在同一滚动宽度并提供复制入口', async () => {

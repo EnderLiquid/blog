@@ -13,6 +13,7 @@ import { calculateReadingZoomRatio } from '~/utils/image-preview';
 const props = defineProps<{
   alt: string;
   articleImage: HTMLImageElement;
+  diagramSource?: string;
   src: string;
   title?: string;
 }>();
@@ -31,8 +32,17 @@ const closeButton = ref<HTMLButtonElement>();
 const imageStatus = ref<'loading' | 'ready' | 'error'>('loading');
 const imageDimensions = ref<Record<string, string>>();
 const isReady = ref(false);
+const copySucceeded = ref(false);
+const hasDiagramSource = computed(
+  () => typeof props.diagramSource === 'string' && props.diagramSource.length > 0,
+);
 const lightboxLabel = computed(() => messages.value.article.image.preview(props.alt));
 const imageMessages = computed(() => messages.value.article.image);
+const copyLabel = computed(() =>
+  copySucceeded.value
+    ? imageMessages.value.diagramSourceCopied
+    : imageMessages.value.copyDiagramSource,
+);
 
 const BACKDROP_CLICK_TOLERANCE = 6;
 const LIGHTBOX_TRANSITION_DURATION = 180;
@@ -59,6 +69,7 @@ let releaseDocumentScroll: (() => void) | undefined;
 let wheelAnimationFrame: number | undefined;
 let wheelTargetScale: number | undefined;
 let wheelZoomPoint: LightboxZoomPoint | undefined;
+let copyResetTimer: ReturnType<typeof setTimeout> | undefined;
 let isDisposed = false;
 let isCleanedUp = false;
 let preparationVersion = 0;
@@ -188,6 +199,44 @@ function zoomIn(): void {
 function zoomOut(): void {
   cancelWheelAnimation();
   panzoom?.zoomOut({ animate: !prefersReducedMotion() });
+}
+
+function clearCopyResetTimer(): void {
+  if (copyResetTimer !== undefined) {
+    clearTimeout(copyResetTimer);
+    copyResetTimer = undefined;
+  }
+}
+
+function scheduleCopyReset(): void {
+  clearCopyResetTimer();
+  copyResetTimer = setTimeout(() => {
+    copySucceeded.value = false;
+    copyResetTimer = undefined;
+  }, 1800);
+}
+
+async function copyDiagramSource(): Promise<void> {
+  const source = props.diagramSource;
+
+  if (typeof source !== 'string' || source.length === 0) {
+    return;
+  }
+
+  clearCopyResetTimer();
+  copySucceeded.value = false;
+
+  try {
+    if (!globalThis.navigator?.clipboard?.writeText) {
+      return;
+    }
+
+    await globalThis.navigator.clipboard.writeText(source);
+    copySucceeded.value = true;
+    scheduleCopyReset();
+  } catch {
+    // 剪贴板权限或浏览器兼容性失败时保持静默，按钮维持默认状态。
+  }
 }
 
 function toggleDoubleClickZoom(): void {
@@ -477,6 +526,8 @@ function cleanUp(): void {
   ++preparationVersion;
   backdropPointerGesture = undefined;
   cancelWheelAnimation();
+  clearCopyResetTimer();
+  copySucceeded.value = false;
   document.removeEventListener('pointermove', trackBackdropPointerGesture, true);
   document.removeEventListener('pointerup', finishBackdropPointerGesture, true);
   document.removeEventListener('pointercancel', cancelBackdropPointerGesture, true);
@@ -605,7 +656,25 @@ onBeforeUnmount(() => {
         </button>
         <button type="button" :aria-label="imageMessages.zoomIn" @click="zoomIn">+</button>
         <button type="button" :aria-label="imageMessages.zoomOut" @click="zoomOut">−</button>
+        <button
+          v-if="hasDiagramSource"
+          class="article-image-lightbox__copy"
+          type="button"
+          :aria-label="copyLabel"
+          @click="copyDiagramSource"
+        >
+          <svg v-if="copySucceeded" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="m5 12.5 4 4L19 6.5" />
+          </svg>
+          <svg v-else viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <rect x="8" y="8" width="11" height="11" />
+            <path d="M16 8V5H5v11h3" />
+          </svg>
+        </button>
       </div>
+      <span v-if="copySucceeded" class="article-image-lightbox__copy-status" aria-live="polite">
+        {{ copyLabel }}
+      </span>
     </dialog>
   </Teleport>
 </template>
@@ -722,6 +791,26 @@ onBeforeUnmount(() => {
 .article-image-lightbox__toolbar button:nth-child(3),
 .article-image-lightbox__toolbar button:nth-child(4) {
   font-size: 1.1rem;
+}
+
+.article-image-lightbox__copy svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  stroke-width: 1.7;
+}
+
+.article-image-lightbox__copy-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
 }
 
 .article-image-lightbox__close:hover,

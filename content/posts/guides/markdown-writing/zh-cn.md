@@ -190,7 +190,7 @@ flowchart LR
 \end{document}
 ```
 
-`color-scheme` 可取 `auto`、`light` 或 `dark`。自动模式会随页面主题切换；固定模式只生成一份带背景的 SVG，适合需要稳定纸张色或包含浅灰填充的图。
+`color-scheme` 可取 `auto`、`light` 或 `dark`。自动模式会随页面主题切换；固定模式只生成一份带背景的 SVG，适合需要稳定纸张色或包含浅灰填充的图。打开可预览的 Mermaid 或 TikZ 图表灯箱后，可以复制实际用于渲染的围栏内部源码；复制内容不包含 Markdown 围栏和展示属性。
 
 ## 发布前检查
 

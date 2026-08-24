@@ -70,6 +70,8 @@ export interface SiteMessages {
       zoomOut: string;
       restoreReadingSize: string;
       originalSize: string;
+      copyDiagramSource: string;
+      diagramSourceCopied: string;
     };
     copyCode: string;
     codeCopied: string;
@@ -160,6 +162,8 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
         zoomOut: '缩小图片',
         restoreReadingSize: '恢复适合阅读的图片大小',
         originalSize: '按原始大小查看',
+        copyDiagramSource: '复制图表源码',
+        diagramSourceCopied: '已复制图表源码',
       },
       copyCode: '复制代码',
       codeCopied: '已复制',
@@ -247,6 +251,8 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
         zoomOut: 'Zoom out',
         restoreReadingSize: 'Restore reading size',
         originalSize: 'View at original size',
+        copyDiagramSource: 'Copy diagram source',
+        diagramSourceCopied: 'Diagram source copied',
       },
       copyCode: 'Copy code',
       codeCopied: 'Copied',

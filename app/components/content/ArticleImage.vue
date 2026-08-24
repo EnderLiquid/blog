@@ -21,6 +21,7 @@ const props = withDefaults(
     caption?: string;
     darkSrc?: string;
     decoding?: string;
+    diagramSource?: string;
     height?: number | string;
     layout?: string;
     loading?: string;
@@ -36,6 +37,7 @@ const props = withDefaults(
     caption: undefined,
     darkSrc: undefined,
     decoding: undefined,
+    diagramSource: undefined,
     height: undefined,
     layout: undefined,
     loading: undefined,
@@ -242,6 +244,7 @@ function handleLightboxClose(): void {
     v-if="previewOpen && imageElement && lightboxComponent"
     :alt="props.alt"
     :article-image="imageElement"
+    :diagram-source="props.diagramSource"
     :src="previewSource"
     :title="props.title"
     @close="handleLightboxClose"

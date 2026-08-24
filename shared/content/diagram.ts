@@ -7,6 +7,8 @@ import {
 
 export const DIAGRAM_ASSET_MANIFEST_VERSION = 2;
 export const DIAGRAM_RENDER_CONFIG_VERSION = 'diagram-render-v3';
+/** 仅影响Markdown AST投影；不参与SVG资产身份和渲染缓存。 */
+export const DIAGRAM_CONTENT_PROJECTION_VERSION = 'diagram-content-v1';
 export const DIAGRAM_PUBLIC_BASE = '/_diagram-assets/';
 export const DIAGRAM_FONT_ASSET_VERSION = 'node-tikzjax@1.0.5-bakoma-embedded-v1';
 

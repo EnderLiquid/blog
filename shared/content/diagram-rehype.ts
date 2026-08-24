@@ -148,6 +148,7 @@ function createDiagramImageNode(
         loading: 'lazy',
         decoding: 'async',
         'data-diagram-kind': fence.kind,
+        ...(fence.presentation.preview === false ? {} : { 'diagram-source': fence.source }),
       },
       children: [],
       position: pre.position,

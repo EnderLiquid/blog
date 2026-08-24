@@ -256,7 +256,7 @@ describe('静态图表资产清单与rehype转换', () => {
           tagName: 'pre',
           properties: {
             language: 'mermaid',
-            code: `${fence.source}\n`,
+            code: 'flowchart LR\r\n  A --> B\r\n',
             meta: 'alt="构建流程" caption="图 1：构建流程" width="42rem" align="center"',
           },
           children: [],
@@ -291,6 +291,7 @@ describe('静态图表资产清单与rehype转换', () => {
       loading: 'lazy',
       decoding: 'async',
       'data-diagram-kind': 'mermaid',
+      'diagram-source': fence.source,
     });
   });
 
@@ -350,8 +351,45 @@ describe('静态图表资产清单与rehype转换', () => {
       loading: 'lazy',
       decoding: 'async',
       'data-diagram-kind': 'tikz',
+      'diagram-source': fence.source,
     });
     assert.equal('dark-src' in image.properties, false);
+  });
+
+  test('关闭预览的图表不向文章内容投影源码', () => {
+    const fence = createDiagramFence({
+      kind: 'mermaid',
+      source: 'flowchart LR\n  A --> B',
+      meta: 'alt="不预览的构建流程" preview="false"',
+      sourcePath: 'preview-disabled.md',
+      position: { line: 2, column: 1 },
+    });
+
+    assert.ok(fence);
+    const manifest = createManifest(fence);
+    const tree: Root = {
+      type: 'root',
+      children: [
+        {
+          type: 'element',
+          tagName: 'pre',
+          properties: {
+            language: 'mermaid',
+            code: `${fence.source}\n`,
+            meta: 'alt="不预览的构建流程" preview="false"',
+          },
+          children: [],
+        },
+      ],
+    };
+    const file = new VFile({ path: 'preview-disabled.md' });
+
+    renderDiagramFences({ manifest })(tree, file);
+    normalizeArticleImages()(tree, file);
+
+    const image = tree.children[0] as Element;
+    assert.equal(image.properties.preview, false);
+    assert.equal('diagram-source' in image.properties, false);
   });
 
   test('清单拒绝伪造文件名和与配色方案不匹配的资源形态', () => {

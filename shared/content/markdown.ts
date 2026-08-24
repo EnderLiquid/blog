@@ -1,7 +1,7 @@
 import { bundledLanguagesInfo } from 'shiki/bundle/full';
 import javascript from '@shikijs/langs/javascript';
 import type { BundledLanguage, LanguageRegistration } from 'shiki';
-import { DIAGRAM_RENDER_CONFIG_VERSION } from './diagram.ts';
+import { DIAGRAM_CONTENT_PROJECTION_VERSION, DIAGRAM_RENDER_CONFIG_VERSION } from './diagram.ts';
 import renderDiagramFences from './diagram-rehype.ts';
 import normalizeArticleImages from './normalize-article-images.ts';
 import failOnKaTeXErrors from './strict-katex-errors.ts';
@@ -69,14 +69,14 @@ export const MARKDOWN_MATH_REHYPE_PLUGINS = {
 /** 将预渲染图表围栏替换为统一图片节点，必须先于图片结构归一化和代码高亮。
  *
  * `cacheVersion` 必须是可序列化值：Nuxt Content 以 Markdown 配置计算解析缓存键，
- * 图表渲染契约更新时需要让未改动的文章重新解析，避免其引用已清理的旧指纹资产。
+ * 图表渲染或内容投影契约更新时需要让未改动的文章重新解析，避免其引用已清理的旧指纹资产或缺少组件所需数据。
  */
 export const MARKDOWN_DIAGRAM_REHYPE_PLUGINS = {
   'render-diagram-fences': {
     instance: renderDiagramFences,
     src: '~~/shared/content/diagram-rehype',
     options: {
-      cacheVersion: DIAGRAM_RENDER_CONFIG_VERSION,
+      cacheVersion: `${DIAGRAM_RENDER_CONFIG_VERSION}:${DIAGRAM_CONTENT_PROJECTION_VERSION}`,
     },
   },
 } as const;
