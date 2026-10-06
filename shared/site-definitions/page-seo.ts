@@ -25,7 +25,7 @@ interface StaticPageSeoDefinitions {
 export const STATIC_PAGE_SEO_DEFINITIONS: StaticPageSeoDefinitions = {
   root: {
     title: `EnderLiquid's Blog`,
-    description: 'Choose a language / 选择语言',
+    description: '选择语言 / Choose a language',
     indexability: 'noindex',
   },
   home: {

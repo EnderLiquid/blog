@@ -3,7 +3,7 @@ import type { LocaleCode } from './locales.ts';
 /** 语言中立根入口的可见文案；不作为SEO metadata使用。 */
 export const ROOT_PAGE_MESSAGES = {
   title: `Blog`,
-  description: 'Choose a language / 选择语言',
+  description: '选择语言 / Choose a language',
 } as const;
 
 export interface SiteMessages {
