@@ -2,7 +2,7 @@
 
 基于 Nuxt 4、Nuxt Content 和 GitHub Pages 的个人博客。
 
-线上地址：<https://blog.enderliquid.top>
+线上地址：<https://blog.enderliquid.com>
 
 站点提供中英文界面、Pagefind 搜索、RSS、Sitemap、Giscus 评论，以及构建期渲染的数学公式和 Mermaid/TikZ 图表。
 
@@ -138,7 +138,7 @@ TikZ 围栏必须自行包含完整的 `\begin{document}` 与 `\end{document}`�
 
 推送到 `main` 会触发 `.github/workflows/deploy-pages.yml`：工作流依次执行格式检查、单元测试、资源清单校验、类型检查、静态生成和 Pagefind 索引，然后部署 `.output/public/` 到 GitHub Pages。
 
-使用自定义域名时，在仓库设置中将 Pages Source 设为 **GitHub Actions**，将域名配置为 `blog.enderliquid.top`，并在域名服务商添加：
+使用自定义域名时，在仓库设置中将 Pages Source 设为 **GitHub Actions**，将域名配置为 `blog.enderliquid.com`，并在域名服务商添加：
 
 ```text
 blog CNAME enderliquid.github.io
