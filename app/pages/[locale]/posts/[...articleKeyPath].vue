@@ -44,37 +44,39 @@ const contentLanguageLabel = computed(() => {
       :data-pagefind-body="delivery.fallback ? undefined : ''"
     >
       <header class="article-header">
-        <p v-if="delivery.fallback" class="article-header__fallback" role="note">
-          {{ messages.article.fallbackLanguage(contentLanguageLabel) }}
-        </p>
-        <div class="article-header__metadata">
-          <p class="article-header__dates">
-            <time
-              :datetime="toDateTime(post.publishedAt)"
-              data-pagefind-meta="publishedAt[datetime]"
-              data-pagefind-sort="publishedAt[datetime]"
-            >
-              {{ formatPostDate(post.publishedAt, localeCode) }}
-            </time>
-            <span v-if="post.updatedAt" class="article-header__updated">
-              <span class="article-header__separator" aria-hidden="true">·</span>
-              <span>{{ messages.article.updated }}</span>
-              <time :datetime="toDateTime(post.updatedAt)">
-                {{ formatPostDate(post.updatedAt, localeCode) }}
-              </time>
-            </span>
+        <div class="article-header__meta">
+          <p v-if="delivery.fallback" class="article-header__fallback" role="note">
+            {{ messages.article.fallbackLanguage(contentLanguageLabel) }}
           </p>
+          <div class="article-header__metadata">
+            <p class="article-header__dates">
+              <time
+                :datetime="toDateTime(post.publishedAt)"
+                data-pagefind-meta="publishedAt[datetime]"
+                data-pagefind-sort="publishedAt[datetime]"
+              >
+                {{ formatPostDate(post.publishedAt, localeCode) }}
+              </time>
+              <span v-if="post.updatedAt" class="article-header__updated">
+                <span class="article-header__separator" aria-hidden="true">·</span>
+                <span>{{ messages.article.updated }}</span>
+                <time :datetime="toDateTime(post.updatedAt)">
+                  {{ formatPostDate(post.updatedAt, localeCode) }}
+                </time>
+              </span>
+            </p>
 
-          <ul v-if="postTags.length" class="article-tags" :aria-label="messages.article.tags">
-            <li
-              v-for="tag in postTags"
-              :key="tag"
-              :data-tag="tag"
-              data-pagefind-filter="tag[data-tag]"
-            >
-              #{{ tag }}
-            </li>
-          </ul>
+            <ul v-if="postTags.length" class="article-tags" :aria-label="messages.article.tags">
+              <li
+                v-for="tag in postTags"
+                :key="tag"
+                :data-tag="tag"
+                data-pagefind-filter="tag[data-tag]"
+              >
+                #{{ tag }}
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div class="article-header__copy">
@@ -114,6 +116,10 @@ article {
 
 .article-header {
   margin: var(--page-intro-offset) 0 clamp(3rem, 7cqi, 4.75rem);
+}
+
+.article-header__meta {
+  min-width: 0;
   padding: clamp(0.75rem, 1.5cqi, 1rem) 0 clamp(0.75rem, 1.5cqi, 1rem) clamp(1.5rem, 5cqi, 3rem);
   border-left: 2px solid var(--signal);
 }
