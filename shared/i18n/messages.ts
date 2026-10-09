@@ -59,6 +59,8 @@ export interface SiteMessages {
   article: {
     updated: string;
     tags: string;
+    readingTime: string;
+    views: string;
     fallbackLanguage: (languageLabel: string) => string;
     image: {
       open: (alt: string) => string;
@@ -151,6 +153,8 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     article: {
       updated: '更新于',
       tags: '标签',
+      readingTime: '阅读时长',
+      views: '访问量',
       fallbackLanguage: (languageLabel) => `仅提供${languageLabel}版本。`,
       image: {
         open: (alt) => (alt ? `查看图片：${alt}` : '查看图片'),
@@ -240,6 +244,8 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     article: {
       updated: 'Updated',
       tags: 'Tags',
+      readingTime: 'Reading time',
+      views: 'Views',
       fallbackLanguage: (languageLabel) => `Available in ${languageLabel} only.`,
       image: {
         open: (alt) => (alt ? `View image: ${alt}` : 'View image'),

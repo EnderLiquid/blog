@@ -76,6 +76,8 @@ const contentLanguageLabel = computed(() => {
                 #{{ tag }}
               </li>
             </ul>
+
+            <ArticleMetadataStats :article-key-path="delivery.articleKeyPath" />
           </div>
         </div>
 
@@ -175,9 +177,10 @@ article {
 
 .article-tags {
   display: flex;
-  flex: 0 1 max-content;
+  flex: 1 1 max-content;
   flex-wrap: wrap;
   gap: 0.2rem 0.4rem;
+  min-width: 0;
   max-width: 100%;
   margin: 0;
   padding: 0;
