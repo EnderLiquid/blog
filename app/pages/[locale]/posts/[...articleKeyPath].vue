@@ -146,16 +146,15 @@ article {
 .article-header h1 {
   margin: 0;
   font-family: var(--font-serif);
-  font-size: clamp(3rem, 9cqi, 4.75rem);
-  font-weight: 400;
+  font-size: clamp(2.5rem, 9cqi, 4rem);
+  font-weight: 450;
   line-height: 0.9;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.025em;
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
 
 .article-header__description {
-  max-width: 35rem;
   margin: 1rem 0 0;
   color: var(--muted);
   font-family: var(--font-serif);
@@ -201,7 +200,7 @@ article {
 
 @container article (max-width: 34rem) {
   .article-header h1 {
-    font-size: clamp(2.7rem, 14cqi, 3.9rem);
+    font-size: clamp(2rem, 14cqi, 2.5rem);
   }
 }
 </style>
