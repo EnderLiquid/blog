@@ -42,7 +42,7 @@ h1 {
   margin: 0.5rem 0 clamp(1.5rem, 2.5vw, 2rem);
   font-family: var(--font-serif);
   font-size: clamp(2.8rem, 8vw, 5.5rem);
-  font-weight: 400;
+  font-weight: 450;
   line-height: 0.95;
 }
 

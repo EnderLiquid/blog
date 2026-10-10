@@ -37,7 +37,7 @@ const { data: posts } = await useAsyncData('all-posts', () =>
   font-size: clamp(3.25rem, 9cqi, 5.25rem);
   font-weight: 400;
   line-height: 0.88;
-  letter-spacing: -0.065em;
+  letter-spacing: -0.025em;
 }
 
 .posts-page__header p {

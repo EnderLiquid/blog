@@ -226,7 +226,7 @@ const featuredPosts = computed(() => {
   justify-self: start;
   font-size: 2.75rem;
   line-height: 0.98;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.025em;
 }
 
 .featured-post__description {

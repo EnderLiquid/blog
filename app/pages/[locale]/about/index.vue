@@ -170,7 +170,7 @@ function updateContentRowOffset(): void {
   font-size: clamp(2.15rem, 6.4cqi, 3.35rem);
   font-weight: 400;
   line-height: 1.12;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 

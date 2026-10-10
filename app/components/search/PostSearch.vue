@@ -503,7 +503,7 @@ onBeforeUnmount(() => {
   font-size: clamp(2rem, 4.25cqi, 3.15rem);
   font-weight: 400;
   line-height: 1.08;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 

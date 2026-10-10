@@ -54,9 +54,9 @@ h1 {
   margin: 0.5rem 0 clamp(1.5rem, 2.5vw, 2rem);
   font-family: var(--font-serif);
   font-size: clamp(3.5rem, 14vw, 8rem);
-  font-weight: 400;
+  font-weight: 450;
   line-height: 0.9;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.025em;
 }
 
 ul {
