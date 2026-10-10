@@ -13,7 +13,7 @@ export const GISCUS_CONFIG = {
   categoryId: 'DIC_kwDOTcOr4s4DBcS9',
   mapping: 'specific',
   strict: '1',
-  reactionsEnabled: '1',
+  reactionsEnabled: '0',
   emitMetadata: '0',
   inputPosition: 'top',
   theme: `${SITE_ORIGIN}/giscus-theme.css`,

@@ -26,7 +26,7 @@ describe('Giscus文章映射', () => {
   it('固定评论行为并从生产源地址加载自定义主题', () => {
     assert.equal(GISCUS_CONFIG.mapping, 'specific');
     assert.equal(GISCUS_CONFIG.strict, '1');
-    assert.equal(GISCUS_CONFIG.reactionsEnabled, '1');
+    assert.equal(GISCUS_CONFIG.reactionsEnabled, '0');
     assert.equal(GISCUS_CONFIG.theme, `${SITE_ORIGIN}/giscus-theme.css`);
   });
 });

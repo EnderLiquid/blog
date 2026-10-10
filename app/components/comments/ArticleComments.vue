@@ -20,9 +20,9 @@ const widgetKey = computed(() => `${discussionTerm.value}:${giscusLanguage.value
 
 <template>
   <section class="article-comments" aria-labelledby="article-comments-title">
-    <h2 id="article-comments-title" class="article-comments__title">
-      {{ messages.comments.title }}
-    </h2>
+    <header class="article-comments__header">
+      <h2 id="article-comments-title">{{ messages.comments.title }}</h2>
+    </header>
 
     <ClientOnly>
       <Giscus
@@ -55,20 +55,19 @@ const widgetKey = computed(() => `${discussionTerm.value}:${giscusLanguage.value
 <style scoped>
 .article-comments {
   margin-top: 5rem;
-  padding-top: 1.5rem;
+  padding-top: 2rem;
   border-top: 1px solid var(--line);
 }
 
-/* 保留章节标题供辅助技术识别，视觉上让Giscus成为评论区的唯一界面。 */
-.article-comments__title {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+.article-comments__header {
+  margin-bottom: 1.5rem;
+}
+
+.article-comments__header h2 {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-weight: 400;
 }
 
 .article-comments__loading {
