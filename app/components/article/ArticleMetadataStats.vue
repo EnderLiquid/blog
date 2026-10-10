@@ -7,6 +7,7 @@ const VIEW_COUNT_TIMEOUT_MS = 3000;
 
 const props = defineProps<{
   articleKeyPath: string;
+  readingTimeMinutes: number;
 }>();
 
 const { messages } = useSiteLocale();
@@ -114,19 +115,22 @@ function isViewCountPayload(value: unknown): value is { count: string } {
   <p class="article-header__stats" data-pagefind-ignore>
     <span class="article-header__stat">
       <span>{{ messages.article.readingTime }}</span>
-      <span class="article-header__stat-value">—</span>
+      {{ ' ' }}
+      <span class="article-header__stat-value">
+        {{ messages.article.formatReadingTime(readingTimeMinutes) }}
+      </span>
     </span>
 
     <span
       v-if="viewCountState !== 'unavailable'"
       class="article-header__separator"
       aria-hidden="true"
-    >
-      ·
-    </span>
+      v-text="'·'"
+    ></span>
 
     <span v-if="viewCountState !== 'unavailable'" class="article-header__stat">
       <span>{{ messages.article.views }}</span>
+      {{ ' ' }}
       <span class="article-header__stat-value" aria-atomic="true" aria-live="polite">
         {{ viewCountState === 'loading' ? '…' : viewCount }}
       </span>
@@ -150,15 +154,12 @@ function isViewCountPayload(value: unknown): value is { count: string } {
 }
 
 .article-header__stat {
-  display: inline-flex;
-  flex-wrap: nowrap;
-  gap: 0.45em;
+  display: inline-block;
   min-width: 0;
   white-space: nowrap;
 }
 
 .article-header__stat-value {
-  color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 

@@ -34,6 +34,7 @@ function createArticleDeliveryDescriptor(
     interfaceLocaleCode: resource.localeCode,
     contentLocaleCode: post.localeCode,
     contentPath: postContentPath(resource.articleKeyPath, post.localeCode),
+    readingTimeMinutes: post.readingTimeMinutes,
     fallback: resource.kind === 'article-fallback-page',
   };
 }

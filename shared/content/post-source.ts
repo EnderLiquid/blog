@@ -7,4 +7,5 @@ export interface PostSource {
   articleKeyPath: string;
   localeCode: LocaleCode;
   metadata: PostMetadata;
+  readingTimeMinutes: number;
 }

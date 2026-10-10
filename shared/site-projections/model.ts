@@ -40,6 +40,7 @@ const articleDeliveryDescriptorSchema = z
     interfaceLocaleCode: localeCodeSchema,
     contentLocaleCode: localeCodeSchema,
     contentPath: z.string().startsWith('/'),
+    readingTimeMinutes: z.number().int().min(1),
     fallback: z.boolean(),
   })
   .strict();

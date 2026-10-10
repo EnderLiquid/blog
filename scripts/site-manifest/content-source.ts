@@ -8,6 +8,7 @@ import {
 import { ARTICLE_SEGMENT_PATTERN, postMetadataSchema } from '../../shared/content/post-schema.ts';
 import { validateMarkdownImages } from '../../shared/content/image-validation.ts';
 import { validateMarkdownMath } from '../../shared/content/math-validation.ts';
+import { calculateReadingTimeMinutes } from '../../shared/content/reading-time.ts';
 import { parseLocaleCode, SUPPORTED_LOCALE_CODES } from '../../shared/i18n/locales.ts';
 import type { PostSource } from '../../shared/content/post-source.ts';
 
@@ -78,11 +79,22 @@ export async function readPostSources(postsDirectory: string): Promise<PostSourc
       continue;
     }
 
+    let readingTimeMinutes: number;
+
+    try {
+      readingTimeMinutes = await calculateReadingTimeMinutes(markdown, relativePath);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      errors.push(`${relativePath}: 阅读时长计算失败：${message}`);
+      continue;
+    }
+
     posts.push({
       sourcePath: relativePath,
       articleKeyPath: pathSegments.join('/'),
       localeCode,
       metadata: metadataResult.data,
+      readingTimeMinutes,
     });
   }
 

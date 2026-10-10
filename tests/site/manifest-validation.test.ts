@@ -21,6 +21,7 @@ const posts: PostSource[] = [
       tags: ['test'],
       draft: false,
     },
+    readingTimeMinutes: 2,
   },
   {
     sourcePath: 'first/zh-cn.md',
@@ -33,6 +34,7 @@ const posts: PostSource[] = [
       tags: ['test'],
       draft: false,
     },
+    readingTimeMinutes: 1,
   },
 ];
 
@@ -179,6 +181,7 @@ describe('Manifest v3确定性与职责边界', () => {
     assert.equal(fallbackResource?.sourceResourceId, 'article:first:zh-cn');
     assert.deepEqual(firstGroup?.memberResourceIds, ['article:first:zh-cn']);
     assert.equal(delivery?.contentLocaleCode, 'zh-cn');
+    assert.equal(delivery?.readingTimeMinutes, 1);
     assert.equal(delivery?.fallback, true);
     assert.equal(seo?.indexability, 'noindex');
     assert.equal(seo?.canonicalUrl?.endsWith('/zh-cn/posts/first/'), true);

@@ -15,6 +15,7 @@ const articleDeliveryIndex: ArticleDeliveryIndexView = {
     interfaceLocaleCode: 'zh-cn',
     contentLocaleCode: 'zh-cn',
     contentPath: '/posts/fixtures/sample-article/zh-cn',
+    readingTimeMinutes: 2,
     fallback: false,
   },
   '/en/posts/fixtures/sample-article/': {
@@ -23,6 +24,7 @@ const articleDeliveryIndex: ArticleDeliveryIndexView = {
     interfaceLocaleCode: 'en',
     contentLocaleCode: 'en',
     contentPath: '/posts/fixtures/sample-article/en',
+    readingTimeMinutes: 3,
     fallback: false,
   },
   '/zh-cn/posts/fixtures/fallback-article/': {
@@ -31,6 +33,7 @@ const articleDeliveryIndex: ArticleDeliveryIndexView = {
     interfaceLocaleCode: 'zh-cn',
     contentLocaleCode: 'zh-cn',
     contentPath: '/posts/fixtures/fallback-article/zh-cn',
+    readingTimeMinutes: 1,
     fallback: false,
   },
   '/en/posts/fixtures/fallback-article/': {
@@ -39,6 +42,7 @@ const articleDeliveryIndex: ArticleDeliveryIndexView = {
     interfaceLocaleCode: 'en',
     contentLocaleCode: 'zh-cn',
     contentPath: '/posts/fixtures/fallback-article/zh-cn',
+    readingTimeMinutes: 1,
     fallback: true,
   },
 };

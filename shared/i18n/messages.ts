@@ -60,6 +60,7 @@ export interface SiteMessages {
     updated: string;
     tags: string;
     readingTime: string;
+    formatReadingTime: (minutes: number) => string;
     views: string;
     fallbackLanguage: (languageLabel: string) => string;
     image: {
@@ -154,6 +155,7 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       updated: '更新于',
       tags: '标签',
       readingTime: '阅读时长',
+      formatReadingTime: (minutes) => `${minutes} 分钟`,
       views: '访问量',
       fallbackLanguage: (languageLabel) => `仅提供${languageLabel}版本。`,
       image: {
@@ -245,6 +247,7 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       updated: 'Updated',
       tags: 'Tags',
       readingTime: 'Reading time',
+      formatReadingTime: (minutes) => `${minutes} min`,
       views: 'Views',
       fallbackLanguage: (languageLabel) => `Available in ${languageLabel} only.`,
       image: {

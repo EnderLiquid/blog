@@ -18,6 +18,7 @@ const posts: PostSource[] = [
       tags: [],
       draft: false,
     },
+    readingTimeMinutes: 2,
   },
   {
     sourcePath: 'fixtures/sample-article/en.md',
@@ -30,6 +31,7 @@ const posts: PostSource[] = [
       tags: [],
       draft: false,
     },
+    readingTimeMinutes: 3,
   },
   {
     sourcePath: 'fixtures/fallback-article/zh-cn.md',
@@ -42,6 +44,7 @@ const posts: PostSource[] = [
       tags: [],
       draft: false,
     },
+    readingTimeMinutes: 1,
   },
   {
     sourcePath: 'fixtures/draft-article/zh-cn.md',
@@ -54,6 +57,7 @@ const posts: PostSource[] = [
       tags: [],
       draft: true,
     },
+    readingTimeMinutes: 1,
   },
 ];
 

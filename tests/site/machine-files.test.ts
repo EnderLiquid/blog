@@ -27,6 +27,7 @@ const englishPost: PostSource = {
     tags: ['nuxt', 'rss'],
     draft: false,
   },
+  readingTimeMinutes: 3,
 };
 
 const chinesePost: PostSource = {

@@ -77,7 +77,10 @@ const contentLanguageLabel = computed(() => {
               </li>
             </ul>
 
-            <ArticleMetadataStats :article-key-path="delivery.articleKeyPath" />
+            <ArticleMetadataStats
+              :article-key-path="delivery.articleKeyPath"
+              :reading-time-minutes="delivery.readingTimeMinutes"
+            />
           </div>
         </div>
 
