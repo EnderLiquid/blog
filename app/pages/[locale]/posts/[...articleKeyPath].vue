@@ -30,6 +30,10 @@ if (!post.value || post.value.draft) {
   });
 }
 
+const { count: viewCount, state: viewCountState } = useArticleViewCount(
+  () => delivery.articleKeyPath,
+);
+
 const postTags = computed(() => post.value?.tags ?? []);
 const contentLanguageLabel = computed(() => {
   const displayNames = new Intl.DisplayNames([localeCode.value], { type: 'language' });
@@ -77,10 +81,25 @@ const contentLanguageLabel = computed(() => {
               </li>
             </ul>
 
-            <ArticleMetadataStats
-              :article-key-path="delivery.articleKeyPath"
-              :reading-time-minutes="delivery.readingTimeMinutes"
-            />
+            <p class="article-header__stats" data-pagefind-ignore>
+              <span class="article-header__stat">
+                {{ messages.article.readingTime(delivery.readingTimeMinutes) }}
+              </span>
+              <span
+                v-if="viewCountState !== 'unavailable'"
+                class="article-header__separator"
+                aria-hidden="true"
+                v-text="'·'"
+              ></span>
+              <span
+                v-if="viewCountState !== 'unavailable'"
+                class="article-header__stat"
+                aria-atomic="true"
+                aria-live="polite"
+              >
+                {{ messages.article.views(viewCount) }}
+              </span>
+            </p>
           </div>
         </div>
 
@@ -175,6 +194,31 @@ article {
 .article-header__updated {
   display: flex;
   gap: 0.6em;
+}
+
+.article-header__stats {
+  display: flex;
+  flex: 0 0 100%;
+  flex-wrap: wrap;
+  gap: 0.6em;
+  min-width: 0;
+  margin: 0;
+  padding-top: clamp(0.65rem, 1.5cqi, 0.85rem);
+  border-top: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.article-header__stat {
+  display: inline-block;
+  min-width: 0;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.article-header__separator {
+  color: var(--line);
 }
 
 .article-tags {
