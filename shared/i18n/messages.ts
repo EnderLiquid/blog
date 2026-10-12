@@ -1,3 +1,4 @@
+import { pluralize } from './english.ts';
 import type { LocaleCode } from './locales.ts';
 
 /** 语言中立根入口的可见文案；不作为SEO metadata使用。 */
@@ -59,9 +60,9 @@ export interface SiteMessages {
   article: {
     updated: string;
     tags: string;
-    readingTime: string;
-    formatReadingTime: (minutes: number) => string;
-    views: string;
+    readingTime: (minutes: number) => string;
+    /** count为undefined时表示计数尚未加载，文案返回加载占位。 */
+    views: (count: number | undefined) => string;
     fallbackLanguage: (languageLabel: string) => string;
     image: {
       open: (alt: string) => string;
@@ -154,9 +155,9 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     article: {
       updated: '更新于',
       tags: '标签',
-      readingTime: '阅读时长',
-      formatReadingTime: (minutes) => `${minutes} 分钟`,
-      views: '访问量',
+      readingTime: (minutes) => `阅读时间 ${minutes} 分钟`,
+      views: (count) =>
+        count === undefined ? '访问量 …' : `访问量 ${count.toLocaleString('zh-cn')}`,
       fallbackLanguage: (languageLabel) => `仅提供${languageLabel}版本。`,
       image: {
         open: (alt) => (alt ? `查看图片：${alt}` : '查看图片'),
@@ -246,9 +247,11 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
     article: {
       updated: 'Updated',
       tags: 'Tags',
-      readingTime: 'Reading time',
-      formatReadingTime: (minutes) => `${minutes} min`,
-      views: 'Views',
+      readingTime: (minutes) => `${minutes} min read`,
+      views: (count) =>
+        count === undefined
+          ? '… views'
+          : `${count.toLocaleString('en')} ${pluralize(count, 'view')}`,
       fallbackLanguage: (languageLabel) => `Available in ${languageLabel} only.`,
       image: {
         open: (alt) => (alt ? `View image: ${alt}` : 'View image'),

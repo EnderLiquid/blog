@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { createGoatCounterArticleCountUrl } from '~~/shared/analytics/goatcounter';
+import {
+  createGoatCounterArticleCountUrl,
+  parseGoatCounterCount,
+} from '~~/shared/analytics/goatcounter';
 
 type ViewCountState = 'loading' | 'loaded' | 'unavailable';
 
@@ -12,7 +15,7 @@ const props = defineProps<{
 
 const { messages } = useSiteLocale();
 const viewCountState = ref<ViewCountState>('loading');
-const viewCount = ref('');
+const viewCount = ref<number | undefined>(undefined);
 
 let requestId = 0;
 let activeController: AbortController | undefined;
@@ -35,7 +38,7 @@ async function loadViewCount(articleKeyPath: string): Promise<void> {
   const currentRequestId = ++requestId;
   cancelActiveRequest();
   viewCountState.value = 'loading';
-  viewCount.value = '';
+  viewCount.value = undefined;
 
   if (!import.meta.client) {
     return;
@@ -57,7 +60,7 @@ async function loadViewCount(articleKeyPath: string): Promise<void> {
     if (response.status === 404) {
       // GoatCounter对尚未产生访问的路径返回404，但正文中的计数语义仍然是0。
       if (currentRequestId === requestId) {
-        viewCount.value = '0';
+        viewCount.value = 0;
         viewCountState.value = 'loaded';
       }
       return;
@@ -77,7 +80,13 @@ async function loadViewCount(articleKeyPath: string): Promise<void> {
       return;
     }
 
-    viewCount.value = payload.count;
+    const count = parseGoatCounterCount(payload.count);
+
+    if (count === undefined) {
+      throw new Error('GoatCounter returned an invalid count');
+    }
+
+    viewCount.value = count;
     viewCountState.value = 'loaded';
   } catch {
     if (currentRequestId === requestId) {
@@ -114,11 +123,7 @@ function isViewCountPayload(value: unknown): value is { count: string } {
 <template>
   <p class="article-header__stats" data-pagefind-ignore>
     <span class="article-header__stat">
-      <span>{{ messages.article.readingTime }}</span>
-      {{ ' ' }}
-      <span class="article-header__stat-value">
-        {{ messages.article.formatReadingTime(readingTimeMinutes) }}
-      </span>
+      {{ messages.article.readingTime(readingTimeMinutes) }}
     </span>
 
     <span
@@ -128,12 +133,13 @@ function isViewCountPayload(value: unknown): value is { count: string } {
       v-text="'·'"
     ></span>
 
-    <span v-if="viewCountState !== 'unavailable'" class="article-header__stat">
-      <span>{{ messages.article.views }}</span>
-      {{ ' ' }}
-      <span class="article-header__stat-value" aria-atomic="true" aria-live="polite">
-        {{ viewCountState === 'loading' ? '…' : viewCount }}
-      </span>
+    <span
+      v-if="viewCountState !== 'unavailable'"
+      class="article-header__stat"
+      aria-atomic="true"
+      aria-live="polite"
+    >
+      {{ messages.article.views(viewCount) }}
     </span>
   </p>
 </template>
@@ -157,9 +163,6 @@ function isViewCountPayload(value: unknown): value is { count: string } {
   display: inline-block;
   min-width: 0;
   white-space: nowrap;
-}
-
-.article-header__stat-value {
   font-variant-numeric: tabular-nums;
 }
 

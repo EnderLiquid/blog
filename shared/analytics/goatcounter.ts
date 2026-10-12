@@ -17,3 +17,10 @@ export function createGoatCounterArticleCountUrl(articleKeyPath: string): string
   const path = createGoatCounterArticlePath(articleKeyPath);
   return `${GOATCOUNTER_ORIGIN}/counter/${encodeURIComponent(path)}.json`;
 }
+
+/** 解析GoatCounter公开计数；计数过千时接口会插入窄不换行空格等分组符。 */
+export function parseGoatCounterCount(value: string): number | undefined {
+  const digits = value.replace(/\D/g, '');
+
+  return digits === '' ? undefined : Number(digits);
+}

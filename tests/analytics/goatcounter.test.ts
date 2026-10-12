@@ -5,6 +5,7 @@ import {
   createGoatCounterArticlePath,
   GOATCOUNTER_COUNT_ENDPOINT,
   GOATCOUNTER_ORIGIN,
+  parseGoatCounterCount,
 } from '../../shared/analytics/goatcounter.ts';
 
 describe('GoatCounter文章统计路径', () => {
@@ -28,5 +29,18 @@ describe('GoatCounter文章统计路径', () => {
 
   it('拒绝空文章身份', () => {
     assert.throws(() => createGoatCounterArticlePath('///'), /articleKeyPath 不能为空/);
+  });
+});
+
+describe('解析GoatCounter公开计数', () => {
+  it('剥离计数中的分组符并转换为数字', () => {
+    assert.equal(parseGoatCounterCount('2'), 2);
+    assert.equal(parseGoatCounterCount('1,234'), 1234);
+    assert.equal(parseGoatCounterCount('77\u202f831'), 77831);
+  });
+
+  it('没有数字时返回undefined', () => {
+    assert.equal(parseGoatCounterCount(''), undefined);
+    assert.equal(parseGoatCounterCount('not a count'), undefined);
   });
 });
