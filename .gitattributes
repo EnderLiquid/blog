@@ -1,0 +1,2 @@
+# 仓库统一使用LF行尾，Windows检出不再转为CRLF，与Prettier的endOfLine=lf保持一致。
+* text=auto eol=lf
