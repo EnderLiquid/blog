@@ -7,7 +7,7 @@ import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 
-export const MERMAN_VERSION = '0.8.0-alpha.3';
+export const MERMAN_VERSION = '0.9.3';
 
 interface MermanReleaseAsset {
   archiveName: string;
@@ -17,11 +17,11 @@ interface MermanReleaseAsset {
 const MERMAN_RELEASE_ASSETS: Readonly<Record<string, MermanReleaseAsset>> = {
   'win32-x64': {
     archiveName: 'merman-cli-x86_64-pc-windows-msvc.zip',
-    sha256: '026a18b5c00a3141e9537a67f05cd062cff21d72bc1a6304111cf8a6dcba631e',
+    sha256: '05e97bf7f179292479fb01463f4c8e0f6dff8fb3c5910bee5ec4a5ed34e9d547',
   },
   'linux-x64': {
     archiveName: 'merman-cli-x86_64-unknown-linux-gnu.tar.xz',
-    sha256: 'a20d2d9d47a6f1d9ff44d8e1de8c5119833f80f3115c4a5d45188202555fb06f',
+    sha256: 'e93dbf741319190d53107c4277b373d357dcdad3f4f7e50f114a51c9b682109b',
   },
 };
 

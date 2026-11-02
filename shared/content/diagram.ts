@@ -6,7 +6,7 @@ import {
 } from './article-image.ts';
 
 export const DIAGRAM_ASSET_MANIFEST_VERSION = 2;
-export const DIAGRAM_RENDER_CONFIG_VERSION = 'diagram-render-v3';
+export const DIAGRAM_RENDER_CONFIG_VERSION = 'diagram-render-v4';
 /** 仅影响Markdown AST投影；不参与SVG资产身份和渲染缓存。 */
 export const DIAGRAM_CONTENT_PROJECTION_VERSION = 'diagram-content-v1';
 export const DIAGRAM_PUBLIC_BASE = '/_diagram-assets/';
@@ -54,7 +54,7 @@ export const DIAGRAM_THEMES: Readonly<Record<DiagramVariant, DiagramTheme>> = {
 };
 
 export const DIAGRAM_RENDERER_IDS: Readonly<Record<DiagramKind, string>> = {
-  mermaid: 'merman-cli@0.8.0-alpha.3',
+  mermaid: 'merman-cli@0.9.3',
   tikz: 'node-tikzjax@1.0.5',
 };
 
@@ -395,6 +395,12 @@ function createDiagramRendererConfig(
     return {
       backgroundColor: 'transparent',
       svgPipeline: 'resvg-safe',
+      look: 'classic',
+      flowchart: {
+        minNodeWidth: 0,
+        wrappingWidth: 200,
+        padding: 12,
+      },
       theme: 'base',
       themeVariables: {
         background: 'transparent',
@@ -412,6 +418,7 @@ function createDiagramRendererConfig(
         edgeLabelBackground: theme.paper,
         nodeTextColor: theme.ink,
         fontFamily: "Georgia, 'Noto Serif SC', serif",
+        dropShadow: 'none',
       },
     };
   }
