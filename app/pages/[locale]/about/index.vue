@@ -168,9 +168,11 @@ function updateContentRowOffset(): void {
 .about-quote p {
   margin: 0;
   font-size: clamp(2.15rem, 6.4cqi, 3.35rem);
-  font-weight: 400;
-  line-height: 1.12;
-  letter-spacing: -0.025em;
+  font-weight: 500;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+  line-height: 1.2;
+  letter-spacing: 0;
   text-wrap: balance;
 }
 
@@ -180,10 +182,12 @@ function updateContentRowOffset(): void {
 
 .about-prose {
   align-self: end;
-  font-family: var(--font-serif);
-  font-size: clamp(1.02rem, 2.5cqi, 1.14rem);
+  font-family: var(--font-sans);
+  font-size: clamp(1.05rem, 2.5cqi, 1.18rem);
   grid-area: prose;
   line-height: 1.9;
+  letter-spacing: var(--tracking-body);
+  text-wrap: pretty;
 }
 
 .about-prose__dark {
@@ -260,7 +264,9 @@ function updateContentRowOffset(): void {
   min-width: 0;
   margin-top: 0.2rem;
   color: var(--muted);
-  font-size: 0.74rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  letter-spacing: var(--tracking-meta);
   grid-column: 2 / -1;
   grid-row: 2;
   overflow-wrap: anywhere;

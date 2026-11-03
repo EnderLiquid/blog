@@ -7,6 +7,9 @@ html {
   color: var(--ink);
   background: var(--paper);
   font-family: var(--font-mono);
+  font-optical-sizing: auto;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {

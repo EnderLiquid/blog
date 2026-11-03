@@ -13,8 +13,24 @@
   --code-ink: #e7e3d6;
   --code-muted: #a6a99d;
   --code-line: #4a4d45;
-  --font-mono: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Consolas, monospace;
-  --font-serif: Georgia, 'Noto Serif SC', serif;
+  /* 三声部字体：展示用衬线，阅读用黑体，界面用等宽。 */
+  --font-mono:
+    'IBM Plex Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', 'SFMono-Regular', Consolas,
+    'Noto Sans Mono CJK SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei',
+    monospace;
+  --font-sans:
+    'Source Sans 3', 'Source Han Sans SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC',
+    'HarmonyOS Sans SC', 'MiSans', system-ui, 'Microsoft YaHei', sans-serif;
+  --font-serif:
+    'Newsreader', 'Source Serif 4', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia,
+    'Source Han Serif SC', 'Noto Serif SC', 'Noto Serif CJK SC', 'Songti SC', 'STSong', SimSun,
+    serif;
+  --text-body: clamp(1.0625rem, 0.35vw + 1rem, 1.125rem);
+  --text-meta: 0.82rem;
+  --leading-body: 1.9;
+  --leading-display: 1.18;
+  --tracking-body: 0.01em;
+  --tracking-meta: 0.02em;
 }
 
 @media (prefers-color-scheme: dark) {

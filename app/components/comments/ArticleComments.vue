@@ -67,11 +67,19 @@ const widgetKey = computed(() => `${discussionTerm.value}:${giscusLanguage.value
   margin: 0 0 0.5rem;
   font-family: var(--font-serif);
   font-size: clamp(1.8rem, 5vw, 2.5rem);
-  font-weight: 400;
+  font-weight: 600;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+  line-height: 1.2;
+  letter-spacing: 0;
 }
 
 .article-comments__loading {
   margin: 0;
   color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  letter-spacing: var(--tracking-body);
 }
 </style>

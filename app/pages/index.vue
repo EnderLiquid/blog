@@ -54,9 +54,19 @@ h1 {
   margin: 0.5rem 0 clamp(1.5rem, 2.5vw, 2rem);
   font-family: var(--font-serif);
   font-size: clamp(3.5rem, 14vw, 8rem);
-  font-weight: 450;
-  line-height: 0.9;
-  letter-spacing: -0.025em;
+  font-weight: 600;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+
+.language-entry > p:not(.prompt) {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.7;
+  letter-spacing: var(--tracking-body);
+  text-wrap: pretty;
 }
 
 ul {

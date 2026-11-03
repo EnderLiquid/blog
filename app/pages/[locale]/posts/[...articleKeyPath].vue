@@ -129,8 +129,9 @@ const contentLanguageLabel = computed(() => {
 .article-header__fallback {
   margin: 0 0 0.65rem;
   color: var(--signal);
-  font-size: 0.78rem;
-  line-height: 1.45;
+  font-size: var(--text-meta);
+  line-height: 1.5;
+  letter-spacing: var(--tracking-meta);
 }
 
 article {
@@ -166,9 +167,12 @@ article {
   margin: 0;
   font-family: var(--font-serif);
   font-size: clamp(2.5rem, 9cqi, 4rem);
-  font-weight: 450;
-  line-height: 0.9;
-  letter-spacing: -0.025em;
+  font-weight: 600;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+  line-height: 1.14;
+  letter-spacing: 0;
+  word-break: keep-all;
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
@@ -177,8 +181,11 @@ article {
   margin: 1rem 0 0;
   color: var(--muted);
   font-family: var(--font-serif);
-  font-size: 1.1rem;
-  line-height: 1.6;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.75;
+  letter-spacing: 0;
+  text-wrap: pretty;
 }
 
 .article-header__dates {
@@ -187,8 +194,9 @@ article {
   gap: 0.6em;
   margin: 0;
   color: var(--muted);
-  font-size: 0.78rem;
-  line-height: 1.45;
+  font-size: var(--text-meta);
+  line-height: 1.5;
+  letter-spacing: var(--tracking-meta);
 }
 
 .article-header__updated {
@@ -206,8 +214,9 @@ article {
   padding-top: clamp(0.65rem, 1.5cqi, 0.85rem);
   border-top: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
   color: var(--muted);
-  font-size: 0.78rem;
-  line-height: 1.45;
+  font-size: var(--text-meta);
+  line-height: 1.5;
+  letter-spacing: var(--tracking-meta);
 }
 
 .article-header__stat {
@@ -231,8 +240,9 @@ article {
   margin: 0;
   padding: 0;
   color: var(--muted);
-  font-size: 0.78rem;
-  line-height: 1.45;
+  font-size: var(--text-meta);
+  line-height: 1.5;
+  letter-spacing: var(--tracking-meta);
   list-style: none;
 }
 

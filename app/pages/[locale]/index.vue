@@ -166,8 +166,11 @@ const featuredPosts = computed(() => {
   align-self: flex-end;
   margin: auto 0 clamp(3.5rem, 7cqi, 5.5rem);
   max-width: 24rem;
-  font-size: clamp(1rem, 1.8cqi, 1.2rem);
-  line-height: 1.8;
+  font-family: var(--font-sans);
+  font-size: clamp(1.05rem, 1.8cqi, 1.2rem);
+  line-height: 1.9;
+  letter-spacing: var(--tracking-body);
+  text-wrap: pretty;
 }
 
 .featured-posts {
@@ -211,7 +214,13 @@ const featuredPosts = computed(() => {
 .featured-post__title {
   font-family: var(--font-serif);
   font-size: clamp(1.5rem, 3cqi, 2.25rem);
-  line-height: 1.16;
+  font-weight: 500;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+  line-height: 1.2;
+  letter-spacing: 0;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
   text-wrap: balance;
 }
 
@@ -225,17 +234,19 @@ const featuredPosts = computed(() => {
   );
   justify-self: start;
   font-size: 2.75rem;
-  line-height: 0.98;
-  letter-spacing: -0.025em;
+  line-height: 1.14;
+  letter-spacing: 0;
 }
 
 .featured-post__description {
   width: min(100%, var(--featured-post-description-max-width));
   justify-self: start;
   color: var(--muted);
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1rem;
-  line-height: 1.65;
+  line-height: 1.75;
+  letter-spacing: var(--tracking-body);
+  text-wrap: pretty;
 }
 
 .featured-post__meta {
@@ -244,7 +255,8 @@ const featuredPosts = computed(() => {
   align-self: stretch;
   gap: 1rem;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: var(--text-meta);
+  letter-spacing: var(--tracking-meta);
   white-space: nowrap;
 }
 
@@ -291,13 +303,16 @@ const featuredPosts = computed(() => {
 .home-destination__title {
   font-size: clamp(1.25rem, 2.4cqi, 1.75rem);
   font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 .home-destination__description {
   grid-column: 1;
   color: var(--muted);
-  font-family: var(--font-serif);
-  line-height: 1.5;
+  font-family: var(--font-sans);
+  line-height: 1.7;
+  letter-spacing: var(--tracking-body);
+  text-wrap: pretty;
 }
 
 .home-destination__arrow {
@@ -356,7 +371,7 @@ const featuredPosts = computed(() => {
   .home-welcome {
     align-self: flex-start;
     margin: var(--home-title-welcome-gap) 0 0;
-    font-size: 1rem;
+    font-size: 1.05rem;
   }
 
   .featured-posts {
@@ -371,6 +386,7 @@ const featuredPosts = computed(() => {
   }
 
   .featured-post--lead .featured-post__title {
+    width: 100%;
     font-size: clamp(2.25rem, 10cqi, 2.75rem);
   }
 

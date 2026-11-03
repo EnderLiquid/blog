@@ -116,7 +116,8 @@ onBeforeUnmount(clearCopyResetTimer);
   border-bottom: 1px solid var(--code-line);
   background: color-mix(in srgb, var(--code-ink) 7%, var(--code-paper));
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
+  letter-spacing: var(--tracking-meta);
 }
 
 .article-code-block__label {

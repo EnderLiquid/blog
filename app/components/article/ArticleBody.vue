@@ -23,25 +23,28 @@ const renderedValue = computed(() => ({
 
 <style scoped>
 .article-body {
-  font-family: var(--font-serif);
-  font-size: 1.08rem;
-  line-height: 1.85;
-  overflow-wrap: anywhere;
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-body);
+  line-break: strict;
+  overflow-wrap: break-word;
+  text-spacing-trim: trim-start;
 }
 
 .article-body :deep(h1),
 .article-body :deep(h2),
-.article-body :deep(h3),
-.article-body :deep(h4),
-.article-body :deep(h5),
-.article-body :deep(h6) {
+.article-body :deep(h3) {
   margin: 3.4rem 0 1rem;
   color: var(--ink);
   font-family: var(--font-serif);
-  font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
-  overflow-wrap: anywhere;
+  font-weight: 600;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+  line-height: var(--leading-display);
+  letter-spacing: 0;
+  overflow-wrap: break-word;
+  text-wrap: balance;
   scroll-margin-top: 5rem;
 }
 
@@ -62,18 +65,26 @@ const renderedValue = computed(() => ({
 
 .article-body :deep(h4) {
   margin: 2.4rem 0 0.65rem;
-  font-size: clamp(1.2rem, 2.75vw, 1.45rem);
-  font-weight: 700;
-  line-height: 1.35;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: clamp(1.15rem, 2.75vw, 1.35rem);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+  scroll-margin-top: 5rem;
 }
 
 .article-body :deep(h5) {
   margin: 2rem 0 0.55rem;
+  color: var(--ink);
   font-family: var(--font-mono);
   font-size: 1rem;
   font-weight: 700;
-  line-height: 1.45;
+  line-height: 1.5;
   letter-spacing: 0.02em;
+  scroll-margin-top: 5rem;
 }
 
 .article-body :deep(h6) {
@@ -82,10 +93,11 @@ const renderedValue = computed(() => ({
   color: var(--muted);
   border-left: 1px solid color-mix(in srgb, var(--signal) 50%, var(--line));
   font-family: var(--font-mono);
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 500;
   line-height: 1.5;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
+  scroll-margin-top: 5rem;
 }
 
 .article-body :deep(h1:first-child),
@@ -98,7 +110,8 @@ const renderedValue = computed(() => ({
 }
 
 .article-body :deep(p) {
-  margin: 0 0 1.35rem;
+  margin: 0 0 1.45rem;
+  text-wrap: pretty;
 }
 
 .article-body :deep(p:last-child) {
@@ -148,6 +161,7 @@ const renderedValue = computed(() => ({
 
 .article-body :deep(li) {
   padding-left: 0.25rem;
+  line-height: 1.8;
 }
 
 .article-body :deep(li + li) {
@@ -281,6 +295,11 @@ const renderedValue = computed(() => ({
   color: var(--muted);
   border-left: 2px solid var(--signal);
   background: color-mix(in srgb, var(--ink) 4%, transparent);
+  font-family: var(--font-serif);
+  font-size: 1.08em;
+  font-weight: 500;
+  line-height: 1.8;
+  letter-spacing: 0;
 }
 
 .article-body :deep(blockquote > :last-child) {
@@ -299,7 +318,8 @@ const renderedValue = computed(() => ({
   border: 1px solid color-mix(in srgb, var(--signal) 28%, var(--line));
   background: color-mix(in srgb, var(--signal) 7%, transparent);
   font-family: var(--font-mono);
-  font-size: 0.82em;
+  font-size: 0.86em;
+  letter-spacing: normal;
   overflow-wrap: anywhere;
 }
 
@@ -328,8 +348,9 @@ const renderedValue = computed(() => ({
   color: var(--code-ink);
   background: var(--code-paper);
   font-family: var(--font-mono);
-  font-size: 0.86em;
-  line-height: 1.65;
+  font-size: 0.9em;
+  line-height: 1.7;
+  letter-spacing: normal;
   tab-size: 2;
 }
 
@@ -342,7 +363,7 @@ const renderedValue = computed(() => ({
 
 .article-body :deep(.article-code-block__pre .line) {
   display: block;
-  min-height: 1.65em;
+  min-height: 1.7em;
 }
 
 .article-body :deep(.article-code-block__pre .line.highlight) {
@@ -369,6 +390,7 @@ const renderedValue = computed(() => ({
   min-width: 32rem;
   border-collapse: collapse;
   font-size: 0.92em;
+  font-variant-numeric: tabular-nums;
 }
 
 .article-body :deep(th),
@@ -377,14 +399,16 @@ const renderedValue = computed(() => ({
   text-align: left;
   vertical-align: top;
   border-bottom: 1px solid var(--line);
+  line-height: 1.6;
 }
 
 .article-body :deep(th) {
   color: var(--ink);
   background: color-mix(in srgb, var(--ink) 5%, transparent);
   font-family: var(--font-mono);
-  font-size: 0.82em;
+  font-size: 0.84em;
   font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .article-body :deep(tr:last-child td) {
@@ -474,7 +498,9 @@ const renderedValue = computed(() => ({
   margin-top: 0.6rem;
   color: var(--muted);
   font-family: var(--font-mono);
-  font-size: 0.8em;
+  font-size: 0.84em;
+  line-height: 1.6;
+  letter-spacing: var(--tracking-meta);
   text-align: center;
 }
 
@@ -500,8 +526,7 @@ const renderedValue = computed(() => ({
 
 @media (max-width: 36rem) {
   .article-body {
-    font-size: 1rem;
-    line-height: 1.8;
+    line-height: 1.85;
   }
 
   .article-body :deep(h1),

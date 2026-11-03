@@ -35,17 +35,21 @@ const { data: posts } = await useAsyncData('all-posts', () =>
   margin: 0;
   font-family: var(--font-serif);
   font-size: clamp(3.25rem, 9cqi, 5.25rem);
-  font-weight: 400;
-  line-height: 0.88;
-  letter-spacing: -0.025em;
+  font-weight: 600;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+  line-height: 1.05;
+  letter-spacing: 0;
 }
 
 .posts-page__header p {
   max-width: 32rem;
   margin: 0 0 0.2rem;
   color: var(--muted);
-  font-family: var(--font-serif);
-  font-size: 0.98rem;
-  line-height: 1.5;
+  font-family: var(--font-sans);
+  font-size: 1.02rem;
+  line-height: 1.7;
+  letter-spacing: var(--tracking-body);
+  text-wrap: pretty;
 }
 </style>

@@ -36,14 +36,28 @@ const { messages } = useSiteLocale();
 
 .status-code {
   color: var(--signal);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-meta);
 }
 
 h1 {
   margin: 0.5rem 0 clamp(1.5rem, 2.5vw, 2rem);
   font-family: var(--font-serif);
   font-size: clamp(2.8rem, 8vw, 5.5rem);
-  font-weight: 450;
-  line-height: 0.95;
+  font-weight: 600;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+  line-height: 1.15;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.error-page > p:not(.status-code) {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.7;
+  letter-spacing: var(--tracking-body);
+  text-wrap: pretty;
 }
 
 .actions {
