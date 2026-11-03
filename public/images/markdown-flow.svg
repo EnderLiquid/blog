@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" role="img" aria-labelledby="title description">
+  <!-- 独立 SVG 文档无法读取页面 CSS 变量，字体栈与 Mermaid 图表保持一致。 -->
   <title id="title">Markdown文章构建流程</title>
   <desc id="description">Markdown经过Nuxt Content和静态生成，最终成为可搜索的文章页面。</desc>
   <rect width="960" height="360" fill="#d9d4c5"/>
@@ -9,7 +10,7 @@
     <path d="M268 180h105m214 0h105"/>
     <path d="m352 165 21 15-21 15m319-30 21 15-21 15"/>
   </g>
-  <g fill="#252720" font-family="ui-monospace, Cascadia Code, Consolas, monospace" text-anchor="middle">
+  <g fill="#252720" font-family="'Source Sans 3', 'Source Han Sans SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'HarmonyOS Sans SC', 'MiSans', system-ui, 'Microsoft YaHei', sans-serif" text-anchor="middle">
     <text x="161" y="174" font-size="30">Markdown</text>
     <text x="480" y="164" font-size="27">Nuxt Content</text>
     <text x="480" y="203" font-size="18">+ generate</text>
