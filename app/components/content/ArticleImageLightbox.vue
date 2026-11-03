@@ -784,7 +784,7 @@ onBeforeUnmount(() => {
 }
 
 .article-image-lightbox__toolbar button:first-child {
-  font-family: var(--font-mono), system-ui, sans-serif;
+  font-family: var(--font-mono);
   font-size: 1.15rem;
 }
 
