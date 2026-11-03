@@ -6,6 +6,8 @@
 
 站点提供中英文界面、Pagefind 搜索、RSS、Sitemap、Giscus 评论，以及构建期渲染的数学公式和 Mermaid/TikZ 图表。
 
+全站字体设计、声明位置和未来自托管路径见 [`docs/typography.md`](docs/typography.md)。
+
 ## 快速开始
 
 要求 Node.js 24.11 或更高版本。
