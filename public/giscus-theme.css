@@ -2,7 +2,8 @@
 
 /*
  * Giscus运行在跨域iframe中，无法读取博客页面的CSS变量。
- * 下列滚动条令牌须与app/assets/css/tokens.css中的同名令牌保持同步。
+ * 字体栈和滚动条令牌须与app/assets/css/tokens.css中的同名令牌保持同步。
+ * 如果以后自托管 webfont，需要在 iframe 内单独声明 @font-face；页面字体不会跨 iframe 生效。
  */
 main {
   --color-btn-text: #252720;
@@ -56,13 +57,31 @@ main {
 .gsc-main button,
 .gsc-main input,
 .gsc-main select {
-  font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Consolas, monospace !important;
+  font-family:
+    'IBM Plex Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', 'SFMono-Regular', Consolas,
+    'Noto Sans Mono CJK SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei',
+    monospace !important;
 }
 
-/* 输入和用户生成内容沿用博客正文的衬线字体，界面控件继续保持等宽字体。 */
+/* 输入和用户生成内容使用阅读声部黑体，界面控件保持等宽字体。 */
 .gsc-main textarea,
 .gsc-main .markdown {
-  font-family: Georgia, 'Noto Serif SC', serif !important;
+  font-family:
+    'Source Sans 3', 'Source Han Sans SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC',
+    'HarmonyOS Sans SC', 'MiSans', system-ui, 'Microsoft YaHei', sans-serif !important;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+/* 评论里的代码仍属于机器声部，不能继承正文的 sans-serif。 */
+.gsc-main .markdown code,
+.gsc-main .markdown pre,
+.gsc-main .markdown kbd,
+.gsc-main .markdown samp {
+  font-family:
+    'IBM Plex Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', 'SFMono-Regular', Consolas,
+    'Noto Sans Mono CJK SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei',
+    monospace !important;
 }
 
 /* 站点界面以直角边框为基调，统一覆盖Giscus及其伪元素的圆角。 */
