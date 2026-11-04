@@ -292,12 +292,12 @@ const renderedValue = computed(() => ({
 .article-body :deep(blockquote) {
   margin: 2rem 0;
   padding: 0.15rem 1.25rem;
-  color: var(--muted);
+  color: var(--ink);
   border-left: 2px solid var(--signal);
   background: color-mix(in srgb, var(--ink) 4%, transparent);
-  font-family: var(--font-serif);
-  font-size: 1.08em;
-  font-weight: 500;
+  font-family: var(--font-sans);
+  font-size: 0.98em;
+  font-weight: 400;
   line-height: 1.8;
   letter-spacing: 0;
 }

@@ -180,7 +180,7 @@ article {
 .article-header__description {
   margin: 1rem 0 0;
   color: var(--muted);
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1.2rem;
   font-weight: 500;
   line-height: 1.75;

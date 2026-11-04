@@ -4,7 +4,7 @@
 
 | 声部 | 令牌 | 用途 | 主要规则 |
 | --- | --- | --- | --- |
-| 展示 | `--font-serif` | 文章 h1-h3、页面标题、导语、引文、特稿标题、404 | 字重 500/600，行高 1.14-1.2，字距 0 |
+| 展示 | `--font-serif` | 文章 h1-h3、页面标题、特稿标题、404 | 字重 500/600，行高 1.14-1.2，字距 0 |
 | 阅读 | `--font-sans` | 正文、列表、表格、说明段落 | 17-18px，行高 1.9，移动端 1.85，字距 0.01em |
 | 机器 | `--font-mono` | 导航、日期、标签、代码、终端、图注、灯箱、Giscus 控件 | 元数据 13px 起，字距 0.02em |
 
@@ -40,8 +40,8 @@
 | --- | --- | --- |
 | `app/assets/css/tokens.css` | 三套字体栈、字号、行高、字距 | 源头 |
 | `app/assets/css/base.css` | `html` 默认等宽，字号调整；`Mono CJK Fallback` 本地字族 | 是 |
-| `app/components/article/ArticleBody.vue` | 正文 sans；h1-h3 serif；h4 sans；h5/h6 mono；引文 serif；代码、表格、图注 mono | 是 |
-| `app/pages/[locale]/posts/[...articleKeyPath].vue` | 文章标题和导语 serif，元数据 mono | 是 |
+| `app/components/article/ArticleBody.vue` | 正文 sans；h1-h3 serif；h4 sans；h5/h6 mono；引文 sans；代码、表格、图注 mono | 是 |
+| `app/pages/[locale]/posts/[...articleKeyPath].vue` | 文章标题 serif，导语 sans，元数据 mono | 是 |
 | `app/pages/[locale]/posts/index.vue` | 列表页标题 serif，说明 sans | 是 |
 | `app/pages/[locale]/index.vue` | 字标 mono，欢迎语 sans，特稿标题 serif，摘要 sans | 是 |
 | `app/pages/[locale]/about/index.vue` | 引文 serif，正文 sans，身份和链接 mono | 是 |
@@ -63,7 +63,7 @@ Giscus 运行在跨域 iframe 中，Mermaid 和静态 SVG 以 `<img>` 独立加�
 ## 修改规则
 
 - 组件内优先使用 `var(--font-serif)`、`var(--font-sans)`、`var(--font-mono)`，不要复制新的字体栈。
-- 段落是散文时用阅读声部，标题和引文才用展示声部，等宽只留给界面、元数据和代码。
+- 正文、文章导语与文章引文用阅读声部，标题与展示性文案用展示声部，等宽只留给界面、元数据和代码。
 - 隔离上下文要写完整系统字体栈。
 - 修改 Mermaid 渲染配置后，升级 `DIAGRAM_RENDER_CONFIG_VERSION`，并同步 GitHub Actions 的 `diagram-assets-vN` 缓存前缀。只改配置不升版本，文章会继续引用旧 SVG 指纹。
 - 修改 `public/giscus-theme.css` 后，本地 Giscus 仍加载生产主题地址，需要部署后强刷验证。
