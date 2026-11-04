@@ -5,6 +5,21 @@
  * 字体栈和滚动条令牌须与app/assets/css/tokens.css中的同名令牌保持同步。
  * 如果以后自托管 webfont，需要在 iframe 内单独声明 @font-face；页面字体不会跨 iframe 生效。
  */
+
+/* 与 app/assets/css/base.css 的本地 CJK 兜底保持同步。 */
+@font-face {
+  font-family: 'Mono CJK Fallback';
+  src:
+    local('Noto Sans SC'), local('Noto Sans CJK SC'), local('Source Han Sans SC'),
+    local('PingFang SC'), local('Hiragino Sans GB'), local('Microsoft YaHei'),
+    local('WenQuanYi Zen Hei');
+  font-style: normal;
+  font-weight: 400 700;
+  unicode-range:
+    U+2E80-2FFF, U+3000-303F, U+3040-30FF, U+3100-312F, U+31A0-31BF, U+3400-4DBF, U+4E00-9FFF,
+    U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF, U+20000-2FA1F;
+}
+
 main {
   --color-btn-text: #252720;
   --color-btn-bg: #dfdbce;
@@ -58,8 +73,9 @@ main {
 .gsc-main input,
 .gsc-main select {
   font-family:
-    'IBM Plex Mono', 'Cascadia Code', 'SF Mono', 'SFMono-Regular', Menlo, Consolas, ui-monospace,
-    monospace, 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+    'IBM Plex Mono', 'Cascadia Code', 'SF Mono', 'SFMono-Regular', Menlo, Consolas,
+    'Mono CJK Fallback', ui-monospace, monospace, 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC',
+    'Microsoft YaHei', sans-serif !important;
 }
 
 /* 输入和用户生成内容使用阅读声部黑体，界面控件保持等宽字体。 */
@@ -78,8 +94,9 @@ main {
 .gsc-main .markdown kbd,
 .gsc-main .markdown samp {
   font-family:
-    'IBM Plex Mono', 'Cascadia Code', 'SF Mono', 'SFMono-Regular', Menlo, Consolas, ui-monospace,
-    monospace, 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+    'IBM Plex Mono', 'Cascadia Code', 'SF Mono', 'SFMono-Regular', Menlo, Consolas,
+    'Mono CJK Fallback', ui-monospace, monospace, 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC',
+    'Microsoft YaHei', sans-serif !important;
 }
 
 /* 站点界面以直角边框为基调，统一覆盖Giscus及其伪元素的圆角。 */

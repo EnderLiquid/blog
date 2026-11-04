@@ -15,8 +15,9 @@
   --code-line: #4a4d45;
   /* 三声部字体：展示用衬线，阅读用黑体，界面用等宽。 */
   --font-mono:
-    'IBM Plex Mono', 'Cascadia Code', 'SF Mono', 'SFMono-Regular', Menlo, Consolas, ui-monospace,
-    monospace, 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    'IBM Plex Mono', 'Cascadia Code', 'SF Mono', 'SFMono-Regular', Menlo, Consolas,
+    'Mono CJK Fallback', ui-monospace, monospace, 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
   --font-sans:
     'Source Sans 3', 'Source Han Sans SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC',
     'HarmonyOS Sans SC', 'MiSans', system-ui, 'Microsoft YaHei', sans-serif;

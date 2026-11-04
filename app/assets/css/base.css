@@ -2,6 +2,23 @@
   box-sizing: border-box;
 }
 
+/*
+ * Windows 的 generic monospace 会把中文回退到宋体。这个本地字族只覆盖 CJK
+ * 码位，让中文在 monospace 之前落到无衬线字体，拉丁字符仍走等宽。
+ */
+@font-face {
+  font-family: 'Mono CJK Fallback';
+  src:
+    local('Noto Sans SC'), local('Noto Sans CJK SC'), local('Source Han Sans SC'),
+    local('PingFang SC'), local('Hiragino Sans GB'), local('Microsoft YaHei'),
+    local('WenQuanYi Zen Hei');
+  font-style: normal;
+  font-weight: 400 700;
+  unicode-range:
+    U+2E80-2FFF, U+3000-303F, U+3040-30FF, U+3100-312F, U+31A0-31BF, U+3400-4DBF, U+4E00-9FFF,
+    U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF, U+20000-2FA1F;
+}
+
 html {
   min-width: 20rem;
   color: var(--ink);

@@ -18,8 +18,9 @@
   'Noto Sans CJK SC', 'PingFang SC', 'HarmonyOS Sans SC', 'MiSans',
   system-ui, 'Microsoft YaHei', sans-serif;
 --font-mono: 'IBM Plex Mono', 'Cascadia Code', 'SF Mono', 'SFMono-Regular',
-  Menlo, Consolas, ui-monospace, monospace, 'Noto Sans SC',
-  'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  Menlo, Consolas, 'Mono CJK Fallback', ui-monospace, monospace,
+  'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei',
+  sans-serif;
 --text-body: clamp(1.0625rem, 0.35vw + 1rem, 1.125rem);
 --text-meta: 0.82rem;
 --leading-body: 1.9;
@@ -30,6 +31,8 @@
 
 当前实际渲染取系统可用字体。Windows 上常见 Palatino Linotype、Noto Serif SC 或 SimSun，Noto Sans SC 或微软雅黑，Cascadia 或 Consolas；macOS 上常见 Palatino、Songti SC、PingFang SC 和 SF Mono。
 
+`--font-mono` 的顺序是刻意的：命名拉丁等宽在前，`ui-monospace` / `monospace` 之前插一个只覆盖 CJK 码位的本地字族 `Mono CJK Fallback`。这样 Windows 的 generic monospace 不会先用宋体，手机也仍能用系统好看的通用等宽。
+
 ## 声明位置
 
 新增或审查字体时，按这张表逐项检查。
@@ -37,7 +40,7 @@
 | 位置 | 负责 | 读取全局令牌 |
 | --- | --- | --- |
 | `app/assets/css/tokens.css` | 三套字体栈、字号、行高、字距 | 源头 |
-| `app/assets/css/base.css` | `html` 默认等宽，字号调整 | 是 |
+| `app/assets/css/base.css` | `html` 默认等宽，字号调整；`Mono CJK Fallback` 本地字族 | 是 |
 | `app/components/article/ArticleBody.vue` | 正文 sans；h1-h3 serif；h4 sans；h5/h6 mono；引文 serif；代码、表格、图注 mono | 是 |
 | `app/pages/[locale]/posts/[...articleKeyPath].vue` | 文章标题和导语 serif，元数据 mono | 是 |
 | `app/pages/[locale]/posts/index.vue` | 列表页标题 serif，说明 sans | 是 |
@@ -56,7 +59,7 @@
 | `public/images/markdown-flow.svg` | 静态示例 SVG 的 `font-family` | 否，手工同步 |
 | `scripts/diagrams/fonts.ts`、KaTeX | TikZ 和数学公式字体 | 不参与文本声部 |
 
-Giscus 运行在跨域 iframe 中，Mermaid 和静态 SVG 以 `<img>` 独立加载。这三处都读不到页面的 CSS 变量，也不会加载页面声明的 webfont。修改全局令牌后必须手动同步它们。
+Giscus 运行在跨域 iframe 中，Mermaid 和静态 SVG 以 `<img>` 独立加载。这三处都读不到页面的 CSS 变量，也不会加载页面声明的 webfont。修改全局令牌后必须手动同步它们；`giscus-theme.css` 还要复制 `Mono CJK Fallback` 的 `@font-face`。
 
 ## 修改规则
 
