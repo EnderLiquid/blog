@@ -58,9 +58,8 @@ main {
 .gsc-main input,
 .gsc-main select {
   font-family:
-    'IBM Plex Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', 'SFMono-Regular', Consolas,
-    'Noto Sans Mono CJK SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei',
-    monospace !important;
+    'IBM Plex Mono', 'Cascadia Code', 'SF Mono', 'SFMono-Regular', Menlo, Consolas, ui-monospace,
+    monospace, 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
 }
 
 /* 输入和用户生成内容使用阅读声部黑体，界面控件保持等宽字体。 */
@@ -79,9 +78,8 @@ main {
 .gsc-main .markdown kbd,
 .gsc-main .markdown samp {
   font-family:
-    'IBM Plex Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', 'SFMono-Regular', Consolas,
-    'Noto Sans Mono CJK SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei',
-    monospace !important;
+    'IBM Plex Mono', 'Cascadia Code', 'SF Mono', 'SFMono-Regular', Menlo, Consolas, ui-monospace,
+    monospace, 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
 }
 
 /* 站点界面以直角边框为基调，统一覆盖Giscus及其伪元素的圆角。 */

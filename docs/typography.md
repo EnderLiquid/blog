@@ -17,9 +17,9 @@
 --font-sans: 'Source Sans 3', 'Source Han Sans SC', 'Noto Sans SC',
   'Noto Sans CJK SC', 'PingFang SC', 'HarmonyOS Sans SC', 'MiSans',
   system-ui, 'Microsoft YaHei', sans-serif;
---font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro',
-  'SFMono-Regular', Consolas, 'Noto Sans Mono CJK SC', 'Noto Sans SC',
-  'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', monospace;
+--font-mono: 'IBM Plex Mono', 'Cascadia Code', 'SF Mono', 'SFMono-Regular',
+  Menlo, Consolas, ui-monospace, monospace, 'Noto Sans SC',
+  'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 --text-body: clamp(1.0625rem, 0.35vw + 1rem, 1.125rem);
 --text-meta: 0.82rem;
 --leading-body: 1.9;
