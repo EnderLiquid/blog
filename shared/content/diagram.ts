@@ -6,17 +6,17 @@ import {
 } from './article-image.ts';
 
 export const DIAGRAM_ASSET_MANIFEST_VERSION = 2;
-export const DIAGRAM_RENDER_CONFIG_VERSION = 'diagram-render-v5';
+export const DIAGRAM_RENDER_CONFIG_VERSION = 'diagram-render-v6';
 /** 仅影响Markdown AST投影；不参与SVG资产身份和渲染缓存。 */
 export const DIAGRAM_CONTENT_PROJECTION_VERSION = 'diagram-content-v1';
 export const DIAGRAM_PUBLIC_BASE = '/_diagram-assets/';
 export const DIAGRAM_FONT_ASSET_VERSION = 'node-tikzjax@1.0.5-bakoma-embedded-v1';
 /**
- * Mermaid SVG 以 <img> 独立加载，无法读取页面 CSS 变量或 webfont。
+ * Mermaid SVG 以 <img> 独立加载，无法读取页面 CSS 变量。
  * 这里使用系统可解析的黑体栈，顺序与 tokens.css 的 --font-sans 保持一致。
  */
 const DIAGRAM_FONT_FAMILY =
-  "'Source Sans 3', 'Source Han Sans SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'HarmonyOS Sans SC', 'MiSans', system-ui, 'Microsoft YaHei', sans-serif";
+  "'Source Han Sans SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'HarmonyOS Sans SC', 'MiSans', system-ui, 'Microsoft YaHei', sans-serif";
 
 export const DIAGRAM_KINDS = ['mermaid', 'tikz'] as const;
 export type DiagramKind = (typeof DIAGRAM_KINDS)[number];

@@ -1,9 +1,8 @@
 @import url('https://giscus.app/themes/preferred_color_scheme.css');
 
 /*
- * Giscus运行在跨域iframe中，无法读取博客页面的CSS变量。
+ * Giscus运行在跨域iframe中，无法读取博客页面的CSS变量；字体栈也不会跨iframe继承。
  * 字体栈和滚动条令牌须与app/assets/css/tokens.css中的同名令牌保持同步。
- * 如果以后自托管 webfont，需要在 iframe 内单独声明 @font-face；页面字体不会跨 iframe 生效。
  */
 
 /* 与 app/assets/css/base.css 的本地 CJK 兜底保持同步。 */
@@ -73,17 +72,17 @@ main {
 .gsc-main input,
 .gsc-main select {
   font-family:
-    'IBM Plex Mono', 'Cascadia Code', 'SF Mono', 'SFMono-Regular', Menlo, Consolas,
-    'Mono CJK Fallback', ui-monospace, monospace, 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC',
-    'Microsoft YaHei', sans-serif !important;
+    'Cascadia Code', 'SF Mono', 'SFMono-Regular', Menlo, Consolas, 'Mono CJK Fallback',
+    ui-monospace, monospace, 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei',
+    sans-serif !important;
 }
 
 /* 输入和用户生成内容使用阅读声部黑体，界面控件保持等宽字体。 */
 .gsc-main textarea,
 .gsc-main .markdown {
   font-family:
-    'Source Sans 3', 'Source Han Sans SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC',
-    'HarmonyOS Sans SC', 'MiSans', system-ui, 'Microsoft YaHei', sans-serif !important;
+    'Source Han Sans SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'HarmonyOS Sans SC',
+    'MiSans', system-ui, 'Microsoft YaHei', sans-serif !important;
   font-size: 1rem;
   line-height: 1.75;
 }
@@ -94,9 +93,9 @@ main {
 .gsc-main .markdown kbd,
 .gsc-main .markdown samp {
   font-family:
-    'IBM Plex Mono', 'Cascadia Code', 'SF Mono', 'SFMono-Regular', Menlo, Consolas,
-    'Mono CJK Fallback', ui-monospace, monospace, 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC',
-    'Microsoft YaHei', sans-serif !important;
+    'Cascadia Code', 'SF Mono', 'SFMono-Regular', Menlo, Consolas, 'Mono CJK Fallback',
+    ui-monospace, monospace, 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei',
+    sans-serif !important;
 }
 
 /* 站点界面以直角边框为基调，统一覆盖Giscus及其伪元素的圆角。 */

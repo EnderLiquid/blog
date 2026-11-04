@@ -15,16 +15,15 @@
   --code-line: #4a4d45;
   /* 三声部字体：展示用衬线，阅读用黑体，界面用等宽。 */
   --font-mono:
-    'IBM Plex Mono', 'Cascadia Code', 'SF Mono', 'SFMono-Regular', Menlo, Consolas,
-    'Mono CJK Fallback', ui-monospace, monospace, 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC',
-    'Microsoft YaHei', sans-serif;
+    'Cascadia Code', 'SF Mono', 'SFMono-Regular', Menlo, Consolas, 'Mono CJK Fallback',
+    ui-monospace, monospace, 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei',
+    sans-serif;
   --font-sans:
-    'Source Sans 3', 'Source Han Sans SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC',
-    'HarmonyOS Sans SC', 'MiSans', system-ui, 'Microsoft YaHei', sans-serif;
+    'Source Han Sans SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'HarmonyOS Sans SC',
+    'MiSans', system-ui, 'Microsoft YaHei', sans-serif;
   --font-serif:
-    'Newsreader', 'Source Serif 4', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia,
-    'Source Han Serif SC', 'Noto Serif SC', 'Noto Serif CJK SC', 'Songti SC', 'STSong', SimSun,
-    serif;
+    'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, 'Source Han Serif SC', 'Noto Serif SC',
+    'Noto Serif CJK SC', 'Songti SC', 'STSong', SimSun, serif;
   --text-body: clamp(1.0625rem, 0.35vw + 1rem, 1.125rem);
   --text-meta: 0.82rem;
   --leading-body: 1.9;
