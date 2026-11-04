@@ -310,6 +310,7 @@ defineExpose({ focusShellToggle });
   min-height: 3.25rem;
   align-items: center;
   font-weight: 700;
+  line-height: 3.25rem;
   text-decoration: none;
 }
 
@@ -324,6 +325,7 @@ defineExpose({ focusShellToggle });
 }
 
 .site-navigation__primary a {
+  line-height: 3.25rem;
   text-decoration: none;
 }
 
@@ -492,6 +494,7 @@ defineExpose({ focusShellToggle });
     width: 100%;
     padding: 0.65rem 0 0.65rem 0.65rem;
     border-top: 1px dotted var(--line);
+    line-height: normal;
   }
 
   .is-compact-menu-open .site-navigation__primary-clip {
