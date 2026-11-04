@@ -49,8 +49,8 @@ export const SHELL_MESSAGES: Record<LocaleCode, ShellMessages> = {
       'clear                Clear terminal output',
     ].join('\n'),
     unknownCommand: (command) =>
-      `Unknown command: “${command}”. Enter help for available commands.`,
-    pathNotFound: (path) => `Path does not exist or cannot be navigated: “${path}”.`,
+      `Unknown command: "${command}". Enter help for available commands.`,
+    pathNotFound: (path) => `Path does not exist or cannot be navigated: "${path}".`,
     translationMissing: 'This page does not have a version in the target language.',
     usage: (command) => `Usage: ${command}`,
   },

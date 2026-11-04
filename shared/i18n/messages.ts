@@ -215,11 +215,11 @@ export const SITE_MESSAGES: Record<LocaleCode, SiteMessages> = {
       title: 'ABOUT',
       name: 'EnderLiquid',
       identity: ['Software engineering undergraduate.', 'Java is my native programming language.'],
-      quote: ['“What if I could make this idea real?”'],
+      quote: ['"What if I could make this idea real?"'],
       prose: {
         light: [
-          'Why not give it a try? That’s how I’ve left behind quite a few half-finished projects that never saw the light of day, but I’ve also picked up a few lessons along the way that might be worth even more than the finished product. Still, sometimes I really do manage to turn a spur-of-the-moment idea into something that works—and that other people can see.',
-          'Java gave me my first framework for understanding and building systems. However, as I’ve been learning other languages recently, I’ve also been trying to think beyond it.',
+          "Why not give it a try? That's how I've left behind quite a few half-finished projects that never saw the light of day, but I've also picked up a few lessons along the way that might be worth even more than the finished product. Still, sometimes I really do manage to turn a spur-of-the-moment idea into something that works—and that other people can see.",
+          "Java gave me my first framework for understanding and building systems. However, as I've been learning other languages recently, I've also been trying to think beyond it.",
         ],
         dark: [
           'Each time, only the voice within answers me, its echoes rippling like arpeggios across the empty sea of the mind. So I resolve, once again, to set sail in the boat of the unknowing, seeking a way through the storm toward the far shore of the unknowable. Until, once again, I strike the reefs of reality—or perhaps tear my own sails apart. Until, once again, I sink soundlessly to the seabed and am drawn back into the cycle.',
